@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
 
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
@@ -46,8 +45,8 @@ export async function GET(request: NextRequest) {
             // TODO
         }
 
-        const accessToken = data.access_token;
-        const instagramUserId = data.user_id;
+        // const accessToken = data.access_token;
+        // const instagramUserId = data.user_id;
 
         console.log(data);
 
@@ -56,5 +55,7 @@ export async function GET(request: NextRequest) {
         
     } catch (error) {
         // TODO
+
+        console.error(error);
     }
 }

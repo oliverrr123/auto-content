@@ -3,7 +3,7 @@ import { FacebookIcon, InstagramIcon, PlusIcon } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 export default function Context() {
-    const { user, isLoading } = useAuth();
+    const { user } = useAuth();
 
     if (user) {
         return (
