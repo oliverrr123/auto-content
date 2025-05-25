@@ -1,5 +1,5 @@
 "use client";
-import Image from "next/image";
+// import Image from "next/image";
 import LoginLogoutButton from "@/components/login-logout-button";
 import React from "react";
 import { useAuth } from "@/context/AuthContext";
