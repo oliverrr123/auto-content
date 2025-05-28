@@ -66,6 +66,7 @@ export async function GET(request: NextRequest) {
 
         } catch (error) {
             // TODO
+            console.error(error);
         }
 
         return NextResponse.redirect(new URL('/context', request.url));
