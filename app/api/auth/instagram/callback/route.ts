@@ -79,6 +79,7 @@ export async function GET(request: NextRequest) {
 
             if (instagramError) {
                 // TODO
+                console.error(instagramError);
             }
 
             const { error: userError } = await supabase
@@ -90,6 +91,7 @@ export async function GET(request: NextRequest) {
 
             if (userError) {
                 // TODO
+                console.error(userError);
             }
 
             // TODO: MAKE REFRESHING LOGIC BEFORE PRODUCTION!!!!!!!!!!
