@@ -41,23 +41,25 @@ export async function GET(request: NextRequest) {
             // TODO
         }
 
-        // const accessToken = data.access_token;
-        // const instagramUserId = data.user_id;
-
-        console.log(data);
+        const accessToken = data.access_token;
+        const instagramUserId = data.user_id;
 
         try {
-            console.log("1:")
-            console.log(data[0].access_token)
-        } catch (error) {
-            console.error(error);
-        }
+            const response = await fetch(`https://graph.instagram.com/access_token?grant_type=ig_exchange_token&client_secret=${clientSecret}&access_token=${accessToken}`);
+        
+            const data = await response.json();
 
-        try {
-            console.log("2:")
-            console.log(data.access_token)
+            if (!response.ok || data.error_type) {
+                // TODO
+            }
+
+            console.log(data);
+
+            const longLivedAccessToken = data.access_token;
+
+            console.log(`${instagramUserId} has a long lived access token: ${longLivedAccessToken}`);
         } catch (error) {
-            console.error(error);
+            // TODO
         }
 
         return NextResponse.redirect(new URL('/context', request.url));
