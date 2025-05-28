@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
         // const accessToken = data.access_token;
         // const instagramUserId = data.user_id;
 
-        console.log(data);
+        console.log(data[0].access_token);
 
         return NextResponse.redirect(new URL('/context', request.url));
 
