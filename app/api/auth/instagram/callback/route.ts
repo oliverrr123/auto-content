@@ -8,7 +8,6 @@ export async function GET(request: NextRequest) {
         // TODO
     }
 
-    // TODO: GET THESE FROM SUPABASE
     const clientId = process.env.INSTAGRAM_CLIENT_ID;
     const clientSecret = process.env.INSTAGRAM_CLIENT_SECRET;
     const redirectUri = process.env.INSTAGRAM_REDIRECT_URI;
@@ -56,7 +55,7 @@ export async function GET(request: NextRequest) {
             console.log(data);
 
             const longLivedAccessToken = data.access_token;
-            const expiryDate = new Date(Date.now() + (data.expires_in * 1000)).toISOString();
+            const expiryDate = Math.floor(Date.now() / 1000) + data.expires_in;
 
             console.log(`${instagramUserId} has a long lived access token: ${longLivedAccessToken}`);
             console.log(`${instagramUserId} has a expiry date: ${expiryDate}`);
