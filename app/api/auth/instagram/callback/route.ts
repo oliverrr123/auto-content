@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@/utils/supabase/server';
 
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
@@ -60,6 +61,35 @@ export async function GET(request: NextRequest) {
             console.log(`${instagramUserId} has a long lived access token: ${longLivedAccessToken}`);
             console.log(`${instagramUserId} has a expiry date: ${expiryDate}`);
 
+            const supabase = await createClient();
+            const { data: { user } } = await supabase.auth.getUser();
+
+            if (!user) {
+                return NextResponse.redirect(new URL('/login', request.url));
+            }
+
+            const { error: instagramError } = await supabase
+                .from('instagram')
+                .insert({
+                    id: instagramUserId,
+                    access_token: longLivedAccessToken,
+                    token_expiry_date: expiryDate,
+                });
+
+            if (instagramError) {
+                // TODO
+            }
+
+            const { error: userError } = await supabase
+                .from('profiles')
+                .update({
+                    instagram_id: instagramUserId,
+                })
+                .eq('id', user.id)
+
+            if (userError) {
+                // TODO
+            }
 
             // TODO: MAKE REFRESHING LOGIC BEFORE PRODUCTION!!!!!!!!!!
 
