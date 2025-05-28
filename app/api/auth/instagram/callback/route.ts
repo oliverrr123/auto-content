@@ -56,8 +56,14 @@ export async function GET(request: NextRequest) {
             console.log(data);
 
             const longLivedAccessToken = data.access_token;
+            const expiryDate = new Date(Date.now() + (data.expires_in * 1000)).toISOString();
 
             console.log(`${instagramUserId} has a long lived access token: ${longLivedAccessToken}`);
+            console.log(`${instagramUserId} has a expiry date: ${expiryDate}`);
+
+
+            // TODO: MAKE REFRESHING LOGIC BEFORE PRODUCTION!!!!!!!!!!
+
         } catch (error) {
             // TODO
         }
