@@ -9,6 +9,8 @@ export async function GET(request: NextRequest) {
         // TODO
     }
 
+    // exchange code for short lived access token
+    
     const clientId = process.env.INSTAGRAM_CLIENT_ID;
     const clientSecret = process.env.INSTAGRAM_CLIENT_SECRET;
     const redirectUri = process.env.INSTAGRAM_REDIRECT_URI;
@@ -44,6 +46,8 @@ export async function GET(request: NextRequest) {
         const accessToken = data.access_token;
         const instagramUserId = data.user_id;
 
+        // exchange short lived access token for long lived access token
+
         try {
             const response = await fetch(`https://graph.instagram.com/access_token?grant_type=ig_exchange_token&client_secret=${clientSecret}&access_token=${accessToken}`);
         
@@ -53,20 +57,28 @@ export async function GET(request: NextRequest) {
                 // TODO
             }
 
-            console.log(data);
-
             const longLivedAccessToken = data.access_token;
             const expiryDate = Math.floor(Date.now() / 1000) + data.expires_in;
 
-            console.log(`${instagramUserId} has a long lived access token: ${longLivedAccessToken}`);
-            console.log(`${instagramUserId} has a expiry date: ${expiryDate}`);
+            
+            const responseGetUserInfo = await fetch(`https://graph.instagram.com/v22.0/me?fields=username,name,profile_picture_url&access_token=${longLivedAccessToken}`)
+
+            const userInfo = await responseGetUserInfo.json();
+
+            const username = userInfo.username;
+            const name = userInfo.name;
+            const profilePictureUrl = userInfo.profile_picture_url;
+
+
+            // save to supabase
+
+
 
             const supabase = await createClient();
             const { data: { user } } = await supabase.auth.getUser();
 
             if (!user) {
-                // return NextResponse.redirect(new URL('/login', request.url));
-                console.log("No user found");
+                return NextResponse.redirect(new URL('/login', request.url));
             }
 
             const { error: instagramError } = await supabase
@@ -75,6 +87,9 @@ export async function GET(request: NextRequest) {
                     id: instagramUserId,
                     access_token: longLivedAccessToken,
                     token_expiry_date: expiryDate,
+                    username: username,
+                    name: name,
+                    profile_picture_url: profilePictureUrl,
                 });
 
             if (instagramError) {
@@ -87,7 +102,7 @@ export async function GET(request: NextRequest) {
                 .update({
                     instagram_id: instagramUserId,
                 })
-                .eq('id', user?.id)
+                .eq('id', user.id)
 
             if (userError) {
                 // TODO
