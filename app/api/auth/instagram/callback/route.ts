@@ -26,10 +26,6 @@ export async function GET(request: NextRequest) {
     params.append('redirect_uri', redirectUri);
     params.append('code', code!);
 
-    console.log("CODE")
-    console.log(code);
-    console.log("/CODE")
-
     try {
         const response = await fetch(tokenUrl, {
             method: 'POST',
@@ -48,7 +44,21 @@ export async function GET(request: NextRequest) {
         // const accessToken = data.access_token;
         // const instagramUserId = data.user_id;
 
-        console.log(data[0].access_token);
+        console.log(data);
+
+        try {
+            console.log("1:")
+            console.log(data[0].access_token)
+        } catch (error) {
+            console.error(error);
+        }
+
+        try {
+            console.log("2:")
+            console.log(data.access_token)
+        } catch (error) {
+            console.error(error);
+        }
 
         return NextResponse.redirect(new URL('/context', request.url));
 
