@@ -65,7 +65,8 @@ export async function GET(request: NextRequest) {
             const { data: { user } } = await supabase.auth.getUser();
 
             if (!user) {
-                return NextResponse.redirect(new URL('/login', request.url));
+                // return NextResponse.redirect(new URL('/login', request.url));
+                console.log("No user found");
             }
 
             const { error: instagramError } = await supabase
@@ -85,7 +86,7 @@ export async function GET(request: NextRequest) {
                 .update({
                     instagram_id: instagramUserId,
                 })
-                .eq('id', user.id)
+                .eq('id', user?.id)
 
             if (userError) {
                 // TODO
