@@ -93,6 +93,8 @@ export async function GET(request: NextRequest) {
             if (instagramError) {
                 // TODO
                 console.error(instagramError);
+                console.log(user.id);
+                console.log(instagramUserId);
             }
 
             // TODO: MAKE REFRESHING LOGIC BEFORE PRODUCTION!!!!!!!!!!
