@@ -4,11 +4,34 @@ import LoginLogoutButton from "@/components/login-logout-button";
 import React from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useEffect, useState } from "react";
 
 export default function Home() {
   const { user, isLoading } = useAuth();
 
-  if (isLoading) {
+  const [profile, setProfile] = useState(null);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(false);
+
+  useEffect(() => {
+    console.log("acdasdf");
+    if (user && !profile) {
+      setIsLoadingProfile(true);
+
+      fetch('/api/get/instagram/profile')
+        .then(res => res.json())
+        .then(data => {
+          setProfile(data);
+          setIsLoadingProfile(false);
+          console.log(data);
+        })
+        .catch(err => {
+          console.error(err);
+          setIsLoadingProfile(false);
+        })
+    }
+  }, [user, profile])
+
+  if (isLoading || isLoadingProfile) {
     return (
       <div className="flex gap-4 items-center">
         <Skeleton className="rounded-full w-[100px] h-[100px]" />
@@ -30,6 +53,7 @@ export default function Home() {
         <div>
           <h1 className="text-2xl font-bold">Forbes</h1>
           <h3 className="text-sm text-gray-500">News & media website</h3>
+          
         </div>
       </div>
     );

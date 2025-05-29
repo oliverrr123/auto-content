@@ -81,7 +81,8 @@ export async function GET(request: NextRequest) {
             const { error: instagramError } = await supabase
                 .from('instagram')
                 .insert({
-                    id: instagramUserId,
+                    id: user.id,
+                    instagram_id: instagramUserId,
                     access_token: longLivedAccessToken,
                     token_expiry_date: expiryDate,
                     username: username,
@@ -92,18 +93,6 @@ export async function GET(request: NextRequest) {
             if (instagramError) {
                 // TODO
                 console.error(instagramError);
-            }
-
-            const { error: userError } = await supabase
-                .from('profiles')
-                .update({
-                    instagram_id: instagramUserId,
-                })
-                .eq('id', user.id)
-
-            if (userError) {
-                // TODO
-                console.error(userError);
             }
 
             // TODO: MAKE REFRESHING LOGIC BEFORE PRODUCTION!!!!!!!!!!
