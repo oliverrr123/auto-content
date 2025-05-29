@@ -9,12 +9,11 @@ import { useEffect, useState } from "react";
 export default function Home() {
   const { user, isLoading } = useAuth();
 
-  const [profile, setProfile] = useState(null);
+  const [profile, setProfile] = useState<{ username: string, name: string, profilePictureUrl: string } | null>(null);
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
 
   useEffect(() => {
-    console.log("acdasdf");
-    if (user && !profile) {
+    if (user) {
       setIsLoadingProfile(true);
 
       fetch('/api/get/instagram/profile')
@@ -22,16 +21,15 @@ export default function Home() {
         .then(data => {
           setProfile(data);
           setIsLoadingProfile(false);
-          console.log(data);
         })
         .catch(err => {
           console.error(err);
           setIsLoadingProfile(false);
         })
     }
-  }, [user, profile])
+  }, [isLoading])
 
-  if (isLoading || isLoadingProfile) {
+  if (isLoading || isLoadingProfile || !profile) {
     return (
       <div className="flex gap-4 items-center">
         <Skeleton className="rounded-full w-[100px] h-[100px]" />
@@ -47,13 +45,12 @@ export default function Home() {
     return (
       <div className="flex gap-4 items-center">
         <div>
-          <Image src={user.user_metadata.avatar_url} alt="User Avatar" width={100} height={100} className="rounded-full absolute z-10" />
-          <div className="w-[100px] h-[100px] bg-slate-200 rounded-full relative" />
+            <Image src={profile.profilePictureUrl} alt="User Avatar" width={100} height={100} className="rounded-full absolute z-10" />
+            <div className="w-[100px] h-[100px] bg-slate-200 rounded-full relative" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold">Forbes</h1>
-          <h3 className="text-sm text-gray-500">News & media website</h3>
-          
+          <h1 className="text-2xl font-bold">{profile.name}</h1>
+          <h3 className="text-sm text-gray-500">@{profile.username}</h3>
         </div>
       </div>
     );

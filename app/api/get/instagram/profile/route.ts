@@ -10,39 +10,25 @@ export async function GET() {
     }
 
     
-    const { data: profile, error: profileError } = await supabase
-    .from('profiles')
-    .select('instagram_id')
-    .eq('id', user.id)
-    .single();
+    const { data, error } = await supabase
+        .from('instagram')
+        .select('access_token')
+        .eq('id', user.id)
+        .single();
 
-    if (profileError || !profile?.instagram_id) {
+    if (error) {
+        console.log(error);
         return NextResponse.json({ error: "Instagram not connected" }, { status: 400 });
     }
 
-    console.log(profile.instagram_id);
-
-    // Then get instagram data using the bigint ID
-    const { data: instagram, error: instagramError } = await supabase
-        .from('instagram')
-        .select('*')
-
-    if (instagramError) {
-        console.log(instagramError);
-        return NextResponse.json({ error: "Error fetching instagram data" }, { status: 500 });
-    }
-
-    console.log('Query result:', instagram);
-    console.log('Query error:', instagramError);
-
-    return NextResponse.json(instagram);
-
-    // const responseGetUserInfo = await fetch(`https://graph.instagram.com/v22.0/me?fields=username,name,profile_picture_url&access_token=${longLivedAccessToken}`)
-
-    // const userInfo = await responseGetUserInfo.json();
-
-    // const username = userInfo.username;
-    // const name = userInfo.name;
-    // const profilePictureUrl = userInfo.profile_picture_url;
-
+    
+    const responseGetUserInfo = await fetch(`https://graph.instagram.com/v22.0/me?fields=username,name,profile_picture_url&access_token=${data.access_token}`)
+    
+    const userInfo = await responseGetUserInfo.json();
+    
+    const username = userInfo.username;
+    const name = userInfo.name;
+    const profilePictureUrl = userInfo.profile_picture_url;
+    
+    return NextResponse.json({ username, name, profilePictureUrl });
 }
