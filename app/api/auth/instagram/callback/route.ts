@@ -69,10 +69,7 @@ export async function GET(request: NextRequest) {
             const name = userInfo.name;
             const profilePictureUrl = userInfo.profile_picture_url;
 
-
             // save to supabase
-
-
 
             const supabase = await createClient();
             const { data: { user } } = await supabase.auth.getUser();
