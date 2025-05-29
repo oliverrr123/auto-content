@@ -1,5 +1,5 @@
 "use client";
-// import Image from "next/image";
+import Image from "next/image";
 import LoginLogoutButton from "@/components/login-logout-button";
 import React from "react";
 import { useAuth } from "@/context/AuthContext";
@@ -24,7 +24,7 @@ export default function Home() {
     return (
       <div className="flex gap-4 items-center">
         <div>
-          {/* <Image src={user.user_metadata.avatar_url} alt="User Avatar" width={100} height={100} className="rounded-full absolute z-10" /> */}
+          <Image src={user.user_metadata.avatar_url} alt="User Avatar" width={100} height={100} className="rounded-full absolute z-10" />
           <div className="w-[100px] h-[100px] bg-slate-200 rounded-full relative" />
         </div>
         <div>
