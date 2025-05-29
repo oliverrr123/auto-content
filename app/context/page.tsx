@@ -55,7 +55,7 @@ export default function Context() {
                         </div>
 
                         <DialogClose asChild>
-                            <Button className="text-xl font-semibold h-12 p-0 rounded-2xl">Done</Button>
+                            <Button className="text-xl font-semibold h-12 p-0 rounded-2xl hover:bg-blue-500">Done</Button>
                         </DialogClose>
                     </DialogContent>
                     </Dialog>
