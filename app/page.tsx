@@ -46,7 +46,6 @@ export default function Home() {
       <div className="flex gap-4 items-center">
         <div>
             <Image src={profile.profilePictureUrl} alt="User Avatar" width={100} height={100} className="rounded-full absolute z-10" />
-            <p>{profile.profilePictureUrl}</p>
             <div className="w-[100px] h-[100px] bg-slate-200 rounded-full relative" />
         </div>
         <div>
