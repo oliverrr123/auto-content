@@ -32,7 +32,7 @@ export default function RootLayout({
       >
         <AuthProvider>
           <MobileHeader />
-          <main className="p-4 pt-24 w-full h-dvh bg-slate-100">
+          <main className="p-4 py-20 w-full h-dvh bg-slate-100">
             {children}
           </main>
           <MobileNavbar />
