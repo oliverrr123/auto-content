@@ -8,7 +8,7 @@ export async function POST(req: Request) {
         const fileData = formData.getAll('file');
         const files = fileData.map(data => JSON.parse(data.toString()) as { filename: string, filetype: string });
 
-        let credentials = {
+        const credentials = {
             type: process.env.TYPE,
             project_id: process.env.PROJECT_ID,
             private_key_id: process.env.PRIVATE_KEY_ID,
