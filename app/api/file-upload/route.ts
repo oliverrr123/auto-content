@@ -1,37 +1,57 @@
 import { NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
-import path from 'path';
+import { Storage } from '@google-cloud/storage';
 import crypto from 'crypto';
 
 export async function POST(req: Request) {
     try {
         const formData = await req.formData();
-        const files = formData.getAll('file') as File[];
+        const fileData = formData.getAll('file');
+        const files = fileData.map(data => JSON.parse(data.toString()) as { filename: string, filetype: string });
 
-        const uploadedFiles = [];
+        let credentials = {
+            type: process.env.TYPE,
+            project_id: process.env.PROJECT_ID,
+            private_key_id: process.env.PRIVATE_KEY_ID,
+            private_key: process.env.PRIVATE_KEY ? Buffer.from(process.env.PRIVATE_KEY, "base64").toString("utf-8") : undefined,
+            client_email: process.env.CLIENT_EMAIL,
+            client_id: process.env.CLIENT_ID,
+            auth_uri: process.env.AUTH_URI,
+            token_uri: process.env.TOKEN_URI,
+            auth_provider_x509_cert_url: process.env.AUTH_PROVIdER_X509_CERT_URL,
+            client_x509_cert_url: process.env.CLIENT_X509_CERT_URL,
+            universe_domain: process.env.UNIVERSE_DOMAIN,
+        };
+
+        const storage = new Storage({ credentials });
+        const bucketName = process.env.BUCKET_NAME || "";
+
+        const signedWriteUrls: string[] = [];
+        const signedReadUrls: string[] = [];
+
+        const folderName = crypto.randomBytes(16).toString('hex');
 
         for (const file of files) {
-            const bytes = await file.arrayBuffer();
-            const buffer = Buffer.from(bytes);
+            const bucketFile = storage.bucket(bucketName).file(`${folderName}/${file.filename}`)
 
-            const originalExtension = path.extname(file.name);
-            const uniqueId = crypto.randomBytes(16).toString('hex');
-            const filename = `${uniqueId}${originalExtension}`;
-
-            console.log("CWD: ", process.cwd());
-
-            const filepath = path.join(process.cwd(), 'public', 'temp_media', filename);
-            await writeFile(filepath, buffer);
-
-            uploadedFiles.push({
-                filename,
-                originalName: file.name,
+            const [signedWriteUrl] = await bucketFile.getSignedUrl({
+                action: 'write',
+                expires: Date.now() + 1000 * 60,
+                contentType: file.filetype
             })
+
+            const [signedReadUrl] = await bucketFile.getSignedUrl({
+                action: 'read',
+                expires: Date.now() + 1000 * 60
+            })
+
+            signedWriteUrls.push(signedWriteUrl);
+            signedReadUrls.push(signedReadUrl);
         }
 
         return NextResponse.json({
             success: true,
-            files: uploadedFiles
+            signedWriteUrls,
+            signedReadUrls
         })
     } catch (error) {
         console.error('Upload error:', error);

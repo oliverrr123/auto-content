@@ -17,9 +17,15 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Instagram account not linked' }, { status: 400 });
     }
 
+
     try {
         const containerIds = [];
-        for (const file of files) {
+
+        const accountCheck = await fetch(`https://graph.instagram.com/me?fields=id,username&access_token=${data.access_token}`);
+        const accountData = await accountCheck.json();
+        data.instagram_id = accountData.id;
+
+        for (const fileURL of files) {
             const request = await fetch(`https://graph.instagram.com/v23.0/${data.instagram_id}/media`, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -27,11 +33,13 @@ export async function POST(req: NextRequest) {
                 },
                 method: 'POST',
                 body: JSON.stringify({
-                    "image_url":`https://growbyte.cz/temp_media/${file}`
+                    "image_url": fileURL,
+                    "is_carousel_item": true
                 })
-            })
+            });
 
             const response = await request.json();
+
             containerIds.push(response.id);
         }
 
@@ -59,16 +67,15 @@ export async function POST(req: NextRequest) {
             body: JSON.stringify({
                 "creation_id": response.id
             })
-        })
+        });
 
         const response2 = await request2.json();
 
-        if (response2.success) {
+        if (response2.id) {
             return NextResponse.json({ success: true }, { status: 200 });
         }
 
-        console.log(response2);
-
+        console.error('Failed to publish:', response2);
         return NextResponse.json({ error: 'Failed to publish post' }, { status: 400 });
 
     } catch (error) {

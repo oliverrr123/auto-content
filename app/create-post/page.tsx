@@ -4,10 +4,7 @@ import { MapPin, Music4, User, X } from "lucide-react";
 import { useState } from "react";
 
 export default function CreatePost() {
-    const [uploadedFiles, setUploadedFiles] = useState<Array<{
-        filename: string;
-        originalName: string;
-    }>>([]);
+    const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
     const [isUploading, setIsUploading] = useState(false);
     const [caption, setCaption] = useState('');
 
@@ -24,7 +21,7 @@ export default function CreatePost() {
         const formData = new FormData();
 
         Array.from(e.target.files).forEach((file) => {
-            formData.append('file', file);
+            formData.append('file', JSON.stringify({ filename: file.name, filetype: file.type }));
         })
 
         try {
@@ -36,7 +33,15 @@ export default function CreatePost() {
             const data = await response.json()
 
             if (data.success) {
-                setUploadedFiles(prev => [...prev, ...data.files]);
+                const signedWriteUrls = data.signedWriteUrls;
+                const signedReadUrls = data.signedReadUrls;
+
+                for (let i=0; i < e.target.files.length; i++) {
+                    await uploadToGoogleCloud(signedWriteUrls[i], e.target.files[i])
+                }
+
+
+                setUploadedFiles(prev => [...prev, ...signedReadUrls])
             } else {
                 console.error('Upload failed:', data.error);
                 alert('Failed to upload files. Please try again.');
@@ -49,6 +54,36 @@ export default function CreatePost() {
         }
     }
 
+    async function uploadToGoogleCloud(signedWriteUrl: string, file: File) {
+        return new Promise<void>((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('PUT', signedWriteUrl, true);
+            xhr.setRequestHeader('Content-Type', file.type);
+
+            console.log(signedWriteUrl)
+
+            // xhr.upload.onprogress = (event) => {
+            //     if (event.lengthComputable) {
+            //         uploadProgress[index] = Math.round((event.loaded / event.total) * 100);
+            //         // console.log(`Upload progress (${file.name}): ${uploadProgress[index]}%`)
+            //     }
+            // };
+
+            xhr.onload = () => {
+                if (xhr.status === 200) {
+                    // console.log("File uploaded successfully");
+                    resolve();
+                } else {
+                    console.error("Failed to upload file");
+                    reject(new Error("Upload failed"));
+                }
+            };
+
+            xhr.onerror = () => reject(new Error("Upload error"));
+            xhr.send(file);
+        });
+    }
+
     const handlePublish = async () => {
         try {
             await fetch('/api/post/instagram', {
@@ -58,21 +93,21 @@ export default function CreatePost() {
                 },
                 body: JSON.stringify({
                     caption,
-                    files: uploadedFiles.map(file => file.filename),
+                    files: uploadedFiles,
                 }),
             })
 
-            await fetch('/api/file-delete', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    files: uploadedFiles.map(file => file.filename),
-                }),
-            });
+            // await fetch('/api/file-delete', {
+            //     method: 'POST',
+            //     headers: {
+            //         'Content-Type': 'application/json',
+            //     },
+            //     body: JSON.stringify({
+            //         files: uploadedFiles,
+            //     }),
+            // });
 
-            location.reload();
+            // location.reload();
         } catch (error) {
             console.error('Error during publish:', error);
         }
@@ -89,7 +124,7 @@ export default function CreatePost() {
             }),
         });
 
-        setUploadedFiles(prev => prev.filter(file => file.filename !== fileToRemove))
+        setUploadedFiles(prev => prev.filter(file => file !== fileToRemove))
     }
 
 
@@ -99,10 +134,10 @@ export default function CreatePost() {
 
             <div className="mt-4 flex gap-4 overflow-x-auto w-full no-scrollbar">
                 {uploadedFiles.length > 0 &&
-                    uploadedFiles.map((file) => (
-                        <div key={file.filename} className="relative flex-shrink-0 w-64 h-auto">
-                            <img src={`/temp_media/${file.filename}`} alt={file.originalName} className="w-full object-cover rounded-xl" />
-                            <button onClick={() => removeFile(file.filename)} className="absolute top-2 right-2 p-1 bg-black bg-opacity-50 rounded-full text-white hover:bg-opacity-70">
+                    uploadedFiles.map((fileURL) => (
+                        <div key={fileURL} className="relative flex-shrink-0 w-64 h-auto">
+                            <img src={fileURL} alt={fileURL} className="w-full object-cover rounded-xl" />
+                            <button onClick={() => removeFile(fileURL)} className="absolute top-2 right-2 p-1 bg-black bg-opacity-50 rounded-full text-white hover:bg-opacity-70">
                                 <X className="w-4 h-4" />
                             </button>
                         </div>
@@ -112,7 +147,7 @@ export default function CreatePost() {
                     <input 
                         type="file" 
                         className="hidden" 
-                        accept="image/jpg"
+                        accept="image/jpg, image/jpeg, image/png, image/gif"
                         id="file-upload"
                         multiple
                         onChange={handleFileUpload}
