@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { MapPin, Music4, User, X } from "lucide-react";
 import { useState } from "react";
+import Image from "next/image";
 
 export default function CreatePost() {
     const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
@@ -136,7 +137,13 @@ export default function CreatePost() {
                 {uploadedFiles.length > 0 &&
                     uploadedFiles.map((fileURL) => (
                         <div key={fileURL} className="relative flex-shrink-0 w-64 h-auto">
-                            <img src={fileURL} alt={fileURL} className="w-full object-cover rounded-xl" />
+                            <Image
+                                src={fileURL}
+                                alt={fileURL}
+                                width={256}
+                                height={256}
+                                className="w-full object-cover rounded-xl"
+                            />
                             <button onClick={() => removeFile(fileURL)} className="absolute top-2 right-2 p-1 bg-black bg-opacity-50 rounded-full text-white hover:bg-opacity-70">
                                 <X className="w-4 h-4" />
                             </button>

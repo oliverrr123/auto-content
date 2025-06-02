@@ -27,7 +27,7 @@ export default function Home() {
           setIsLoadingProfile(false);
         })
     }
-  }, [isLoading])
+  }, [user])
 
   if (isLoading || isLoadingProfile || !profile) {
     return (
