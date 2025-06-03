@@ -1,173 +1,129 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 
-const FETCH_TIMEOUT = 30000; // 30 seconds timeout
-
-async function fetchWithTimeout(url: string, options: RequestInit = {}, stage: string) {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
-    const startTime = Date.now();
+// Step 1: Create media containers
+async function createMediaContainers(instagramId: string, accessToken: string, files: string[]) {
+    const containerIds = [];
     
-    try {
-        console.log(`[${stage}] Starting request to: ${url}`);
-        const response = await fetch(url, {
-            ...options,
-            signal: controller.signal
+    for (const fileURL of files) {
+        const request = await fetch(`https://graph.instagram.com/v23.0/${instagramId}/media`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${accessToken}`
+            },
+            method: 'POST',
+            body: JSON.stringify({
+                "image_url": fileURL,
+                "is_carousel_item": true
+            })
         });
-        clearTimeout(timeoutId);
-        
-        const endTime = Date.now();
-        console.log(`[${stage}] Request completed in ${endTime - startTime}ms`);
-        
-        if (!response.ok) {
-            const text = await response.text();
-            console.error(`[${stage}] HTTP error! status: ${response.status}, body:`, text);
-            throw new Error(`HTTP error! status: ${response.status}`);
+
+        const response = await request.json();
+        if (!response.id) {
+            throw new Error('Failed to create media container');
         }
-        
-        return response;
-    } catch (error) {
-        clearTimeout(timeoutId);
-        const endTime = Date.now();
-        console.error(`[${stage}] Request failed after ${endTime - startTime}ms:`, error);
-        throw error;
+        containerIds.push(response.id);
     }
+    
+    return containerIds;
+}
+
+// Step 2: Create carousel
+async function createCarousel(instagramId: string, accessToken: string, containerIds: string[], caption: string) {
+    const request = await fetch(`https://graph.instagram.com/v23.0/${instagramId}/media`, {
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+        },
+        method: 'POST',
+        body: JSON.stringify({
+            "caption": caption,
+            "media_type": "CAROUSEL",
+            "children": containerIds.join(',')
+        })
+    });
+
+    const response = await request.json();
+    if (!response.id) {
+        throw new Error('Failed to create carousel');
+    }
+    return response.id;
+}
+
+// Step 3: Publish carousel
+async function publishCarousel(instagramId: string, accessToken: string, creationId: string) {
+    const request = await fetch(`https://graph.instagram.com/v23.0/${instagramId}/media_publish`, {
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+        },
+        method: 'POST',
+        body: JSON.stringify({
+            "creation_id": creationId
+        })
+    });
+
+    const response = await request.json();
+    if (!response.id) {
+        throw new Error('Failed to publish carousel');
+    }
+    return response.id;
 }
 
 export async function POST(req: NextRequest) {
-    console.log('Starting Instagram post request');
-    const startTime = Date.now();
-    
     try {
-        const { caption, files } = await req.json();
-        console.log(`Received request with ${files.length} files`);
-        
+        const { caption, files, step = 1, containerIds = [], carouselId = '' } = await req.json();
         const supabase = await createClient();
-        const { data: { user } } = await supabase.auth.getUser();
 
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
         const { data } = await supabase.from('instagram').select('*').eq('id', user.id).single();
-
         if (!data) {
             return NextResponse.json({ error: 'Instagram account not linked' }, { status: 400 });
         }
 
-        const containerIds = [];
-
-        // Check account and get Instagram ID
-        console.log('Verifying Instagram account...');
-        const accountCheck = await fetchWithTimeout(
-            `https://graph.instagram.com/me?fields=id,username&access_token=${data.access_token}`,
-            {},
-            'Account Check'
-        );
-        const accountData = await accountCheck.json();
-        data.instagram_id = accountData.id;
-        console.log('Instagram account verified');
-
-        // Create media containers for each file
-        console.log('Creating media containers...');
-        for (const [index, fileURL] of files.entries()) {
-            try {
-                console.log(`Processing file ${index + 1}/${files.length}`);
-                const request = await fetchWithTimeout(
-                    `https://graph.instagram.com/v23.0/${data.instagram_id}/media`,
-                    {
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${data.access_token}`
-                        },
-                        method: 'POST',
-                        body: JSON.stringify({
-                            "image_url": fileURL,
-                            "is_carousel_item": true
-                        })
-                    },
-                    `Media Container ${index + 1}`
-                );
-
-                const response = await request.json();
-                
-                if (!response.id) {
-                    console.error('Failed to create media container:', response);
-                    throw new Error('Failed to create media container: ' + JSON.stringify(response));
-                }
-
-                containerIds.push(response.id);
-                console.log(`Created media container ${index + 1}/${files.length}`);
-            } catch (error) {
-                console.error('Error creating media container:', error);
-                throw new Error('Failed to create media container');
-            }
+        // Get Instagram ID if not provided
+        if (!data.instagram_id) {
+            const accountCheck = await fetch(`https://graph.instagram.com/me?fields=id,username&access_token=${data.access_token}`);
+            const accountData = await accountCheck.json();
+            data.instagram_id = accountData.id;
         }
 
-        // Create carousel container
-        console.log('Creating carousel container...');
-        const carouselRequest = await fetchWithTimeout(
-            `https://graph.instagram.com/v23.0/${data.instagram_id}/media`,
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${data.access_token}`
-                },
-                method: 'POST',
-                body: JSON.stringify({
-                    "caption": caption,
-                    "media_type": "CAROUSEL",
-                    "children": containerIds.join(',')
-                })
-            },
-            'Carousel Creation'
-        );
+        switch (step) {
+            case 1: // Create media containers
+                const newContainerIds = await createMediaContainers(data.instagram_id, data.access_token, files);
+                return NextResponse.json({ 
+                    success: true, 
+                    nextStep: 2,
+                    containerIds: newContainerIds
+                });
 
-        const carouselResponse = await carouselRequest.json();
-        
-        if (!carouselResponse.id) {
-            console.error('Failed to create carousel:', carouselResponse);
-            throw new Error('Failed to create carousel: ' + JSON.stringify(carouselResponse));
+            case 2: // Create carousel
+                const newCarouselId = await createCarousel(data.instagram_id, data.access_token, containerIds, caption);
+                return NextResponse.json({ 
+                    success: true, 
+                    nextStep: 3,
+                    carouselId: newCarouselId
+                });
+
+            case 3: // Publish carousel
+                const publishedId = await publishCarousel(data.instagram_id, data.access_token, carouselId);
+                return NextResponse.json({ 
+                    success: true, 
+                    complete: true,
+                    publishedId
+                });
+
+            default:
+                return NextResponse.json({ error: 'Invalid step' }, { status: 400 });
         }
-        console.log('Carousel container created');
-
-        // Publish the carousel
-        console.log('Publishing carousel...');
-        const publishRequest = await fetchWithTimeout(
-            `https://graph.instagram.com/v23.0/${data.instagram_id}/media_publish`,
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${data.access_token}`
-                },
-                method: 'POST',
-                body: JSON.stringify({
-                    "creation_id": carouselResponse.id
-                })
-            },
-            'Publishing'
-        );
-
-        const publishResponse = await publishRequest.json();
-
-        if (publishResponse.id) {
-            const endTime = Date.now();
-            console.log(`Post published successfully in ${endTime - startTime}ms`);
-            return NextResponse.json({ success: true }, { status: 200 });
-        }
-
-        console.error('Failed to publish:', publishResponse);
-        return NextResponse.json({ 
-            error: 'Failed to publish post',
-            details: publishResponse 
-        }, { status: 400 });
-
     } catch (error) {
-        const endTime = Date.now();
-        console.error(`Instagram posting error after ${endTime - startTime}ms:`, error);
+        console.error('Instagram posting error:', error);
         return NextResponse.json({ 
-            error: 'Failed to publish post',
-            details: error instanceof Error ? error.message : 'Unknown error'
+            error: error instanceof Error ? error.message : 'Failed to publish post'
         }, { status: 400 });
     }
 }
