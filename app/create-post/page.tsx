@@ -7,9 +7,6 @@ import Image from "next/image";
 export default function CreatePost() {
     const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
     const [isUploading, setIsUploading] = useState(false);
-    const [isPublishing, setIsPublishing] = useState(false);
-    const [publishingStatus, setPublishingStatus] = useState('');
-    const [error, setError] = useState<string | null>(null);
     const [caption, setCaption] = useState('');
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -89,13 +86,8 @@ export default function CreatePost() {
     }
 
     const handlePublish = async () => {
-        setIsPublishing(true);
-        setError(null);
-        setPublishingStatus('Creating media containers...');
-        
         try {
-            // Step 1: Create media containers
-            const step1Response = await fetch('/api/post/instagram', {
+            await fetch('/api/post/instagram', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -103,81 +95,22 @@ export default function CreatePost() {
                 body: JSON.stringify({
                     caption,
                     files: uploadedFiles,
-                    step: 1
                 }),
-            });
+            })
 
-            if (!step1Response.ok) {
-                const data = await step1Response.json().catch(() => ({ error: 'Unknown error occurred' }));
-                throw new Error(data.error || 'Failed to create media containers');
-            }
+            // await fetch('/api/file-delete', {
+            //     method: 'POST',
+            //     headers: {
+            //         'Content-Type': 'application/json',
+            //     },
+            //     body: JSON.stringify({
+            //         files: uploadedFiles,
+            //     }),
+            // });
 
-            const step1Data = await step1Response.json();
-            setPublishingStatus('Creating carousel...');
-
-            // Step 2: Create carousel
-            const step2Response = await fetch('/api/post/instagram', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    caption,
-                    step: 2,
-                    containerIds: step1Data.containerIds
-                }),
-            });
-
-            if (!step2Response.ok) {
-                const data = await step2Response.json().catch(() => ({ error: 'Unknown error occurred' }));
-                throw new Error(data.error || 'Failed to create carousel');
-            }
-
-            const step2Data = await step2Response.json();
-            setPublishingStatus('Publishing to Instagram...');
-
-            // Step 3: Publish carousel
-            const step3Response = await fetch('/api/post/instagram', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    step: 3,
-                    carouselId: step2Data.carouselId
-                }),
-            });
-
-            if (!step3Response.ok) {
-                const data = await step3Response.json().catch(() => ({ error: 'Unknown error occurred' }));
-                throw new Error(data.error || 'Failed to publish post');
-            }
-
-            const step3Data = await step3Response.json();
-
-            if (step3Data.complete) {
-                setPublishingStatus('Post published successfully!');
-                
-                // Clean up the uploaded files
-                await fetch('/api/file-delete', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        files: uploadedFiles,
-                    }),
-                });
-
-                setTimeout(() => {
-                    location.reload();
-                }, 2000);
-            }
+            // location.reload();
         } catch (error) {
             console.error('Error during publish:', error);
-            setError(error instanceof Error ? error.message : 'Failed to publish post. Please try again.');
-        } finally {
-            setIsPublishing(false);
         }
     }
 
@@ -199,16 +132,6 @@ export default function CreatePost() {
     
     return (
         <div>
-            {error && (
-                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl mb-4">
-                    {error}
-                </div>
-            )}
-            {publishingStatus && !error && (
-                <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded-xl mb-4">
-                    {publishingStatus}
-                </div>
-            )}
 
             <div className="mt-4 flex gap-4 overflow-x-auto w-full no-scrollbar">
                 {uploadedFiles.length > 0 &&
@@ -287,13 +210,7 @@ export default function CreatePost() {
                     <p className="text-2xl">Add music</p>
                 </div>
             </div>
-            <Button 
-                className="rounded-2xl font-semibold text-xl p-6 mt-4 w-full hover:bg-blue-500" 
-                onClick={handlePublish} 
-                disabled={isUploading || isPublishing || uploadedFiles.length === 0}
-            >
-                {isPublishing ? publishingStatus : 'Publish'}
-            </Button>
+            <Button className="rounded-2xl font-semibold text-xl p-6 mt-4 w-full hover:bg-blue-500" onClick={handlePublish} disabled={isUploading || uploadedFiles.length === 0}>Publish</Button>
        </div>
     )
 }
