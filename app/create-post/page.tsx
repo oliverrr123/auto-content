@@ -7,7 +7,9 @@ import Image from "next/image";
 export default function CreatePost() {
     const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
     const [isUploading, setIsUploading] = useState(false);
+    const [isPublishing, setIsPublishing] = useState(false);
     const [caption, setCaption] = useState('');
+    const [error, setError] = useState<string | null>(null);
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files?.length) return;
@@ -86,8 +88,11 @@ export default function CreatePost() {
     }
 
     const handlePublish = async () => {
+        setIsPublishing(true);
+        setError(null);
+        
         try {
-            await fetch('/api/post/instagram', {
+            const response = await fetch('/api/post/instagram', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -96,21 +101,35 @@ export default function CreatePost() {
                     caption,
                     files: uploadedFiles,
                 }),
-            })
+            });
 
-            // await fetch('/api/file-delete', {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //     },
-            //     body: JSON.stringify({
-            //         files: uploadedFiles,
-            //     }),
-            // });
+            const data = await response.json();
 
-            // location.reload();
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to publish post');
+            }
+
+            if (data.success) {
+                // Clean up the uploaded files
+                await fetch('/api/file-delete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        files: uploadedFiles,
+                    }),
+                });
+
+                location.reload();
+            } else {
+                throw new Error(data.error || 'Failed to publish post');
+            }
         } catch (error) {
             console.error('Error during publish:', error);
+            setError(error instanceof Error ? error.message : 'Failed to publish post. Please try again.');
+        } finally {
+            setIsPublishing(false);
         }
     }
 
@@ -132,6 +151,11 @@ export default function CreatePost() {
     
     return (
         <div>
+            {error && (
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl mb-4">
+                    {error}
+                </div>
+            )}
 
             <div className="mt-4 flex gap-4 overflow-x-auto w-full no-scrollbar">
                 {uploadedFiles.length > 0 &&
@@ -210,7 +234,13 @@ export default function CreatePost() {
                     <p className="text-2xl">Add music</p>
                 </div>
             </div>
-            <Button className="rounded-2xl font-semibold text-xl p-6 mt-4 w-full hover:bg-blue-500" onClick={handlePublish} disabled={isUploading || uploadedFiles.length === 0}>Publish</Button>
+            <Button 
+                className="rounded-2xl font-semibold text-xl p-6 mt-4 w-full hover:bg-blue-500" 
+                onClick={handlePublish} 
+                disabled={isUploading || isPublishing || uploadedFiles.length === 0}
+            >
+                {isPublishing ? 'Publishing...' : 'Publish'}
+            </Button>
        </div>
     )
 }
