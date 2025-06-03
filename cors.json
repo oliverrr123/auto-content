@@ -1,1 +1,1 @@
-[{"origin": ["http://localhost:3000"], "method": ["PUT", "GET"], "responseHeader": ["Content-Type"], "maxAgeSeconds": 3600}]
+[{"origin": ["http://localhost:3000", "https://growbyte.cz"], "method": ["PUT", "GET"], "responseHeader": ["Content-Type"], "maxAgeSeconds": 3600}]
