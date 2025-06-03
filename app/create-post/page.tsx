@@ -87,16 +87,83 @@ export default function CreatePost() {
 
     const handlePublish = async () => {
         try {
-            await fetch('/api/post/instagram', {
+            // await fetch('/api/post/instagram', {
+            //     method: 'POST',
+            //     headers: {
+            //         'Content-Type': 'application/json',
+            //     },
+            //     body: JSON.stringify({
+            //         caption,
+            //         files: uploadedFiles,
+            //     }),
+            // })
+
+            let containerIdData;
+
+            if (uploadedFiles.length > 1) {
+                const containerIds = [];
+                for (const fileURL of uploadedFiles) {
+                    const response = await fetch('/api/post/instagram/get-container-id', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            caption,
+                            fileURL,
+                            isCarouselItem: true
+                        })
+                    })
+                    const data = await response.json();
+                    containerIds.push(data.id);
+                }
+
+                const response = await fetch('/api/post/instagram/get-carousel-container-id', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        caption,
+                        containerIds
+                    })
+                })
+
+                containerIdData = await response.json();
+            } else {
+                const response = await fetch('/api/post/instagram/get-container-id', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        caption,
+                        fileURL: uploadedFiles[0],
+                        isCarouselItem: false
+                    })
+                })
+
+                containerIdData = await response.json();
+            }
+
+            const publishContainerResponse = await fetch('/api/post/instagram/publish-container', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    caption,
-                    files: uploadedFiles,
-                }),
+                    containerId: containerIdData.id
+                })
             })
+
+            const publishContainerData = await publishContainerResponse.json();
+
+            if (publishContainerData.success) {
+                alert('Post published successfully');
+            } else {
+                alert('Failed to publish post');
+            }
+
 
             // await fetch('/api/file-delete', {
             //     method: 'POST',
