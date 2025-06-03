@@ -34,13 +34,11 @@ export async function POST(req: NextRequest) {
             })
         });
 
-        const response = await request2.json();
+        const response = await request.json();
 
         if (response.id) {
             return NextResponse.json({ success: true }, { status: 200 });
         }
-
-        const response = await request.json();
 
         return NextResponse.json({ id: response.id }, { status: 200 });
     } catch (error) {
