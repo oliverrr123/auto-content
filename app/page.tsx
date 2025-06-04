@@ -1,6 +1,5 @@
 "use client";
 import Image from "next/image";
-import LoginLogoutButton from "@/components/login-logout-button";
 import React from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -14,6 +13,8 @@ export default function Home() {
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
   
   const router = useRouter();
+
+  // something
 
   useEffect(() => {
     if (user) {
