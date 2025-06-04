@@ -28,7 +28,7 @@ export const config = {
      * - favicon.ico (favicon file)
      * - auth/confirm (auth confirmation route)
      */
-    '/((?!api|auth/confirm|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'
+    // '/((?!api|auth/confirm|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'
   ]
 
   // comment
