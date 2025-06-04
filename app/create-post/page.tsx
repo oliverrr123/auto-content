@@ -9,6 +9,9 @@ import { useEffect } from "react";
 
 export default function CreatePost() {
     const { user, isLoading } = useAuth();
+    const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
+    const [isUploading, setIsUploading] = useState(false);
+    const [caption, setCaption] = useState('');
 
     const router = useRouter();
 
@@ -21,10 +24,6 @@ export default function CreatePost() {
     if (!user) {
         return null;
     }
-
-    const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
-    const [isUploading, setIsUploading] = useState(false);
-    const [caption, setCaption] = useState('');
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files?.length) return;
