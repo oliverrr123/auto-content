@@ -2,16 +2,19 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
 
 export async function middleware(request: NextRequest) {
+  // Create a Supabase client configured to use cookies
   const res = NextResponse.next()
   const supabase = createMiddlewareClient({ req: request, res })
 
-  const { data: { session } } = await supabase.auth.getSession()
+  // Refresh session if expired - required for Server Components
+  await supabase.auth.getSession()
 
-  if (!session && !request.nextUrl.pathname.startsWith('/login')) {
-    return NextResponse.redirect(new URL('/login', request.url))
-  }
+  // If we have a session and we're on the login page, redirect to home
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
 
-  if (session && request.nextUrl.pathname.startsWith('/login')) {
+  if (session && request.nextUrl.pathname === '/login') {
     return NextResponse.redirect(new URL('/', request.url))
   }
 
@@ -19,17 +22,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - auth/confirm (auth confirmation route)
-     */
-    '/((?!api|auth/confirm|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'
-  ]
-
-  // comment
+  matcher: ['/login']
 }
