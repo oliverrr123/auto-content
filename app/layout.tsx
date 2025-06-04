@@ -4,6 +4,7 @@ import "./globals.css";
 import MobileNavbar from "@/components/mobile-navbar";
 import MobileHeader from "@/components/mobile-header";
 import { AuthProvider } from "@/context/AuthContext";
+import { createClient } from "@/utils/supabase/server";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,7 +21,7 @@ export const metadata: Metadata = {
   description: "Automatically create content for your social media!",
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;

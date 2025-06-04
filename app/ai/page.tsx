@@ -1,8 +1,10 @@
+"use client";
+import InDevelopment from "@/components/in-development";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
-export default function ErrorPage() {
+export default function Scheduling() {
     const { user, isLoading } = useAuth();
 
     const router = useRouter();
@@ -13,11 +15,12 @@ export default function ErrorPage() {
         }
     }, [user, isLoading, router]);
 
+
     if (!user) {
         return null;
     }
 
     return (
-        <div>ErrorPage</div>
+        <InDevelopment />
     )
 }

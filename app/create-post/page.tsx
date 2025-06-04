@@ -3,8 +3,25 @@ import { Button } from "@/components/ui/button";
 import { MapPin, Music4, User, X } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function CreatePost() {
+    const { user, isLoading } = useAuth();
+
+    const router = useRouter();
+
+    useEffect(() => {
+        if (!user && !isLoading) {
+            router.push('/login');
+        }
+    }, [user, isLoading, router]);
+
+    if (!user) {
+        return null;
+    }
+
     const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
     const [isUploading, setIsUploading] = useState(false);
     const [caption, setCaption] = useState('');
@@ -195,89 +212,89 @@ export default function CreatePost() {
         setUploadedFiles(prev => prev.filter(file => file !== fileToRemove))
     }
 
-
+    if (user) {
+        return (
+            <div>
     
-    return (
-        <div>
-
-            <div className="mt-4 flex gap-4 overflow-x-auto w-full no-scrollbar">
-                {uploadedFiles.length > 0 &&
-                    uploadedFiles.map((fileURL) => (
-                        <div key={fileURL} className="relative flex-shrink-0 w-64 h-auto">
-                            <Image
-                                src={fileURL}
-                                alt={fileURL}
-                                width={256}
-                                height={256}
-                                className="w-full object-cover rounded-xl"
-                            />
-                            <button onClick={() => removeFile(fileURL)} className="absolute top-2 right-2 p-1 bg-black bg-opacity-50 rounded-full text-white hover:bg-opacity-70">
-                                <X className="w-4 h-4" />
-                            </button>
-                        </div>
-                    ))
-                }
-                <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-gray-400 transition-colors cursor-pointer flex-shrink-0 w-64">
-                    <input 
-                        type="file" 
-                        className="hidden" 
-                        accept="image/jpg, image/jpeg, image/png, image/gif"
-                        id="file-upload"
-                        multiple
-                        onChange={handleFileUpload}
-                        disabled={isUploading || uploadedFiles.length >= 10}
-                    />
-                    <label htmlFor="file-upload" className="cursor-pointer flex items-center justify-center h-full">
-                        <div className="text-gray-500">
-                            <svg 
-                                className="mx-auto h-12 w-12 mb-4" 
-                                stroke="currentColor" 
-                                fill="none" 
-                                viewBox="0 0 48 48" 
-                                aria-hidden="true"
-                            >
-                                <path 
-                                    strokeLinecap="round" 
-                                    strokeLinejoin="round" 
-                                    strokeWidth={2} 
-                                    d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" 
+                <div className="mt-4 flex gap-4 overflow-x-auto w-full no-scrollbar">
+                    {uploadedFiles.length > 0 &&
+                        uploadedFiles.map((fileURL) => (
+                            <div key={fileURL} className="relative flex-shrink-0 w-64 h-auto">
+                                <Image
+                                    src={fileURL}
+                                    alt={fileURL}
+                                    width={256}
+                                    height={256}
+                                    className="w-full object-cover rounded-xl"
                                 />
-                            </svg>
-                            <p className="text-sm">
-                                {isUploading ? 'Uploading...' : 'Click to upload or drag and drop'}
-                            </p>
-                            <p className="text-xs mt-1">PNG, JPG, GIF up to 10MB</p>
-                        </div>
-                    </label>
+                                <button onClick={() => removeFile(fileURL)} className="absolute top-2 right-2 p-1 bg-black bg-opacity-50 rounded-full text-white hover:bg-opacity-70">
+                                    <X className="w-4 h-4" />
+                                </button>
+                            </div>
+                        ))
+                    }
+                    <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-gray-400 transition-colors cursor-pointer flex-shrink-0 w-64">
+                        <input 
+                            type="file" 
+                            className="hidden" 
+                            accept="image/jpg, image/jpeg, image/png, image/gif"
+                            id="file-upload"
+                            multiple
+                            onChange={handleFileUpload}
+                            disabled={isUploading || uploadedFiles.length >= 10}
+                        />
+                        <label htmlFor="file-upload" className="cursor-pointer flex items-center justify-center h-full">
+                            <div className="text-gray-500">
+                                <svg 
+                                    className="mx-auto h-12 w-12 mb-4" 
+                                    stroke="currentColor" 
+                                    fill="none" 
+                                    viewBox="0 0 48 48" 
+                                    aria-hidden="true"
+                                >
+                                    <path 
+                                        strokeLinecap="round" 
+                                        strokeLinejoin="round" 
+                                        strokeWidth={2} 
+                                        d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" 
+                                    />
+                                </svg>
+                                <p className="text-sm">
+                                    {isUploading ? 'Uploading...' : 'Click to upload or drag and drop'}
+                                </p>
+                                <p className="text-xs mt-1">PNG, JPG, GIF up to 10MB</p>
+                            </div>
+                        </label>
+                    </div>
                 </div>
-            </div>
-
-            <div className="mt-4">
-                <textarea
-                    className="w-full p-4 rounded-xl focus:outline-none"
-                    placeholder="Write a caption..."
-                    rows={4}
-                    value={caption}
-                    onChange={(e) => setCaption(e.target.value)}
-                />
-            </div>
-            <div className="flex flex-col mt-4 rounded-xl overflow-hidden">
-                <div className="flex gap-3 items-center p-4 bg-white w-full">
-                    <User className="w-8 h-8 stroke-[1.6]" />
-                    <p className="text-2xl">Tag people</p>
+    
+                <div className="mt-4">
+                    <textarea
+                        className="w-full p-4 rounded-xl focus:outline-none"
+                        placeholder="Write a caption..."
+                        rows={4}
+                        value={caption}
+                        onChange={(e) => setCaption(e.target.value)}
+                    />
                 </div>
-                <hr className="border-slate-200" />
-                <div className="flex gap-3 items-center p-4 bg-white w-full">
-                    <MapPin className="w-8 h-8 stroke-[1.6]" />
-                    <p className="text-2xl">Add location</p>
+                <div className="flex flex-col mt-4 rounded-xl overflow-hidden">
+                    <div className="flex gap-3 items-center p-4 bg-white w-full">
+                        <User className="w-8 h-8 stroke-[1.6]" />
+                        <p className="text-2xl">Tag people</p>
+                    </div>
+                    <hr className="border-slate-200" />
+                    <div className="flex gap-3 items-center p-4 bg-white w-full">
+                        <MapPin className="w-8 h-8 stroke-[1.6]" />
+                        <p className="text-2xl">Add location</p>
+                    </div>
+                    <hr className="border-slate-200" />
+                    <div className="flex gap-3 items-center p-4 bg-white w-full">
+                        <Music4 className="w-8 h-8 stroke-[1.6]" />
+                        <p className="text-2xl">Add music</p>
+                    </div>
                 </div>
-                <hr className="border-slate-200" />
-                <div className="flex gap-3 items-center p-4 bg-white w-full">
-                    <Music4 className="w-8 h-8 stroke-[1.6]" />
-                    <p className="text-2xl">Add music</p>
-                </div>
-            </div>
-            <Button className="rounded-2xl font-semibold text-xl p-6 mt-4 w-full hover:bg-blue-500" onClick={handlePublish} disabled={isUploading || uploadedFiles.length === 0}>Publish</Button>
-       </div>
-    )
+                <Button className="rounded-2xl font-semibold text-xl p-6 mt-4 w-full hover:bg-blue-500" onClick={handlePublish} disabled={isUploading || uploadedFiles.length === 0}>Publish</Button>
+           </div>
+        )
+    }
 }

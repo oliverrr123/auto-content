@@ -12,17 +12,30 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function Context() {
     const { user, isLoading } = useAuth();
 
     const [connectedAccounts, setConnectedAccounts] = useState<{ instagram: { name: string, username: string, profile_picture_url: string } } | null>(null);
 
+    const router = useRouter();
+
     useEffect(() => {
         fetch('/api/get/connectedAccounts')
             .then(res => res.json())
             .then(data => setConnectedAccounts(data));
     }, [isLoading]);
+
+    useEffect(() => {
+        if (!user && !isLoading) {
+            router.push('/login');
+        }
+    }, [user, isLoading, router]);
+
+    if (!user) {
+        return null;
+    }
 
     if (user && !isLoading && connectedAccounts) {
         return (

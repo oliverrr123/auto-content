@@ -5,12 +5,15 @@ import React from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
   const { user, isLoading } = useAuth();
 
   const [profile, setProfile] = useState<{ username: string, name: string, profilePictureUrl: string } | null>(null);
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
+  
+  const router = useRouter();
 
   useEffect(() => {
     if (user) {
@@ -29,7 +32,13 @@ export default function Home() {
     }
   }, [user])
 
-  if (isLoading || isLoadingProfile || !profile) {
+  useEffect(() => {
+    if (!user && !isLoading) {
+      router.push('/login');
+    }
+  }, [user, isLoading, router]);
+
+  if (isLoading || isLoadingProfile) {
     return (
       <div className="flex gap-4 items-center">
         <Skeleton className="rounded-full w-[100px] h-[100px]" />
@@ -41,7 +50,7 @@ export default function Home() {
     )
   }
 
-  if (user) {
+  if (user && profile) {
     return (
       <div className="flex gap-4 items-center">
         <div>
@@ -55,7 +64,6 @@ export default function Home() {
       </div>
     );
   }
-  return (
-    <LoginLogoutButton />
-  );
+
+  return null
 }
