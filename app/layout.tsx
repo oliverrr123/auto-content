@@ -4,7 +4,6 @@ import "./globals.css";
 import MobileNavbar from "@/components/mobile-navbar";
 import MobileHeader from "@/components/mobile-header";
 import { AuthProvider } from "@/context/AuthContext";
-import { createClient } from "@/utils/supabase/server";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
