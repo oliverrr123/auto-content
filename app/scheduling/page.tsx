@@ -2,7 +2,7 @@
 import InDevelopment from "@/components/in-development";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 export default function Scheduling() {
     const { user, isLoading } = useAuth();
