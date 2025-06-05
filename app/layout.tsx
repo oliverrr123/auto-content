@@ -28,11 +28,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-100`}
       >
         <AuthProvider>
           <MobileHeader />
-          <main className="p-4 py-20 w-full h-dvh bg-slate-100">
+          <main className="p-4 py-24 w-full h-dvh">
             {children}
           </main>
           <MobileNavbar />
