@@ -23,7 +23,7 @@ export async function GET() {
     const responseMedia = await fetch(`https://graph.instagram.com/v23.0/9742630855805665?fields=media&access_token=${data.access_token}`)
     const mediaData = await responseMedia.json();
 
-    let mediaArray = [];
+    const mediaArray = [];
 
     for (const item of mediaData.media.data) {
         const responseMediaItem = await fetch(`https://graph.instagram.com/v23.0/${item.id}?fields=caption,media_url,thumbnail_url,media_type&access_token=${data.access_token}`)
