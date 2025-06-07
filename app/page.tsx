@@ -14,7 +14,10 @@ export default function Home() {
 
   const [profile, setProfile] = useState<{ username: string, name: string, profilePictureUrl: string, biography: string } | null>(null);
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
-  
+
+  const [media, setMedia] = useState<{ media_url: string, media_type: string, caption: string }[]>([]);
+  const [isLoadingMedia, setIsLoadingMedia] = useState(false);
+
   const router = useRouter();
 
   // something
@@ -32,6 +35,17 @@ export default function Home() {
         .catch(err => {
           console.error(err);
           setIsLoadingProfile(false);
+        })
+
+      fetch('/api/get/instagram/media')
+        .then(res => res.json())
+        .then(data => {
+          setMedia(data.mediaArray);
+          setIsLoadingMedia(false);
+        })
+        .catch(err => {
+          console.error(err);
+          setIsLoadingMedia(false);
         })
     }
   }, [user])
@@ -76,6 +90,29 @@ export default function Home() {
             New Post
           </Button>
         </Link>
+        {media && !isLoadingMedia && (
+          <div className="grid grid-cols-3 w-dvw -translate-x-4 gap-[1px] pb-20">
+            {media.map((mediaItem) => (
+              <div key={mediaItem.media_url} className="aspect-[4/5] w-full relative bg-black border-white">
+                {mediaItem.media_type === 'VIDEO' ? (
+                  <Image 
+                    src={mediaItem.media_url} 
+                    fill
+                    className=" object-cover"
+                    alt="Media" 
+                  />
+                ) : (
+                  <Image 
+                    src={mediaItem.media_url} 
+                    fill
+                    className=" object-contain"
+                    alt="Media" 
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     );
   }
