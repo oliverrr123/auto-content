@@ -61,10 +61,12 @@ export default function Context() {
                                     <p className="text-2xl">Instagram</p>
                                 </div>
                             </Link>
-                            <div className="flex gap-3 items-center p-4 bg-white rounded-xl w-full">
-                                <FacebookIcon className="w-8 h-8 stroke-[1.6]" />
-                                <p className="text-2xl">Facebook</p>
-                            </div>
+                            <Link href="https://www.facebook.com/v23.0/dialog/oauth?client_id=442224939723604&display=page&extras=%7B%22setup%22%3A%7B%22channel%22%3A%22IG_API_ONBOARDING%22%7D%7D&redirect_uri=https%3A%2F%2Fgrowbyte.cz%2Fapi%2Fauth%2Ffacebook%2Fcallback&response_type=code&scope=instagram_basic,instagram_content_publish,instagram_manage_comments,instagram_manage_insights,pages_show_list,pages_read_engagement">
+                                <div className="flex gap-3 items-center p-4 bg-white rounded-xl w-full">
+                                    <FacebookIcon className="w-8 h-8 stroke-[1.6]" />
+                                    <p className="text-2xl">Facebook</p>
+                                </div>
+                            </Link>
                         </div>
 
                         <DialogClose asChild>
