@@ -1,5 +1,5 @@
 "use client";
-import { FacebookIcon, InstagramIcon, PlusIcon } from "lucide-react";
+import { FacebookIcon, InstagramIcon, LinkIcon, PlusIcon, UploadIcon } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useEffect, useState } from "react";
 import {
@@ -49,8 +49,7 @@ export default function Context() {
     if (user && !isLoading) {
         return (
             <div>
-                <h1 className="text-2xl font-bold">Connected social media</h1>
-                {/* <div className="flex gap-4 mt-4 w-full overflow-x-scroll scrollbar-none"> */}
+                <h2 className="text-2xl font-bold">Connected social media</h2>
                 <div className="flex gap-4 mt-4 pr-4 w-[calc(100%+1rem)] no-scrollbar overflow-x-scroll">
                     <Dialog>
                     <DialogTrigger>
@@ -98,6 +97,86 @@ export default function Context() {
                             <p className="text-sm font-semibold truncate max-w-28">Facebook</p>
                         </div>
                     )}
+                </div>
+                <h2 className="text-2xl font-bold mt-4">Connected websites</h2>
+                <div className="flex gap-4 mt-4 pr-4 w-[calc(100%+1rem)] no-scrollbar overflow-x-scroll">
+                    <Dialog>
+                    <DialogTrigger>
+                        <div className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 flex-shrink-0">
+                            <PlusIcon className="w-10 h-10 text-slate-400" />
+                            <p className="text-sm font-semibold text-slate-400">Add</p>
+                        </div>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <DialogHeader>
+                        <DialogTitle>Connect website</DialogTitle>
+                        </DialogHeader>
+
+                        <div className="flex flex-col gap-2">
+                            <div className="flex items-center gap-2 p-4 bg-white rounded-xl w-full">
+                                <LinkIcon className="w-6 h-6 stroke-[1.6] text-slate-400" />
+                                <input type="url" className="w-full outline-none focus:outline-none" placeholder="https://your-awesome-website.com/" />
+                            </div>
+                        </div>
+
+                        <DialogClose asChild>
+                            <Button className="text-xl font-semibold h-12 p-0 rounded-2xl hover:bg-blue-500">Done</Button>
+                        </DialogClose>
+                    </DialogContent>
+                    </Dialog>
+                    {/* {connectedAccounts && connectedAccounts.instagram ? (
+                        <div className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 flex-shrink-0">
+                            <InstagramIcon className="w-10 h-10" />
+                            <p className="text-sm font-semibold truncate max-w-28">@{connectedAccounts.instagram.username}</p>
+                        </div>
+                    ) : (
+                        <Skeleton className="h-32 w-32 rounded-xl" />
+                    )} */}
+                </div>
+                <h2 className="text-2xl font-bold mt-4">Connected documents</h2>
+                <div className="flex gap-4 mt-4 pr-4 w-[calc(100%+1rem)] no-scrollbar overflow-x-scroll">
+                    <Dialog>
+                    <DialogTrigger>
+                        <div className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 flex-shrink-0">
+                            <PlusIcon className="w-10 h-10 text-slate-400" />
+                            <p className="text-sm font-semibold text-slate-400">Add</p>
+                        </div>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <DialogHeader>
+                        <DialogTitle>Connect documents</DialogTitle>
+                        </DialogHeader>
+
+                        <div className="flex flex-col gap-2">
+                            <div className="rounded-xl bg-white w-full p-4 cursor-pointer">
+                                <input 
+                                    type="file" 
+                                    className="hidden" 
+                                    accept=".pdf,.doc,.docx,.txt"
+                                    id="file-upload"
+                                />
+                                <label htmlFor="file-upload" className="flex items-center gap-3 bg-white rounded-xl w-full">
+                                    <UploadIcon className="w-6 h-6 stroke-[1.6] text-slate-600" />
+                                    <p className="text-sm font-medium text-slate-600">
+                                        Click to upload or drag and drop
+                                    </p>
+                                </label>
+                            </div>
+                        </div>
+
+                        <DialogClose asChild>
+                            <Button className="text-xl font-semibold h-12 p-0 rounded-2xl hover:bg-blue-500">Done</Button>
+                        </DialogClose>
+                    </DialogContent>
+                    </Dialog>
+                    {/* {connectedAccounts && connectedAccounts.instagram ? (
+                        <div className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 flex-shrink-0">
+                            <InstagramIcon className="w-10 h-10" />
+                            <p className="text-sm font-semibold truncate max-w-28">@{connectedAccounts.instagram.username}</p>
+                        </div>
+                    ) : (
+                        <Skeleton className="h-32 w-32 rounded-xl" />
+                    )} */}
                 </div>
             </div>
         )
