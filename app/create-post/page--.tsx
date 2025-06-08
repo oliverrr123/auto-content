@@ -1,13 +1,13 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { MapPin, Music4, User, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 import { DragDropContext, Droppable, Draggable, DropResult, DroppableProvided } from 'react-beautiful-dnd';
 
+// Workaround for react-beautiful-dnd in React 18
 const StrictModeDroppable = ({ children, ...props }: any) => {
     const [enabled, setEnabled] = useState(false);
     useEffect(() => {
@@ -15,13 +15,13 @@ const StrictModeDroppable = ({ children, ...props }: any) => {
         return () => {
             cancelAnimationFrame(animation);
             setEnabled(false);
-        }
+        };
     }, []);
     if (!enabled) {
         return null;
     }
     return <Droppable {...props}>{children}</Droppable>;
-}
+};
 
 export default function CreatePost() {
     const { user, isLoading } = useAuth();
@@ -229,13 +229,13 @@ export default function CreatePost() {
 
     const handleDragEnd = (result: DropResult) => {
         if (!result.destination) return;
-
+        
         const items = Array.from(uploadedFiles);
         const [reorderedItem] = items.splice(result.source.index, 1);
         items.splice(result.destination.index, 0, reorderedItem);
-
+        
         setUploadedFiles(items);
-    }
+    };
 
     if (user) {
         return (
@@ -255,35 +255,36 @@ export default function CreatePost() {
                                     {...provided.droppableProps}
                                     className="flex gap-4"
                                 >
-                                    {uploadedFiles.length > 0 &&
-                                        uploadedFiles.map((fileURL, index) => (
-                                            <Draggable key={fileURL} draggableId={fileURL} index={index}>
-                                                {(provided, snapshot) => (
-                                                    <div
-                                                        ref={provided.innerRef}
-                                                        {...provided.draggableProps}
-                                                        {...provided.dragHandleProps}
-                                                        className="relative flex-shrink-0 w-64 h-auto"
-                                                        style={{
-                                                            ...provided.draggableProps.style,
-                                                            opacity: snapshot.isDragging ? 0.5 : 1
-                                                        }}
+                                    {uploadedFiles.map((fileURL, index) => (
+                                        <Draggable key={fileURL} draggableId={fileURL} index={index}>
+                                            {(provided, snapshot) => (
+                                                <div
+                                                    ref={provided.innerRef}
+                                                    {...provided.draggableProps}
+                                                    {...provided.dragHandleProps}
+                                                    className="relative flex-shrink-0 w-64 h-auto"
+                                                    style={{
+                                                        ...provided.draggableProps.style,
+                                                        opacity: snapshot.isDragging ? 0.5 : 1
+                                                    }}
+                                                >
+                                                    <Image
+                                                        src={fileURL}
+                                                        alt={fileURL}
+                                                        width={256}
+                                                        height={256}
+                                                        className="w-full object-cover rounded-xl"
+                                                    />
+                                                    <button 
+                                                        onClick={() => removeFile(fileURL)} 
+                                                        className="absolute top-2 right-2 p-1 bg-black bg-opacity-50 rounded-full text-white hover:bg-opacity-70"
                                                     >
-                                                        <Image
-                                                            src={fileURL}
-                                                            alt={fileURL}
-                                                            width={256}
-                                                            height={256}
-                                                            className="w-full object-cover rounded-xl"
-                                                        />
-                                                        <button onClick={() => removeFile(fileURL)} className="absolute top-2 right-2 p-1 bg-black bg-opacity-50 rounded-full text-white hover:bg-opacity-70">
-                                                            <X className="w-4 h-4" />
-                                                        </button>
-                                                    </div>
-                                                )}
-                                            </Draggable>
-                                        ))
-                                    }
+                                                        <X className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </Draggable>
+                                    ))}
                                     {provided.placeholder}
                                 </div>
                             )}
