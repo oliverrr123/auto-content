@@ -50,7 +50,7 @@ export default function Context() {
         return (
             <div>
                 <h1 className="text-2xl font-bold">Connected social media</h1>
-                <div className="flex gap-4 mt-4 overflow-x-auto w-full no-scrollbar bg-slate-50">
+                <div className="flex gap-4 mt-4 overflow-x-auto w-full no-scrollbar bg-slate-100">
                     <Dialog>
                     <DialogTrigger>
                         <div className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 drop-shadow-sexy flex-shrink-0">

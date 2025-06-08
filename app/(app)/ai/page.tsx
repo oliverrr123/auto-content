@@ -150,7 +150,7 @@ export default function Scheduling() {
 							onKeyDown={handleKeyDown}
 						/>
 						<div className="flex justify-end">
-							<div className="flex gap-2 p-2">
+							<div className="flex gap-2 p-2 pt-0">
 								<Button
 									variant="secondary"
 									className="border border-slate-200 bg-white"
