@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Context() {
     const { user, isLoading } = useAuth();
@@ -33,11 +34,19 @@ export default function Context() {
         }
     }, [user, isLoading, router]);
 
-    if (!user) {
-        return null;
+    if (!user || isLoading) {
+        return (
+            <div className="flex flex-col gap-4">
+                <Skeleton className="h-8 w-3/4" />
+                <div className="flex gap-4">
+                    <Skeleton className="h-40 w-40 rounded-xl" />
+                    <Skeleton className="h-40 w-40 rounded-xl" />
+                </div>
+            </div>
+        )
     }
 
-    if (user && !isLoading && connectedAccounts) {
+    if (user && !isLoading) {
         return (
             <div>
                 <h1 className="text-2xl font-bold">Connected social media</h1>
@@ -74,11 +83,13 @@ export default function Context() {
                         </DialogClose>
                     </DialogContent>
                     </Dialog>
-                    {connectedAccounts.instagram && (
+                    {connectedAccounts && connectedAccounts.instagram ? (
                         <div className="flex flex-col gap-3 items-center justify-center bg-white rounded-xl p-4 w-40 h-40 drop-shadow-sexy flex-shrink-0">
                             <InstagramIcon className="w-10 h-10" />
                             <p className="text-lg font-semibold truncate max-w-32">@{connectedAccounts.instagram.username}</p>
                         </div>
+                    ) : (
+                        <Skeleton className="h-40 w-40 rounded-xl" />
                     )}
                     {user.user_metadata.facebook_id && (
                         <div className="flex flex-col gap-3 items-center justify-center bg-white rounded-xl p-4 w-40 h-40 drop-shadow-sexy flex-shrink-0">
