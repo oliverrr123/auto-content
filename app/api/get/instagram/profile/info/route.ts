@@ -19,8 +19,11 @@ export async function GET() {
         console.log(error);
         return NextResponse.json({ error: "Instagram not connected" }, { status: 400 });
     }
+
+    const accountCheck = await fetch(`https://graph.instagram.com/me?fields=id,username&access_token=${data.access_token}`);
+    const accountData = await accountCheck.json();
     
-    const response = await fetch(`https://graph.instagram.com/v23.0/9742630855805665?fields=username,name,profile_picture_url,biography&access_token=${data.access_token}`)
+    const response = await fetch(`https://graph.instagram.com/v23.0/${accountData.id}?fields=username,name,profile_picture_url,biography&access_token=${data.access_token}`)
     const userData = await response.json();
     
     const username = userData.username;
