@@ -1,9 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 
-export async function GET() {
+export async function POST(req: NextRequest) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
+    const { mediaId } = await req.json();
 
     if (!user) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -20,24 +21,16 @@ export async function GET() {
         return NextResponse.json({ error: "Instagram not connected" }, { status: 400 });
     }
 
-    const responseMedia = await fetch(`https://graph.instagram.com/v23.0/9742630855805665?fields=media&access_token=${data.access_token}`)
-    const mediaData = await responseMedia.json();
+    const response = await fetch(`https://graph.instagram.com/v23.0/${mediaId}?fields=caption,media_url,thumbnail_url,media_type,permalink&access_token=${data.access_token}`)
+    const responseData = await response.json();
 
-    const mediaArray = [];
+    console.log("--------------------------------");
+    console.log(responseData);
+    console.log("--------------------------------");
 
-    for (const item of mediaData.media.data) {
-        const responseMediaItem = await fetch(`https://graph.instagram.com/v23.0/${item.id}?fields=caption,media_url,thumbnail_url,media_type&access_token=${data.access_token}`)
-        const mediaItemData = await responseMediaItem.json();
-        if (!mediaItemData.thumbnail_url) {
-            mediaArray.push({ media_url: mediaItemData.media_url, caption: mediaItemData.caption, media_type: mediaItemData.media_type })
-        } else {
-            mediaArray.push({ media_url: mediaItemData.thumbnail_url, caption: mediaItemData.caption, media_type: mediaItemData.media_type })
-        }
+    if (!responseData.thumbnail_url) {
+        return NextResponse.json({ media_url: responseData.media_url, caption: responseData.caption, media_type: responseData.media_type, permalink: responseData.permalink });
+    } else {
+        return NextResponse.json({ media_url: responseData.thumbnail_url, caption: responseData.caption, media_type: responseData.media_type, permalink: responseData.permalink });
     }
-
-    console.log("--------------------------------");
-    console.log(mediaArray);
-    console.log("--------------------------------");
-
-    return NextResponse.json({ mediaArray });
 }

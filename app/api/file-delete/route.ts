@@ -24,7 +24,7 @@ export async function POST(req: Request) {
             parts.shift();
             fileName = parts.join('/');
         } catch (error) {
-            return NextResponse.json({ success: false, error: 'Invalid file URL format' }, { status: 400 });
+            return NextResponse.json({ success: false, error: 'Invalid file URL format ' + error }, { status: 400 });
         }
 
         if (!fileName) {

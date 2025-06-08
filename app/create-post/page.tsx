@@ -1,12 +1,13 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { MapPin, Music4, User, X } from "lucide-react";
+import { Copy, MapPin, Music4, User, X } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { DragDropContext, Droppable, Draggable, DropResult, DroppableProvided } from 'react-beautiful-dnd';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 const StrictModeDroppable = ({ children, ...props }: any) => {
     const [enabled, setEnabled] = useState(false);
@@ -28,6 +29,10 @@ export default function CreatePost() {
     const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
     const [isUploading, setIsUploading] = useState(false);
     const [caption, setCaption] = useState('');
+    const [isPublishing, setIsPublishing] = useState(false);
+    const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+    const [showErrorDialog, setShowErrorDialog] = useState(false);
+    const [mediaData, setMediaData] = useState<{ media_url: string, caption: string, media_type: string, permalink: string } | null>(null);
 
     const router = useRouter();
 
@@ -118,6 +123,7 @@ export default function CreatePost() {
     }
 
     const handlePublish = async () => {
+        setIsPublishing(true);
         try {
             let containerIdData;
 
@@ -180,23 +186,42 @@ export default function CreatePost() {
             const publishContainerData = await publishContainerResponse.json();
 
             if (publishContainerData.success) {
-                alert('Post published successfully');
-            } else {
-                alert('Failed to publish post');
-            }
-
-            for (const fileUrl of uploadedFiles) {
-                await fetch('/api/file-delete', {
+                const mediaDataResponse = await fetch('/api/get/instagram/media', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ fileUrl }),
-                });
+                    body: JSON.stringify({ mediaId: publishContainerData.id })
+                })
+
+                const mediaData = await mediaDataResponse.json();
+                setMediaData(mediaData);
+                
+                setShowSuccessDialog(true);
+
+                for (const fileUrl of uploadedFiles) {
+                    await fetch('/api/file-delete', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ fileUrl }),
+                    });
+                }
+
+                setUploadedFiles([]);
+                setCaption('');
+            } else {
+                setShowErrorDialog(true);
             }
+
+            setIsPublishing(false);
+
 
         } catch (error) {
             console.error('Error during publish:', error);
+            setIsPublishing(false);
+            setShowErrorDialog(true);
         }
     }
 
@@ -349,7 +374,64 @@ export default function CreatePost() {
                         <p className="text-2xl">Add music</p>
                     </div>
                 </div>
-                <Button className="rounded-2xl font-semibold text-xl p-6 mt-4 w-full hover:bg-blue-500" onClick={handlePublish} disabled={isUploading || uploadedFiles.length === 0}>Publish</Button>
+                <AlertDialog>
+                <AlertDialogTrigger asChild>
+                    <Button className="rounded-2xl font-semibold text-xl p-6 mt-4 w-full hover:bg-blue-500" disabled={isUploading || uploadedFiles.length === 0 || isPublishing}>
+                        {isPublishing ? 'Publishing...' : 'Publish'}
+                    </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="text-2xl">Are sure you want post?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This will create a new post on your Instagram account.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel className="rounded-2xl font-semibold text-xl p-6 w-full hover:bg-blue-500">Cancel</AlertDialogCancel>
+                        <AlertDialogAction className="rounded-2xl font-semibold text-xl p-6 mt-4 w-full hover:bg-blue-500" onClick={handlePublish} disabled={isUploading || uploadedFiles.length === 0 || isPublishing}>
+                            {isPublishing ? 'Publishing...' : 'Publish'}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+                </AlertDialog>
+
+                <AlertDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+                <AlertDialogContent className="bg-slate-100">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="text-2xl">Post published successfully!</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Your post has been successfully published to Instagram.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    {mediaData && (
+                        <div className="flex flex-col items-center justify-center bg-white rounded-xl drop-shadow-sexy mx-10">
+                            <Image src={mediaData.media_url} alt={mediaData.caption} width={256} height={256} className="w-full rounded-xl" />
+                            <div className="p-4 border-t border-slate-200 w-full">
+                                <p className="text-sm" style={{ whiteSpace: 'pre-wrap' }}>{mediaData.caption}</p>
+                                <a href={mediaData.permalink} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-500">View on Instagram</a>
+                            </div>
+                        </div>
+                    )}
+                    <AlertDialogFooter>
+                        <AlertDialogAction className="rounded-2xl font-semibold text-xl p-6 w-full hover:bg-blue-500" onClick={() => { router.push('/') }}>Done</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+                </AlertDialog>
+
+                <AlertDialog open={showErrorDialog} onOpenChange={setShowErrorDialog}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle className="text-2xl">Error publishing post</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                Failed to publish post. Please try again.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogAction className="rounded-2xl font-semibold text-xl p-6 mt-4 w-full hover:bg-blue-500">OK</AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
            </div>
         )
     }

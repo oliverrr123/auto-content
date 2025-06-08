@@ -26,7 +26,7 @@ export default function Home() {
     if (user) {
       setIsLoadingProfile(true);
 
-      fetch('/api/get/instagram/profile')
+      fetch('/api/get/instagram/profile/info')
         .then(res => res.json())
         .then(data => {
           setProfile(data);
@@ -37,7 +37,7 @@ export default function Home() {
           setIsLoadingProfile(false);
         })
 
-      fetch('/api/get/instagram/media')
+      fetch('/api/get/instagram/profile/media')
         .then(res => res.json())
         .then(data => {
           setMedia(data.mediaArray);

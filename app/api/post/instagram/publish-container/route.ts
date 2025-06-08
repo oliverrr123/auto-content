@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
         const response = await request.json();
 
         if (response.id) {
-            return NextResponse.json({ success: true }, { status: 200 });
+            return NextResponse.json({ success: true, id: response.id }, { status: 200 });
         }
 
         return NextResponse.json({ id: response.id }, { status: 200 });
