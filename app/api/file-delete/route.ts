@@ -1,33 +1,40 @@
 import { NextResponse } from 'next/server';
-import { unlink } from 'fs/promises';
-import path from 'path';
+import { Storage } from '@google-cloud/storage';
+
+const storage = new Storage({
+    projectId: process.env.PROJECT_ID,
+    credentials: {
+        client_email: process.env.CLIENT_EMAIL,
+        private_key: process.env.PRIVATE_KEY,
+    },
+});
+
+const bucket = storage.bucket(process.env.BUCKET_NAME || "");
 
 export async function POST(req: Request) {
     try {
-        const { files } = await req.json();
+        const { fileUrl } = await req.json();
 
-        if (!Array.isArray(files)) {
-            return NextResponse.json(
-                { success: false, error: 'Invalid request format' },
-                { status: 400 }
-            );
+        let fileName;
+        try {
+            const urlObj = new URL(fileUrl);
+            const path = urlObj.pathname;
+            
+            const parts = path.split('/').filter(Boolean);
+            parts.shift();
+            fileName = parts.join('/');
+        } catch (error) {
+            return NextResponse.json({ success: false, error: 'Invalid file URL format' }, { status: 400 });
         }
 
-        for (const filename of files) {
-            const filepath = path.join(process.cwd(), 'public', 'temp_media', filename)
-            try {
-                await unlink(filepath);
-            } catch (error) {
-                console.error(`Failed to delete ${filepath}:`, error);
-            }
+        if (!fileName) {
+            return NextResponse.json({ success: false, error: 'Invalid file URL' }, { status: 400 });
         }
+
+        await bucket.file(fileName).delete();
 
         return NextResponse.json({ success: true });
-    } catch (error) {
-        console.error('Delete error:', error);
-        return NextResponse.json(
-            { success: false, error: 'Delete failed' },
-            { status: 500 }
-        )
+    } catch (error) {   
+        return NextResponse.json({ success: false, error: error instanceof Error ? error.message : 'Delete failed' }, { status: 500 });
     }
 }

@@ -103,17 +103,6 @@ export default function CreatePost() {
 
     const handlePublish = async () => {
         try {
-            // await fetch('/api/post/instagram', {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //     },
-            //     body: JSON.stringify({
-            //         caption,
-            //         files: uploadedFiles,
-            //     }),
-            // })
-
             let containerIdData;
 
             if (uploadedFiles.length > 1) {
@@ -180,41 +169,51 @@ export default function CreatePost() {
                 alert('Failed to publish post');
             }
 
+            for (const fileUrl of uploadedFiles) {
+                await fetch('/api/file-delete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ fileUrl }),
+                });
+            }
 
-            // await fetch('/api/file-delete', {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //     },
-            //     body: JSON.stringify({
-            //         files: uploadedFiles,
-            //     }),
-            // });
-
-            // location.reload();
         } catch (error) {
             console.error('Error during publish:', error);
         }
     }
 
     const removeFile = async(fileToRemove: string) => {
-        await fetch('/api/file-delete', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                files: [fileToRemove],
-            }),
-        });
+        try {
+            const response = await fetch('/api/file-delete', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    fileUrl: fileToRemove
+                }),
+            });
 
-        setUploadedFiles(prev => prev.filter(file => file !== fileToRemove))
+            const data = await response.json();
+            
+            if (response.ok && data.success) {
+                setUploadedFiles(prev => prev.filter(file => file !== fileToRemove));
+            } else {
+                const errorMessage = data.error || 'Unknown error occurred';
+                console.error('Failed to delete file:', errorMessage);
+                alert(`Failed to delete file: ${errorMessage}`);
+            }
+        } catch (error) {
+            console.error('Network error while deleting file:', error);
+            alert('Network error while trying to delete file. Please try again.');
+        }
     }
 
     if (user) {
         return (
-            <div>
-    
+            <div className="pb-24">
                 <div className="mt-4 flex gap-4 overflow-x-auto w-full no-scrollbar">
                     {uploadedFiles.length > 0 &&
                         uploadedFiles.map((fileURL) => (
