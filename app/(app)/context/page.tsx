@@ -50,10 +50,11 @@ export default function Context() {
         return (
             <div>
                 <h1 className="text-2xl font-bold">Connected social media</h1>
-                <div className="flex gap-4 mt-4 overflow-x-auto w-full no-scrollbar bg-slate-100">
+                {/* <div className="flex gap-4 mt-4 w-full overflow-x-scroll scrollbar-none"> */}
+                <div className="flex gap-4 mt-4 pr-4 w-[calc(100%+1rem)] no-scrollbar overflow-x-scroll">
                     <Dialog>
                     <DialogTrigger>
-                        <div className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 drop-shadow-sexy flex-shrink-0">
+                        <div className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 flex-shrink-0">
                             <PlusIcon className="w-10 h-10 text-slate-400" />
                             <p className="text-sm font-semibold text-slate-400">Add</p>
                         </div>
@@ -84,7 +85,7 @@ export default function Context() {
                     </DialogContent>
                     </Dialog>
                     {connectedAccounts && connectedAccounts.instagram ? (
-                        <div className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 drop-shadow-sexy flex-shrink-0">
+                        <div className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 flex-shrink-0">
                             <InstagramIcon className="w-10 h-10" />
                             <p className="text-sm font-semibold truncate max-w-28">@{connectedAccounts.instagram.username}</p>
                         </div>
@@ -92,7 +93,7 @@ export default function Context() {
                         <Skeleton className="h-32 w-32 rounded-xl" />
                     )}
                     {user.user_metadata.facebook_id && (
-                        <div className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 drop-shadow-sexy flex-shrink-0">
+                        <div className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 flex-shrink-0">
                             <FacebookIcon className="w-10 h-10" />
                             <p className="text-sm font-semibold truncate max-w-28">Facebook</p>
                         </div>
