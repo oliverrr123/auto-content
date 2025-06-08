@@ -31,11 +31,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-100`}
       >
         <AuthProvider>
-          <MobileHeader />
-          <main className="p-4 py-16 w-full h-dvh">
-            {children}
-          </main>
-          <MobileNavbar />
+          {children}
         </AuthProvider>
       </body>
     </html>
