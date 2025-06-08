@@ -27,7 +27,7 @@ export function Markdown({ content, className }: MarkdownProps) {
     ul: (props) => <ul {...props} className="list-disc pl-6 mb-4" />,
     ol: (props) => <ol {...props} className="list-decimal pl-6 mb-4" />,
     li: (props) => <li {...props} className="mb-1" />,
-    code: ({ inline, className, children, ...props }: CodeProps) => (
+    code: ({ inline, children, ...props }: CodeProps) => (
       inline ? 
         <code {...props} className="bg-gray-100 rounded px-1 py-0.5 font-mono text-sm">{children}</code> :
         <code {...props} className="block bg-gray-100 rounded p-4 font-mono text-sm mb-4">{children}</code>
