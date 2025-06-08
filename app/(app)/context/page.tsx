@@ -39,8 +39,8 @@ export default function Context() {
             <div className="flex flex-col gap-4">
                 <Skeleton className="h-8 w-3/4" />
                 <div className="flex gap-4">
-                    <Skeleton className="h-40 w-40 rounded-xl" />
-                    <Skeleton className="h-40 w-40 rounded-xl" />
+                    <Skeleton className="h-32 w-32 rounded-xl" />
+                    <Skeleton className="h-32 w-32 rounded-xl" />
                 </div>
             </div>
         )
@@ -53,9 +53,9 @@ export default function Context() {
                 <div className="flex gap-4 mt-4 overflow-x-auto w-full no-scrollbar bg-slate-50">
                     <Dialog>
                     <DialogTrigger>
-                        <div className="flex flex-col gap-3 items-center justify-center bg-white rounded-xl p-4 w-40 h-40 drop-shadow-sexy flex-shrink-0">
-                            <PlusIcon className="w-10 h-10 text-gray-500" />
-                            <p className="text-lg font-semibold text-gray-500">Add</p>
+                        <div className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 drop-shadow-sexy flex-shrink-0">
+                            <PlusIcon className="w-10 h-10 text-slate-400" />
+                            <p className="text-sm font-semibold text-slate-400">Add</p>
                         </div>
                     </DialogTrigger>
                     <DialogContent>
@@ -65,15 +65,15 @@ export default function Context() {
 
                         <div className="flex flex-col gap-2">
                             <Link href="https://www.instagram.com/oauth/authorize?enable_fb_login=0&force_authentication=1&client_id=1436609137340002&redirect_uri=https://growbyte.cz/api/auth/instagram/callback&response_type=code&scope=instagram_business_basic%2Cinstagram_business_manage_messages%2Cinstagram_business_manage_comments%2Cinstagram_business_content_publish%2Cinstagram_business_manage_insights">
-                                <div className="flex gap-3 items-center p-4 bg-white rounded-xl w-full">
-                                    <InstagramIcon className="w-8 h-8 stroke-[1.6]" />
-                                    <p className="text-2xl">Instagram</p>
+                                <div className="flex gap-2 items-center p-4 bg-white rounded-xl w-full">
+                                    <InstagramIcon className="w-6 h-6 stroke-[1.6]" />
+                                    <p className="text-xl">Instagram</p>
                                 </div>
                             </Link>
                             <Link href="https://www.facebook.com/v23.0/dialog/oauth?client_id=442224939723604&display=page&extras=%7B%22setup%22%3A%7B%22channel%22%3A%22IG_API_ONBOARDING%22%7D%7D&redirect_uri=https%3A%2F%2Fgrowbyte.cz%2Fapi%2Fauth%2Ffacebook%2Fcallback&response_type=code&scope=instagram_basic,instagram_content_publish,instagram_manage_comments,instagram_manage_insights,pages_show_list,pages_read_engagement">
-                                <div className="flex gap-3 items-center p-4 bg-white rounded-xl w-full">
-                                    <FacebookIcon className="w-8 h-8 stroke-[1.6]" />
-                                    <p className="text-2xl">Facebook</p>
+                                <div className="flex gap-2 items-center p-4 bg-white rounded-xl w-full">
+                                    <FacebookIcon className="w-6 h-6 stroke-[1.6]" />
+                                    <p className="text-xl">Facebook</p>
                                 </div>
                             </Link>
                         </div>
@@ -84,17 +84,17 @@ export default function Context() {
                     </DialogContent>
                     </Dialog>
                     {connectedAccounts && connectedAccounts.instagram ? (
-                        <div className="flex flex-col gap-3 items-center justify-center bg-white rounded-xl p-4 w-40 h-40 drop-shadow-sexy flex-shrink-0">
+                        <div className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 drop-shadow-sexy flex-shrink-0">
                             <InstagramIcon className="w-10 h-10" />
-                            <p className="text-lg font-semibold truncate max-w-32">@{connectedAccounts.instagram.username}</p>
+                            <p className="text-sm font-semibold truncate max-w-28">@{connectedAccounts.instagram.username}</p>
                         </div>
                     ) : (
-                        <Skeleton className="h-40 w-40 rounded-xl" />
+                        <Skeleton className="h-32 w-32 rounded-xl" />
                     )}
                     {user.user_metadata.facebook_id && (
-                        <div className="flex flex-col gap-3 items-center justify-center bg-white rounded-xl p-4 w-40 h-40 drop-shadow-sexy flex-shrink-0">
+                        <div className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 drop-shadow-sexy flex-shrink-0">
                             <FacebookIcon className="w-10 h-10" />
-                            <p className="text-lg font-semibold">Facebook</p>
+                            <p className="text-sm font-semibold truncate max-w-28">Facebook</p>
                         </div>
                     )}
                 </div>
