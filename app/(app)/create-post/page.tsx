@@ -360,19 +360,19 @@ export default function CreatePost() {
                     />
                 </div>
                 <div className="flex flex-col mt-4 rounded-xl overflow-hidden">
-                    <div className="flex gap-3 items-center p-4 bg-white w-full">
-                        <User className="w-8 h-8 stroke-[1.6]" />
-                        <p className="text-2xl">Tag people</p>
+                    <div className="flex gap-2 items-center p-4 bg-white w-full">
+                        <User className="w-6 h-6 stroke-[1.6]" />
+                        <p className="text-xl">Tag people</p>
                     </div>
                     <hr className="border-slate-200" />
-                    <div className="flex gap-3 items-center p-4 bg-white w-full">
-                        <MapPin className="w-8 h-8 stroke-[1.6]" />
-                        <p className="text-2xl">Add location</p>
+                    <div className="flex gap-2 items-center p-4 bg-white w-full">
+                        <MapPin className="w-6 h-6 stroke-[1.6]" />
+                        <p className="text-xl">Add location</p>
                     </div>
                     <hr className="border-slate-200" />
-                    <div className="flex gap-3 items-center p-4 bg-white w-full">
-                        <Music4 className="w-8 h-8 stroke-[1.6]" />
-                        <p className="text-2xl">Add music</p>
+                    <div className="flex gap-2 items-center p-4 bg-white w-full">
+                        <Music4 className="w-6 h-6 stroke-[1.6]" />
+                        <p className="text-xl">Add music</p>
                     </div>
                 </div>
                 <AlertDialog>
