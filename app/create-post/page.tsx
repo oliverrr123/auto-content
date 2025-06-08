@@ -6,10 +6,10 @@ import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { DragDropContext, Droppable, Draggable, DropResult, DroppableProvided } from 'react-beautiful-dnd';
+import { DragDropContext, Droppable, Draggable, DropResult, DroppableProvided, DroppableProps } from 'react-beautiful-dnd';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
-const StrictModeDroppable = ({ children, ...props }: any) => {
+const StrictModeDroppable = ({ children, ...props }: DroppableProps) => {
     const [enabled, setEnabled] = useState(false);
     useEffect(() => {
         const animation = requestAnimationFrame(() => setEnabled(true));
