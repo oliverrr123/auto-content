@@ -5,6 +5,7 @@ import { useEffect, useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Mic, Paperclip, Send } from 'lucide-react';
 import Image from 'next/image';
+import { Markdown } from '@/components/markdown';
 
 export default function Scheduling() {
 	const { user, isLoading } = useAuth();
@@ -124,7 +125,7 @@ export default function Scheduling() {
 								width={22}
 								height={22}
 							/>
-							<p>{message.content}</p>
+							<Markdown content={message.content} />
 						</div>
 					) : (
 						<div key={index} className="flex justify-end">
