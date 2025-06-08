@@ -140,33 +140,43 @@ export default function Scheduling() {
 			<div className="fixed w-[calc(100%-2rem)] bottom-14">
 				<div className="mt-4 relative">
 					<div className="bg-slate-100 w-full h-16 absolute -bottom-10 -z-10"></div>
-					<textarea
-						className="w-full p-4 rounded-xl focus:outline-none resize-none"
-						placeholder="Create a post about ..."
-						rows={4}
-						value={prompt}
-						onChange={e => setPrompt(e.target.value)}
-						onKeyDown={handleKeyDown}
-					/>
-					<div className="flex gap-2 p-2 absolute bottom-2 right-1">
-						<Button
-							variant="secondary"
-							className="w-12 h-12 border border-slate-200 bg-white [&_svg]:!size-6"
-						>
-							<Paperclip className="text-slate-500" />
-						</Button>
-						{prompt.length > 0 ? (
-							<Button
-								className="w-12 h-12 [&_svg]:!size-6 hover:bg-blue-500"
-								onClick={handleSend}
-							>
-								<Send />
-							</Button>
-						) : (
-							<Button className="w-12 h-12 [&_svg]:!size-6 hover:bg-blue-500">
-								<Mic />
-							</Button>
-						)}
+					<div className="flex flex-col bg-white rounded-xl">
+						<textarea
+							className="w-full p-4 rounded-xl focus:outline-none resize-none"
+							placeholder="Create a post about ..."
+							rows={1}
+							value={prompt}
+							onChange={e => setPrompt(e.target.value)}
+							onKeyDown={handleKeyDown}
+						/>
+						<div className="flex justify-end">
+							<div className="flex gap-2 p-2">
+								<Button
+									variant="secondary"
+									className="border border-slate-200 bg-white"
+									size="icon"
+								>
+									<Paperclip className="text-slate-500" />
+								</Button>
+								{prompt.length > 0 ? (
+									<Button
+										className="hover:bg-blue-500"
+										size="icon"
+										onClick={handleSend}
+									>
+										<Send />
+									</Button>
+								) : (
+									<Button
+										className="hover:bg-blue-500"
+										size="icon"
+										onClick={handleSend}
+									>
+										<Mic />
+									</Button>
+								)}
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
