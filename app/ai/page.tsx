@@ -114,7 +114,7 @@ export default function Scheduling() {
 
 	return (
 		<div className="">
-			<div className="flex flex-col gap-4 pb-16 overflow-y-auto">
+			<div className="flex flex-col gap-4 pb-48 overflow-y-auto">
 				{messages.map((message, index) =>
 					message.role === 'assistant' ? (
 						<div key={index} className="flex gap-2">

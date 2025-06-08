@@ -35,6 +35,7 @@ export function Markdown({ content, className }: MarkdownProps) {
     blockquote: (props) => (
       <blockquote {...props} className="border-l-4 border-gray-300 pl-4 italic my-4" />
     ),
+    hr: () => <hr className="my-4 border-gray-200" />,
   };
 
   return (
