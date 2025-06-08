@@ -1,6 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { Copy, MapPin, Music4, User, X } from "lucide-react";
+import { MapPin, Music4, User, X } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
