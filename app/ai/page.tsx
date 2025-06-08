@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Mic, Paperclip, Send } from 'lucide-react';
-import Image from 'next/image';
+// import Image from 'next/image';
 import { Markdown } from '@/components/markdown';
 
 export default function Scheduling() {
@@ -118,7 +118,7 @@ export default function Scheduling() {
 				{messages.map((message, index) =>
 					message.role === 'assistant' ? (
 						<div key={index} className="flex gap-2">
-							<Image
+							<img
 								src="/icons/ai-2.svg"
 								className="w-6 h-6"
 								alt="AI"

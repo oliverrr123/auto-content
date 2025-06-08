@@ -84,7 +84,7 @@ export default function Home() {
       <div className="flex flex-col gap-4">
         <div className="flex gap-4 items-center">
           <div>
-              <Image src={profile.profilePictureUrl} alt="User Avatar" width={100} height={100} className="rounded-full absolute z-10" />
+              <Image src={profile.profilePictureUrl} alt="User Avatar" width={100} height={100} unoptimized className="rounded-full absolute z-10" />
               <div className="w-[100px] h-[100px] bg-slate-200 rounded-full relative" />
           </div>
           <div>
@@ -111,6 +111,7 @@ export default function Home() {
                     fill
                     className="object-cover"
                     alt="Media" 
+                    unoptimized
                   />
                 ) : (
                   <Image 
@@ -118,6 +119,7 @@ export default function Home() {
                     fill
                     className="object-contain"
                     alt="Media" 
+                    unoptimized
                   />
                 )}
               </div>

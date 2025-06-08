@@ -300,6 +300,7 @@ export default function CreatePost() {
                                                             width={256}
                                                             height={256}
                                                             className="w-full object-cover rounded-xl"
+                                                            unoptimized
                                                         />
                                                         <button onClick={() => removeFile(fileURL)} className="absolute top-2 right-2 p-1 bg-black bg-opacity-50 rounded-full text-white hover:bg-opacity-70">
                                                             <X className="w-4 h-4" />
