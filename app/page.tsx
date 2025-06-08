@@ -69,7 +69,7 @@ export default function Home() {
         <Skeleton className="h-4 w-3/4" />
         <Skeleton className="h-4 w-2/3" />
         <Skeleton className="h-8 w-full" />
-        <div className="grid grid-cols-3 w-dvw -translate-x-4 gap-[1px] pb-20">
+        <div className="grid grid-cols-3 w-dvw -translate-x-4 gap-[1px] pb-16">
           <Skeleton className="aspect-[4/5] w-full rounded-none" />
           <Skeleton className="aspect-[4/5] w-full rounded-none" />
           <Skeleton className="aspect-[4/5] w-full rounded-none" />
@@ -102,7 +102,7 @@ export default function Home() {
           </Button>
         </Link>
         {media && !isLoadingMedia && media.length > 0 ? (
-          <div className="grid grid-cols-3 w-dvw -translate-x-4 gap-[1px] pb-20">
+          <div className="grid grid-cols-3 w-dvw -translate-x-4 gap-[1px] pb-16">
             {media.map((mediaItem) => (
               <div key={mediaItem.media_url} className="aspect-[4/5] w-full relative bg-black border-white">
                 {mediaItem.media_type === 'VIDEO' ? (
@@ -126,7 +126,7 @@ export default function Home() {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-3 w-dvw -translate-x-4 gap-[1px] pb-20">
+          <div className="grid grid-cols-3 w-dvw -translate-x-4 gap-[1px] pb-16">
             <Skeleton className="aspect-[4/5] w-full rounded-none" />
             <Skeleton className="aspect-[4/5] w-full rounded-none" />
             <Skeleton className="aspect-[4/5] w-full rounded-none" />

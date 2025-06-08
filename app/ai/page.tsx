@@ -114,7 +114,7 @@ export default function Scheduling() {
 
 	return (
 		<div className="">
-			<div className="flex flex-col gap-4 pb-64 overflow-y-auto">
+			<div className="flex flex-col gap-4 pb-16 overflow-y-auto">
 				{messages.map((message, index) =>
 					message.role === 'assistant' ? (
 						<div key={index} className="flex gap-2">
@@ -137,7 +137,7 @@ export default function Scheduling() {
 				)}
 				<div ref={messagesEndRef} />
 			</div>
-			<div className="fixed w-[calc(100%-2rem)] bottom-24">
+			<div className="fixed w-[calc(100%-2rem)] bottom-14">
 				<div className="mt-4 relative">
 					<div className="bg-slate-100 w-full h-16 absolute -bottom-10 -z-10"></div>
 					<textarea

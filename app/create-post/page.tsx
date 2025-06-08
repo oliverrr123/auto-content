@@ -264,7 +264,7 @@ export default function CreatePost() {
 
     if (user) {
         return (
-            <div className="pb-24">
+            <div className="pb-16">
                 <DragDropContext onDragEnd={handleDragEnd}>
                     <div className="mt-4 flex gap-4 overflow-x-auto w-full no-scrollbar">
                         <StrictModeDroppable
