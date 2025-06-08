@@ -21,7 +21,7 @@ export default function MobileNavbar() {
                 <img src={isActive("/scheduling") ? "/icons/navbar/2/scheduling.svg" : "/icons/navbar/scheduling.svg"} alt="Scheduling" width={24} height={24} />
             </Link>
             <Link href="/ai">
-                <img src={isActive("/ai") ? "/icons/navbar/2/ai.svg" : "/icons/navbar/ai.svg"} alt="AI" width={24} height={24} />
+                <img src={isActive("/ai") ? "/icons/navbar/2/ai.svg" : "/icons/navbar/ai.svg"} alt="AI" width={20} height={20} />
             </Link>
         </div>
     )
