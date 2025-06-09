@@ -169,7 +169,7 @@ export default function MobileNavbar() {
             <Drawer.Overlay className="fixed inset-0 bg-black/40" />
             <Drawer.Portal>
                 <Drawer.Content
-                    className='fixed bg-white border border-gray-200 border-b-none rounded-t-[10px] bottom-20 left-0 right-0 h-[90%] z-20'
+                    className='fixed bg-white border border-gray-200 border-b-none rounded-t-[10px] bottom-0 left-0 right-0 h-full z-20'
                 >
 
                     <Drawer.Title className="hidden">Title</Drawer.Title>
@@ -178,7 +178,7 @@ export default function MobileNavbar() {
                     
                     {/* <div aria-hidden className="mx-auto w-12 h-1.5 m-4 rounded-full bg-slate-300 mb-8" /> */}
 
-                    <div className="flex flex-col gap-4 px-3 pb-8 overflow-y-auto" style={{ height: snap === 0.9 ? '35rem' : '16rem' }}>
+                    <div className="flex flex-col gap-4 px-3 pb-8 overflow-y-auto" style={{ height: snap === 0.9 ? '38rem' : '15rem' }}>
                         {messages.map((message, index) =>
                             message.role === 'assistant' ? (
                                 <div key={index} className="flex gap-2">
@@ -201,7 +201,51 @@ export default function MobileNavbar() {
                         )}
                         <div ref={messagesEndRef} />
                     </div>
-                    <div className="fixed w-full" style={{ bottom: snap === 0.9 ? '6dvh' : '46dvh', transition: 'all 300ms' }}>
+                    {/* <div className="fixed w-full" style={{ bottom: snap === 0.9 ? '6dvh' : '46dvh', transition: 'all 300ms' }}>
+                        <div className="mt-4 relative">
+                            <div className="flex flex-col bg-slate-100 rounded-xl">
+                                <textarea
+                                    className="w-full p-4 rounded-xl focus:outline-none resize-none bg-transparent"
+                                    placeholder="Create a post about ..."
+                                    rows={1}
+                                    value={prompt}
+                                    onChange={e => setPrompt(e.target.value)}
+                                    onKeyDown={handleKeyDown}
+                                />
+                                <div className="flex justify-end">
+                                    <div className="flex gap-2 p-2 pt-0">
+                                        <Button
+                                            variant="secondary"
+                                            className="border border-slate-200 bg-white"
+                                            size="icon"
+                                        >
+                                            <Paperclip className="text-slate-500" />
+                                        </Button>
+                                        {prompt.length > 0 ? (
+                                            <Button
+                                                className="hover:bg-blue-500"
+                                                size="icon"
+                                                onClick={handleSend}
+                                            >
+                                                <Send />
+                                            </Button>
+                                        ) : (
+                                            <Button
+                                                className="hover:bg-blue-500"
+                                                size="icon"
+                                                // onClick={handleSend}
+                                            >
+                                                <Mic />
+                                            </Button>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div> */}
+
+                </Drawer.Content>
+                <div className="fixed w-full bottom-12 z-50 transition-all duration-500">
                         <div className="mt-4 relative">
                             <div className="flex flex-col bg-slate-100 rounded-xl">
                                 <textarea
@@ -243,8 +287,6 @@ export default function MobileNavbar() {
                             </div>
                         </div>
                     </div>
-
-                </Drawer.Content>
             </Drawer.Portal>
         </Drawer.Root>
 
