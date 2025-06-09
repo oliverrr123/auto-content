@@ -78,72 +78,72 @@ export default function MobileNavbar() {
 	// 	}
 	// }
 
-	async function handleSend() {
-		let newMessages = [
-			...messages,
-			{ role: 'user', content: prompt },
-			{ role: 'assistant', content: 'Thinking...' },
-		];
+	// async function handleSend() {
+	// 	let newMessages = [
+	// 		...messages,
+	// 		{ role: 'user', content: prompt },
+	// 		{ role: 'assistant', content: 'Thinking...' },
+	// 	];
 
-		setMessages(newMessages);
-		setPrompt('');
+	// 	setMessages(newMessages);
+	// 	setPrompt('');
 
-		const contextResponse = await fetch('/api/ai/context', {
-			method: 'POST',
-			body: JSON.stringify({ lastMessage: newMessages[newMessages.length - 2] }),
-		});
-		const contextData = await contextResponse.json();
+	// 	const contextResponse = await fetch('/api/ai/context', {
+	// 		method: 'POST',
+	// 		body: JSON.stringify({ lastMessage: newMessages[newMessages.length - 2] }),
+	// 	});
+	// 	const contextData = await contextResponse.json();
 
-        const context = {
-            profile: null,
-            media: null,
-        }
+    //     const context = {
+    //         profile: null,
+    //         media: null,
+    //     }
 
-        if (contextData && contextData.parameters.profile.length > 0) {
-            const profileData = await fetch('/api/get/instagram/custom/profile', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ parameters: contextData.parameters.profile.join(',') }),
-            });
-            const profileDataJson = await profileData.json();
-            context.profile = profileDataJson;
-        }
+    //     if (contextData && contextData.parameters.profile.length > 0) {
+    //         const profileData = await fetch('/api/get/instagram/custom/profile', {
+    //             method: 'POST',
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //             },
+    //             body: JSON.stringify({ parameters: contextData.parameters.profile.join(',') }),
+    //         });
+    //         const profileDataJson = await profileData.json();
+    //         context.profile = profileDataJson;
+    //     }
     
-        if (contextData && contextData.parameters.media.length > 0) {
-            const mediaData = await fetch('/api/get/instagram/custom/media', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ parameters: contextData.parameters.media.join(',') }),
-            });
-            const mediaDataJson = await mediaData.json();
-            context.media = mediaDataJson;
-        }
+    //     if (contextData && contextData.parameters.media.length > 0) {
+    //         const mediaData = await fetch('/api/get/instagram/custom/media', {
+    //             method: 'POST',
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //             },
+    //             body: JSON.stringify({ parameters: contextData.parameters.media.join(',') }),
+    //         });
+    //         const mediaDataJson = await mediaData.json();
+    //         context.media = mediaDataJson;
+    //     }
 
-		const response = await fetch('/api/ai/text', {
-			method: 'POST',
-			body: JSON.stringify({ messages: newMessages.slice(0, -1), context: context }),
-		});
+	// 	const response = await fetch('/api/ai/text', {
+	// 		method: 'POST',
+	// 		body: JSON.stringify({ messages: newMessages.slice(0, -1), context: context }),
+	// 	});
 
-		if (!response.ok) {
-			console.error('Failed to get AI response');
-			setMessages([
-				...messages,
-				{
-					role: 'assistant',
-					content: 'Sorry, there was an error processing your request. Please try again.',
-				},
-			]);
-			return;
-		}
+	// 	if (!response.ok) {
+	// 		console.error('Failed to get AI response');
+	// 		setMessages([
+	// 			...messages,
+	// 			{
+	// 				role: 'assistant',
+	// 				content: 'Sorry, there was an error processing your request. Please try again.',
+	// 			},
+	// 		]);
+	// 		return;
+	// 	}
 
-		const data = await response.json();
-		newMessages = [...newMessages.slice(0, -1), { role: 'assistant', content: data.content }];
-		setMessages(newMessages);
-	}
+	// 	const data = await response.json();
+	// 	newMessages = [...newMessages.slice(0, -1), { role: 'assistant', content: data.content }];
+	// 	setMessages(newMessages);
+	// }
 
     return (
         <div className="fixed flex justify-between items-center w-full h-12 px-10 bottom-0 left-0 right-0 bg-white drop-shadow-sexy z-50">
