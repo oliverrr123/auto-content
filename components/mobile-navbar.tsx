@@ -12,12 +12,12 @@ import { usePathname } from "next/navigation";
 //     DrawerTitle,
 //     DrawerTrigger,
 //   } from "@/components/ui/drawer"
-import { Drawer } from 'vaul';
-import { Button } from "@/components/ui/button"
+// import { Drawer } from 'vaul';
+// import { Button } from "@/components/ui/button"
 // import AI from "@/components/ai"
 // import { clsx } from 'clsx';
-import { Paperclip, Send, Mic } from "lucide-react";
-import { Markdown } from '@/components/markdown';
+// import { Paperclip, Send, Mic } from "lucide-react";
+// import { Markdown } from '@/components/markdown';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
