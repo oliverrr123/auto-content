@@ -331,14 +331,18 @@ export default function CreatePost() {
                                                             opacity: snapshot.isDragging ? 0.5 : 1
                                                         }}
                                                     >
-                                                        <Image
-                                                            src={file.signedReadUrl}
-                                                            alt={file.signedReadUrl}
-                                                            width={256}
-                                                            height={256}
-                                                            className="w-full object-cover rounded-xl"
-                                                            unoptimized
-                                                        />
+                                                        {file.filetype === 'video/mp4' || file.filetype === 'video/mov' || file.filetype === 'video/quicktime' ? (
+                                                            <video src={file.signedReadUrl} className="w-full object-cover rounded-xl" controls />
+                                                        ) : ( 
+                                                            <Image
+                                                                src={file.signedReadUrl}
+                                                                alt={file.signedReadUrl}
+                                                                width={256}
+                                                                height={256}
+                                                                className="w-full object-cover rounded-xl"
+                                                                unoptimized
+                                                            />
+                                                        )}
                                                         <button onClick={() => removeFile(file.signedReadUrl)} className="absolute top-2 right-2 p-1 bg-black bg-opacity-50 rounded-full text-white hover:bg-opacity-70">
                                                             <X className="w-4 h-4" />
                                                         </button>
@@ -355,7 +359,7 @@ export default function CreatePost() {
                             <input 
                                 type="file" 
                                 className="hidden" 
-                                accept="image/jpg, image/jpeg, image/png, image/gif, image/webp, image/heic, image/heif, video/mp4, video/mov, video/quicktime"
+                                accept="image/jpg, image/jpeg, image/png, image/gif, image/webp, video/mp4, video/mov, video/quicktime"
                                 id="file-upload"
                                 multiple
                                 onChange={handleFileUpload}
