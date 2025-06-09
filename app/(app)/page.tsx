@@ -166,11 +166,11 @@ export default function Home() {
 							<div className="flex gap-3">
 							  <div className="flex gap-1.5 items-center">
 								<Heart className="w-5 h-5" />
-								<p className="text-sm">{media[1].like_count}</p>
+								<p className="text-sm">{mediaItem.like_count}</p>
 							  </div>
 							  <div className="flex gap-1.5 items-center">
 								<MessageCircle className="w-5 h-5" />
-								<p className="text-sm">{media[1].comments_count}</p>
+								<p className="text-sm">{mediaItem.comments_count}</p>
 							  </div>
 							</div>
 							<p className="text-sm text-slate-500">{formatDate(mediaItem.timestamp)}</p>
@@ -205,7 +205,7 @@ export default function Home() {
 					)}
 					<DialogFooter className="flex gap-3">
 						<DialogClose className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-white text-slate-700">Close</DialogClose>
-						<Link href={media[1].permalink} target="_blank" rel="noopener noreferrer" className="w-full">
+						<Link href={mediaItem.permalink} target="_blank" rel="noopener noreferrer" className="w-full">
 							  <DialogClose className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-primary text-white hover:bg-blue-500">View on Instagram</DialogClose>
 						</Link>
 					</DialogFooter>
