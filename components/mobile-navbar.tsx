@@ -158,11 +158,11 @@ export default function MobileNavbar() {
             <Link href="/scheduling">
                 <img src={active === "/scheduling" ? "/icons/navbar/2/scheduling.svg" : "/icons/navbar/scheduling.svg"} onClick={() => setActive("/scheduling")} alt="Scheduling" width={24} height={24} />
             </Link>
-            {/* <Link href="/ai">
+            <Link href="/ai">
                 <img src={active === "/ai" ? "/icons/navbar/2/ai.svg" : "/icons/navbar/ai.svg"} onClick={() => setActive("/ai")} alt="AI" width={20} height={20} />
-            </Link> */}
+            </Link>
             
-        <Drawer.Root open={activeAI} onOpenChange={setActiveAI} snapPoints={snapPoints} activeSnapPoint={snap} setActiveSnapPoint={setSnap} modal={false} handleOnly={true}>
+        {/* <Drawer.Root open={activeAI} onOpenChange={setActiveAI} snapPoints={snapPoints} activeSnapPoint={snap} setActiveSnapPoint={setSnap} modal={false} handleOnly={true}>
             <Drawer.Trigger onClick={() => setActiveAI(!activeAI)}>
                 <img src={activeAI ? "/icons/navbar/2/ai.svg" : "/icons/navbar/ai.svg"} alt="AI" width={20} height={20} />
             </Drawer.Trigger>
@@ -176,7 +176,7 @@ export default function MobileNavbar() {
 
                     <Drawer.Handle className="mx-auto w-12 h-1.5 m-4 rounded-full bg-slate-300 mb-8" />
                     
-                    {/* <div aria-hidden className="mx-auto w-12 h-1.5 m-4 rounded-full bg-slate-300 mb-8" /> */}
+                    <div aria-hidden className="mx-auto w-12 h-1.5 m-4 rounded-full bg-slate-300 mb-8" />
 
                     <div className="flex flex-col gap-4 px-3 pb-8 overflow-y-auto" style={{ height: snap === 0.9 ? '38rem' : '15rem' }}>
                         {messages.map((message, index) =>
@@ -201,7 +201,7 @@ export default function MobileNavbar() {
                         )}
                         <div ref={messagesEndRef} />
                     </div>
-                    {/* <div className="fixed w-full" style={{ bottom: snap === 0.9 ? '6dvh' : '46dvh', transition: 'all 300ms' }}>
+                    <div className="fixed w-full" style={{ bottom: snap === 0.9 ? '6dvh' : '46dvh', transition: 'all 300ms' }}>
                         <div className="mt-4 relative">
                             <div className="flex flex-col bg-slate-100 rounded-xl">
                                 <textarea
@@ -242,7 +242,7 @@ export default function MobileNavbar() {
                                 </div>
                             </div>
                         </div>
-                    </div> */}
+                    </div>
 
                 </Drawer.Content>
                 <div className="fixed w-full bottom-12 z-50 transition-all duration-500">
@@ -288,7 +288,7 @@ export default function MobileNavbar() {
                         </div>
                     </div>
             </Drawer.Portal>
-        </Drawer.Root>
+        </Drawer.Root> */}
 
         </div>
     )
