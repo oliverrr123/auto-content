@@ -20,21 +20,22 @@ import { usePathname } from "next/navigation";
 // import { Markdown } from '@/components/markdown';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, useRef } from 'react';
+// import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 
-const snapPoints = [0.5, 0.9];
+// const snapPoints = [0.5, 0.9];
 
 export default function MobileNavbar() {
 
     const pathname = usePathname();
     const [active, setActive] = useState(pathname);
-    const [activeAI, setActiveAI] = useState(false);
-    const [snap, setSnap] = useState<number | string | null>(snapPoints[0]);
+    // const [activeAI, setActiveAI] = useState(false);
+    // const [snap, setSnap] = useState<number | string | null>(snapPoints[0]);
 
     const { user, isLoading } = useAuth();
 	const router = useRouter();
 	const [prompt, setPrompt] = useState('');
-	const messagesEndRef = useRef<HTMLDivElement>(null);
+	// const messagesEndRef = useRef<HTMLDivElement>(null);
 
 	const [messages, setMessages] = useState<{ role: string; content: string }[]>([
 		{
@@ -43,9 +44,9 @@ export default function MobileNavbar() {
 		},
 	]);
 
-	const scrollToBottom = () => {
-		messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-	};
+	// const scrollToBottom = () => {
+	// 	messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+	// };
 
 	useEffect(() => {
 		if (!user && !isLoading) {
@@ -53,29 +54,29 @@ export default function MobileNavbar() {
 		}
 	}, [user, isLoading, router]);
 
-	useEffect(() => {
-		console.log('Drawer position changed:', {
-			snap,
-			percentage: typeof snap === 'number' ? `${snap * 100}%` : snap,
-			isFull: snap === 0.9,
-			isHalf: snap === 0.5
-		});
-	}, [snap]);
+	// useEffect(() => {
+	// 	console.log('Drawer position changed:', {
+	// 		snap,
+	// 		percentage: typeof snap === 'number' ? `${snap * 100}%` : snap,
+	// 		isFull: snap === 0.9,
+	// 		isHalf: snap === 0.5
+	// 	});
+	// }, [snap]);
 
-    useEffect(() => {
-		scrollToBottom();
-	}, [messages, snap]);
+    // useEffect(() => {
+	// 	scrollToBottom();
+	// }, [messages, snap]);
 
 	if (!user) {
 		return null;
 	}
 
-	function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-		if (e.key === 'Enter' && !e.shiftKey) {
-			e.preventDefault();
-			handleSend();
-		}
-	}
+	// function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+	// 	if (e.key === 'Enter' && !e.shiftKey) {
+	// 		e.preventDefault();
+	// 		handleSend();
+	// 	}
+	// }
 
 	async function handleSend() {
 		let newMessages = [
