@@ -34,15 +34,15 @@ export default function MobileNavbar() {
 
     const { user, isLoading } = useAuth();
 	const router = useRouter();
-	const [prompt, setPrompt] = useState('');
+	// const [prompt, setPrompt] = useState('');
 	// const messagesEndRef = useRef<HTMLDivElement>(null);
 
-	const [messages, setMessages] = useState<{ role: string; content: string }[]>([
-		{
-			role: 'assistant',
-			content: 'Hey, how can I help you today?',
-		},
-	]);
+	// const [messages, setMessages] = useState<{ role: string; content: string }[]>([
+	// 	{
+	// 		role: 'assistant',
+	// 		content: 'Hey, how can I help you today?',
+	// 	},
+	// ]);
 
 	// const scrollToBottom = () => {
 	// 	messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
