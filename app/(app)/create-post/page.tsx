@@ -350,14 +350,15 @@ export default function CreatePost() {
                     </div>
                 </DragDropContext>
     
-                <div className="mt-4">
+                <div className="mt-4 relative">
                     <textarea
-                        className="w-full p-4 rounded-xl focus:outline-none"
+                        className="w-full p-4 rounded-xl focus:outline-none relative"
                         placeholder="Write a caption..."
                         rows={4}
                         value={caption}
                         onChange={(e) => setCaption(e.target.value)}
                     />
+                    <img src="/icons/ai-2.svg" className="absolute right-4 top-4 w-6 h-6"></img>
                 </div>
                 <div className="flex flex-col mt-4 rounded-xl overflow-hidden">
                     <div className="flex gap-2 items-center p-4 bg-white w-full">

@@ -114,7 +114,7 @@ export default function AI() {
 
 	return (
 		<div className="">
-			<div className="flex flex-col gap-4 pb-48 overflow-y-auto">
+			<div className="flex flex-col gap-4 px-3 pb-8 overflow-y-auto h-96">
 				{messages.map((message, index) =>
 					message.role === 'assistant' ? (
 						<div key={index} className="flex gap-2">
@@ -137,12 +137,12 @@ export default function AI() {
 				)}
 				<div ref={messagesEndRef} />
 			</div>
-			<div className="fixed w-[calc(100%-2rem)] bottom-14">
+			<div className="fixed w-full bottom-0">
 				<div className="mt-4 relative">
 					<div className="bg-slate-100 w-full h-16 absolute -bottom-10 -z-10"></div>
-					<div className="flex flex-col bg-white rounded-xl">
+					<div className="flex flex-col bg-slate-100 rounded-xl">
 						<textarea
-							className="w-full p-4 rounded-xl focus:outline-none resize-none"
+							className="w-full p-4 rounded-xl focus:outline-none resize-none bg-transparent"
 							placeholder="Create a post about ..."
 							rows={1}
 							value={prompt}
