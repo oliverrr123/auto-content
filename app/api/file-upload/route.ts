@@ -25,8 +25,8 @@ export async function POST(req: Request) {
         const storage = new Storage({ credentials });
         const bucketName = process.env.BUCKET_NAME || "";
 
-        const signedWriteUrls: string[] = [];
-        const signedReadUrls: string[] = [];
+        const signedWriteUrls: { signedWriteUrl: string, filetype: string }[] = [];
+        const signedReadUrls: { signedReadUrl: string, filetype: string }[] = [];
 
         const folderName = crypto.randomBytes(16).toString('hex');
 
@@ -44,8 +44,8 @@ export async function POST(req: Request) {
                 expires: Date.now() + 1000 * 60 * 60 * 24 * 30
             })
 
-            signedWriteUrls.push(signedWriteUrl);
-            signedReadUrls.push(signedReadUrl);
+            signedWriteUrls.push({ signedWriteUrl, filetype: file.filetype });
+            signedReadUrls.push({ signedReadUrl, filetype: file.filetype });
         }
 
         return NextResponse.json({

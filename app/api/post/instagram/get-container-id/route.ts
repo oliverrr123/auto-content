@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 
 export async function POST(req: NextRequest) {
-    const { caption, fileURL, isCarouselItem } = await req.json();
+    const { caption, fileURL, fileType, isCarouselItem } = await req.json();
     const supabase = await createClient();
 
     const { data: { user } } = await supabase.auth.getUser();
@@ -35,6 +35,19 @@ export async function POST(req: NextRequest) {
                 body: JSON.stringify({
                     "image_url": fileURL,
                     "is_carousel_item": true
+                })
+            });
+        } else if (fileType === 'video/mp4' || fileType === 'video/mov' || fileType === 'video/quicktime') {
+            request = await fetch(`https://graph.instagram.com/v23.0/${data.instagram_id}/media`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${data.access_token}`
+                },
+                method: 'POST',
+                body: JSON.stringify({
+                    "video_url": fileURL,
+                    "caption": caption,
+                    "media_type": "REELS",
                 })
             });
         } else {

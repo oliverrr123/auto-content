@@ -26,7 +26,7 @@ const StrictModeDroppable = ({ children, ...props }: DroppableProps) => {
 
 export default function CreatePost() {
     const { user, isLoading } = useAuth();
-    const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
+    const [uploadedFiles, setUploadedFiles] = useState<{ signedReadUrl: string, filetype: string }[]>([]);
     const [isUploading, setIsUploading] = useState(false);
     const [caption, setCaption] = useState('');
     const [isPublishing, setIsPublishing] = useState(false);
@@ -75,11 +75,13 @@ export default function CreatePost() {
                 const signedReadUrls = data.signedReadUrls;
 
                 for (let i=0; i < e.target.files.length; i++) {
-                    await uploadToGoogleCloud(signedWriteUrls[i], e.target.files[i])
+                    await uploadToGoogleCloud(signedWriteUrls[i].signedWriteUrl, e.target.files[i])
                 }
 
-
-                setUploadedFiles(prev => [...prev, ...signedReadUrls])
+                setUploadedFiles(prev => [...prev, ...signedReadUrls.map((url: { signedReadUrl: string, filetype: string }) => ({
+                    signedReadUrl: url.signedReadUrl,
+                    filetype: url.filetype
+                }))])
             } else {
                 console.error('Upload failed:', data.error);
                 alert('Failed to upload files. Please try again.');
@@ -129,7 +131,7 @@ export default function CreatePost() {
 
             if (uploadedFiles.length > 1) {
                 const containerIds = [];
-                for (const fileURL of uploadedFiles) {
+                for (const file of uploadedFiles) {
                     const response = await fetch('/api/post/instagram/get-container-id', {
                         method: 'POST',
                         headers: {
@@ -137,7 +139,7 @@ export default function CreatePost() {
                         },
                         body: JSON.stringify({
                             caption,
-                            fileURL,
+                            fileURL: file.signedReadUrl,
                             isCarouselItem: true
                         })
                     })
@@ -165,12 +167,47 @@ export default function CreatePost() {
                     },
                     body: JSON.stringify({
                         caption,
-                        fileURL: uploadedFiles[0],
+                        fileURL: uploadedFiles[0].signedReadUrl,
+                        fileType: uploadedFiles[0].filetype,
                         isCarouselItem: false
                     })
                 })
 
                 containerIdData = await response.json();
+
+                if (uploadedFiles[0].filetype === 'video/mp4' || uploadedFiles[0].filetype === 'video/mov' || uploadedFiles[0].filetype === 'video/quicktime') {
+                    console.log('---')
+                    console.log('video hereeeee')
+                    console.log('---')
+                    let status = 'IN_PROGRESS';
+
+                    while (status === 'IN_PROGRESS') {
+                        const statusResponse = await fetch('/api/post/instagram/get-container-status', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                containerId: containerIdData.id
+                            })
+                        })
+
+                        const statusData = await statusResponse.json();
+
+                        status = statusData.status_code;
+
+                        console.log('Uploading...', status)
+                        console.log(statusData)
+
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+                    }
+                    
+                    if (status === 'ERROR') {
+                        setShowErrorDialog(true);
+                        setIsPublishing(false);
+                        return;
+                    }
+                }
             }
 
             const publishContainerResponse = await fetch('/api/post/instagram/publish-container', {
@@ -199,13 +236,13 @@ export default function CreatePost() {
                 
                 setShowSuccessDialog(true);
 
-                for (const fileUrl of uploadedFiles) {
+                for (const file of uploadedFiles) {
                     await fetch('/api/file-delete', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                         },
-                        body: JSON.stringify({ fileUrl }),
+                        body: JSON.stringify({ fileUrl: file.signedReadUrl }),
                     });
                 }
 
@@ -240,7 +277,7 @@ export default function CreatePost() {
             const data = await response.json();
             
             if (response.ok && data.success) {
-                setUploadedFiles(prev => prev.filter(file => file !== fileToRemove));
+                setUploadedFiles(prev => prev.filter(file => file.signedReadUrl !== fileToRemove));
             } else {
                 const errorMessage = data.error || 'Unknown error occurred';
                 console.error('Failed to delete file:', errorMessage);
@@ -281,8 +318,8 @@ export default function CreatePost() {
                                     className="flex gap-4"
                                 >
                                     {uploadedFiles.length > 0 &&
-                                        uploadedFiles.map((fileURL, index) => (
-                                            <Draggable key={fileURL} draggableId={fileURL} index={index}>
+                                        uploadedFiles.map((file, index) => (
+                                            <Draggable key={file.signedReadUrl} draggableId={file.signedReadUrl} index={index}>
                                                 {(provided, snapshot) => (
                                                     <div
                                                         ref={provided.innerRef}
@@ -295,14 +332,14 @@ export default function CreatePost() {
                                                         }}
                                                     >
                                                         <Image
-                                                            src={fileURL}
-                                                            alt={fileURL}
+                                                            src={file.signedReadUrl}
+                                                            alt={file.signedReadUrl}
                                                             width={256}
                                                             height={256}
                                                             className="w-full object-cover rounded-xl"
                                                             unoptimized
                                                         />
-                                                        <button onClick={() => removeFile(fileURL)} className="absolute top-2 right-2 p-1 bg-black bg-opacity-50 rounded-full text-white hover:bg-opacity-70">
+                                                        <button onClick={() => removeFile(file.signedReadUrl)} className="absolute top-2 right-2 p-1 bg-black bg-opacity-50 rounded-full text-white hover:bg-opacity-70">
                                                             <X className="w-4 h-4" />
                                                         </button>
                                                     </div>
@@ -318,7 +355,7 @@ export default function CreatePost() {
                             <input 
                                 type="file" 
                                 className="hidden" 
-                                accept="image/jpg, image/jpeg, image/png, image/gif"
+                                accept="image/jpg, image/jpeg, image/png, image/gif, image/webp, image/heic, image/heif, video/mp4, video/mov, video/quicktime"
                                 id="file-upload"
                                 multiple
                                 onChange={handleFileUpload}
