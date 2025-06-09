@@ -169,7 +169,7 @@ export default function MobileNavbar() {
             <Drawer.Overlay className="fixed inset-0 bg-black/40" />
             <Drawer.Portal>
                 <Drawer.Content
-                    className='fixed bg-white border border-gray-200 border-b-none rounded-t-[10px] bottom-0 left-0 right-0 h-full z-20'
+                    className='fixed bg-white border border-gray-200 border-b-none rounded-t-[10px] bottom-20 left-0 right-0 h-[90%] z-20'
                 >
 
                     <Drawer.Title className="hidden">Title</Drawer.Title>
@@ -201,7 +201,7 @@ export default function MobileNavbar() {
                         )}
                         <div ref={messagesEndRef} />
                     </div>
-                    <div className="fixed w-full" style={{ bottom: snap === 0.9 ? '9rem' : '32rem', transition: 'all 300ms' }}>
+                    <div className="fixed w-full" style={{ bottom: snap === 0.9 ? '6dvh' : '46dvh', transition: 'all 300ms' }}>
                         <div className="mt-4 relative">
                             <div className="flex flex-col bg-slate-100 rounded-xl">
                                 <textarea
