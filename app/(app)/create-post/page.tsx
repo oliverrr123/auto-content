@@ -174,11 +174,10 @@ export default function CreatePost() {
                 })
 
                 containerIdData = await response.json();
+            }
 
-                if (uploadedFiles[0].filetype === 'video/mp4' || uploadedFiles[0].filetype === 'video/mov' || uploadedFiles[0].filetype === 'video/quicktime') {
-                    console.log('---')
-                    console.log('video hereeeee')
-                    console.log('---')
+            for (const file of uploadedFiles) {
+                if (file.filetype === 'video/mp4' || file.filetype === 'video/mov' || file.filetype === 'video/quicktime') {
                     let status = 'IN_PROGRESS';
 
                     while (status === 'IN_PROGRESS') {
@@ -195,9 +194,6 @@ export default function CreatePost() {
                         const statusData = await statusResponse.json();
 
                         status = statusData.status_code;
-
-                        console.log('Uploading...', status)
-                        console.log(statusData)
 
                         await new Promise(resolve => setTimeout(resolve, 2000));
                     }

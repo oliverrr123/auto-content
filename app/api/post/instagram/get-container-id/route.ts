@@ -26,17 +26,31 @@ export async function POST(req: NextRequest) {
         let request;
 
         if (isCarouselItem) {
-            request = await fetch(`https://graph.instagram.com/v23.0/${data.instagram_id}/media`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${data.access_token}`
-                },
-                method: 'POST',
-                body: JSON.stringify({
-                    "image_url": fileURL,
-                    "is_carousel_item": true
-                })
-            });
+            if (fileType === 'video/mp4' || fileType === 'video/mov' || fileType === 'video/quicktime') {
+                request = await fetch(`https://graph.instagram.com/v23.0/${data.instagram_id}/media`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${data.access_token}`
+                    },
+                    method: 'POST',
+                    body: JSON.stringify({
+                        "video_url": fileURL,
+                        "is_carousel_item": true
+                    })
+                });
+            } else {
+                request = await fetch(`https://graph.instagram.com/v23.0/${data.instagram_id}/media`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${data.access_token}`
+                    },
+                    method: 'POST',
+                    body: JSON.stringify({
+                        "image_url": fileURL,
+                        "is_carousel_item": true
+                    })
+                });
+            }
         } else if (fileType === 'video/mp4' || fileType === 'video/mov' || fileType === 'video/quicktime') {
             request = await fetch(`https://graph.instagram.com/v23.0/${data.instagram_id}/media`, {
                 headers: {

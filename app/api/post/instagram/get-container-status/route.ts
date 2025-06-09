@@ -22,10 +22,6 @@ export async function POST(req: NextRequest) {
 
         const response = await request.json();
 
-        console.log('---')
-        console.log(response)
-        console.log('---')
-
         return NextResponse.json({ status_code: response.status_code }, { status: 200 });
     } catch (error) {
         console.error(error);
