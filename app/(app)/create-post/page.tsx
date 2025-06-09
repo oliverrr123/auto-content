@@ -33,6 +33,8 @@ export default function CreatePost() {
     const [showSuccessDialog, setShowSuccessDialog] = useState(false);
     const [showErrorDialog, setShowErrorDialog] = useState(false);
     const [mediaData, setMediaData] = useState<{ media_url: string, caption: string, media_type: string, permalink: string } | null>(null);
+    const [tagValue, setTagValue] = useState<string>('');
+    const [taggedPeople, setTaggedPeople] = useState<string[]>([]);
 
     const router = useRouter();
 
@@ -398,10 +400,45 @@ export default function CreatePost() {
                     <img src="/icons/ai-2.svg" className="absolute right-4 top-4 w-6 h-6"></img>
                 </div>
                 <div className="flex flex-col mt-4 rounded-xl overflow-hidden">
-                    <div className="flex gap-2 items-center p-4 bg-white w-full">
-                        <User className="w-6 h-6 stroke-[1.6]" />
-                        <p className="text-xl">Tag people</p>
-                    </div>
+                    <Dialog>
+                    <DialogTrigger>
+                        <div className="flex gap-2 items-center p-4 bg-white w-full">
+                            <User className="w-6 h-6 stroke-[1.6]" />
+                            <p className="text-xl">Tag people</p>
+                        </div>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <DialogHeader>
+                        <DialogTitle>Connect website</DialogTitle>
+                        </DialogHeader>
+
+                        <div className="flex flex-col gap-2">
+                            <div className="flex items-center gap-2 p-4 bg-white rounded-xl w-full">
+                                <User className="w-6 h-6 stroke-[1.6] text-slate-400" />
+                                <input type="url" className="w-full outline-none focus:outline-none" placeholder="@username" value={tagValue} onChange={(e) => setTagValue(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        setTaggedPeople(prev => [...prev, tagValue]);
+                                        setTagValue('');
+                                    }
+                                }} />
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                                {taggedPeople.map((person, index) => (
+                                    <div key={index} className="flex items-center gap-2 p-2 bg-white rounded-xl">
+                                        <User className="w-6 h-6 stroke-[1.6] text-slate-400" />
+                                        <p className="text-sm">{person}</p>
+                                        <X className="w-4 h-4" onClick={() => setTaggedPeople(prev => prev.filter(p => p !== person))} />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <DialogClose asChild>
+                            <Button className="text-xl font-semibold h-12 p-0 rounded-2xl hover:bg-blue-500">Done</Button>
+                        </DialogClose>
+                    </DialogContent>
+                    </Dialog>
                     <hr className="border-slate-200" />
                     <div className="flex gap-2 items-center p-4 bg-white w-full">
                         <MapPin className="w-6 h-6 stroke-[1.6]" />
