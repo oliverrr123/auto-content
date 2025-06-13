@@ -1,11 +1,10 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { MapPin, Music4, User, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 import { DragDropContext, Droppable, Draggable, DropResult, DroppableProvided, DroppableProps } from 'react-beautiful-dnd';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
@@ -33,8 +32,8 @@ export default function CreatePost() {
     const [showSuccessDialog, setShowSuccessDialog] = useState(false);
     const [showErrorDialog, setShowErrorDialog] = useState(false);
     const [mediaData, setMediaData] = useState<{ media_url: string, caption: string, media_type: string, permalink: string } | null>(null);
-    const [tagValue, setTagValue] = useState<string>('');
-    const [taggedPeople, setTaggedPeople] = useState<string[]>([]);
+    const [showTagDialog, setShowTagDialog] = useState(false);
+    const [taggedPeople, setTaggedPeople] = useState<{ x: number, y: number, username: string }[]>([]);
 
     const router = useRouter();
 
@@ -171,7 +170,8 @@ export default function CreatePost() {
                         caption,
                         fileURL: uploadedFiles[0].signedReadUrl,
                         fileType: uploadedFiles[0].filetype,
-                        isCarouselItem: false
+                        isCarouselItem: false,
+                        taggedPeople: taggedPeople
                     })
                 })
 
@@ -246,6 +246,7 @@ export default function CreatePost() {
 
                 setUploadedFiles([]);
                 setCaption('');
+                setTaggedPeople([]);
             } else {
                 setShowErrorDialog(true);
             }
@@ -258,6 +259,34 @@ export default function CreatePost() {
             setIsPublishing(false);
             setShowErrorDialog(true);
         }
+    }
+
+    const addTag = (e: React.MouseEvent<HTMLImageElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        console.log('--------------------------------');
+        console.log(`Relative position: x=${x}px, y=${y}px`);
+        console.log(`Image dimensions: ${rect.width}px x ${rect.height}px`);
+        console.log(x / rect.width);
+        console.log(y / rect.height);
+        console.log('--------------------------------');
+
+        
+        setTaggedPeople(prev => [...prev, { x: x / rect.width, y: y / rect.height, username: '' }]);
+        
+        // Focus will happen in the next render when the new input is created
+        // setTimeout(() => {
+        //     lastInputRef.current?.focus();
+        // }, 0);
+    }
+
+    const closeTagDialog = () => {
+        setTaggedPeople(prev => prev.filter(tag => tag.username.trim() !== ''));
     }
 
     const removeFile = async(fileToRemove: string) => {
@@ -400,8 +429,8 @@ export default function CreatePost() {
                     <img src="/icons/ai-2.svg" className="absolute right-4 top-4 w-6 h-6"></img>
                 </div>
                 <div className="flex flex-col mt-4 rounded-xl overflow-hidden">
-                    <Dialog>
-                    <DialogTrigger>
+                    <Dialog open={showTagDialog} onOpenChange={setShowTagDialog}>
+                    <DialogTrigger className="outline-none">
                         <div className="flex gap-2 items-center p-4 bg-white w-full">
                             <User className="w-6 h-6 stroke-[1.6]" />
                             <p className="text-xl">Tag people</p>
@@ -409,17 +438,20 @@ export default function CreatePost() {
                     </DialogTrigger>
                     <DialogContent>
                         <DialogHeader>
-                        <DialogTitle>Connect website</DialogTitle>
+                        <DialogTitle>Tag people</DialogTitle>
                         </DialogHeader>
 
-                        <div className="flex flex-col gap-2">
+                        {/* <div className="flex flex-col gap-2">
                             <div className="flex items-center gap-2 p-4 bg-white rounded-xl w-full">
                                 <User className="w-6 h-6 stroke-[1.6] text-slate-400" />
-                                <input type="url" className="w-full outline-none focus:outline-none" placeholder="@username" value={tagValue} onChange={(e) => setTagValue(e.target.value)}
+                                <input type="url" className="w-full outline-none focus:outline-none" placeholder="username" value={tagValue} onChange={(e) => setTagValue(e.target.value)}
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter') {
-                                        setTaggedPeople(prev => [...prev, tagValue]);
-                                        setTagValue('');
+                                        if (tagValue.length > 0) {
+                                            addTag();
+                                        } else {
+                                            setShowTagDialog(false);
+                                        }
                                     }
                                 }} />
                             </div>
@@ -432,10 +464,53 @@ export default function CreatePost() {
                                     </div>
                                 ))}
                             </div>
+                        </div> */}
+
+                        <div>
+                            <div className="mt-4 flex gap-4 overflow-x-auto w-full no-scrollbar">
+                                {uploadedFiles.length > 0 && (
+                                    uploadedFiles.map((file) => (
+                                        <div key={file.signedReadUrl} className="relative flex-shrink-0 w-[80%] first:ml-[10%] h-auto">
+                                            {file.filetype === 'video/mp4' || file.filetype === 'video/mov' || file.filetype === 'video/quicktime' ? (
+                                                <video src={file.signedReadUrl} className="w-full object-cover rounded-xl" controls />
+                                            ) : ( 
+                                                <div className="relative">
+                                                    <Image
+                                                        src={file.signedReadUrl}
+                                                        alt={file.signedReadUrl}
+                                                        width={256}
+                                                        height={256}
+                                                        className="w-full object-cover rounded-xl"
+                                                        unoptimized
+                                                        onClick={(e) => addTag(e)}
+                                                    />
+                                                    {taggedPeople.map((tag, index) => (
+                                                        <div key={index} className="absolute flex flex-col items-center top-0 left-0 bg-opacity-50 rounded-xl" style={{ left: `calc(${tag.x * 100}% - 50px)`, top: `calc(${tag.y * 100}% - 9px)` }}>
+                                                            <div className="w-0 h-0 border-l-[8px] border-r-[8px] border-b-[12px] border-l-transparent border-r-transparent border-b-black/50"></div>
+                                                            <input 
+                                                                // ref={tags.length - 1 === index ? lastInputRef : undefined}
+                                                                className="text-white bg-black/50 rounded-xl py-1 px-4 w-[100px] text-center" 
+                                                                value={tag.username} 
+                                                                onChange={(e) => {
+                                                                    const newTags = [...taggedPeople];
+                                                                    newTags[index].username = e.target.value;
+                                                                    setTaggedPeople(newTags);
+                                                                }}
+                                                                onKeyDown={(e) => { if (e.key === 'Enter') { closeTagDialog(); setShowTagDialog(false); }}}
+                                                            />
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                            <p className="text-sm text-slate-500 mb-3 mt-6">Tap the image to tag people</p>
                         </div>
 
                         <DialogClose asChild>
-                            <Button className="text-xl font-semibold h-12 p-0 rounded-2xl hover:bg-blue-500">Done</Button>
+                            <Button className="text-xl font-semibold h-12 p-0 rounded-2xl hover:bg-blue-500" onClick={closeTagDialog}>Done</Button>
                         </DialogClose>
                     </DialogContent>
                     </Dialog>

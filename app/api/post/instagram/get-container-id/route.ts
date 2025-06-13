@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 
 export async function POST(req: NextRequest) {
-    const { caption, fileURL, fileType, isCarouselItem } = await req.json();
+    const { caption, fileURL, fileType, isCarouselItem, taggedPeople } = await req.json();
     const supabase = await createClient();
 
     const { data: { user } } = await supabase.auth.getUser();
@@ -73,13 +73,18 @@ export async function POST(req: NextRequest) {
                 method: 'POST',
                 body: JSON.stringify({
                     "image_url": fileURL,
-                    "caption": caption
+                    "caption": caption,
+                    "user_tags": taggedPeople.map((user: { username: string, x: number, y: number}) => ({ 'username': user.username, x: user.x, y: user.y}))
                 })
             });
         }
 
+        
         const response = await request.json();
+        console.log(response);
 
+        console.log(taggedPeople[0])
+        
         return NextResponse.json({ id: response.id }, { status: 200 });
     } catch (error) {
         console.error(error);
