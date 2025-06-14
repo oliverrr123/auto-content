@@ -35,7 +35,8 @@ export async function POST(req: NextRequest) {
                     method: 'POST',
                     body: JSON.stringify({
                         "video_url": fileURL,
-                        "is_carousel_item": true
+                        "is_carousel_item": true,
+                        "user_tags": taggedPeople.map((user: { username: string, x: number, y: number}) => ({ 'username': user.username }))
                     })
                 });
             } else {
@@ -47,7 +48,8 @@ export async function POST(req: NextRequest) {
                     method: 'POST',
                     body: JSON.stringify({
                         "image_url": fileURL,
-                        "is_carousel_item": true
+                        "is_carousel_item": true,
+                        "user_tags": taggedPeople.map((user: { username: string, x: number, y: number}) => ({ 'username': user.username, x: user.x, y: user.y}))
                     })
                 });
             }
@@ -62,6 +64,7 @@ export async function POST(req: NextRequest) {
                     "video_url": fileURL,
                     "caption": caption,
                     "media_type": "REELS",
+                    "user_tags": taggedPeople.map((user: { username: string, x: number, y: number}) => ({ 'username': user.username }))
                 })
             });
         } else {

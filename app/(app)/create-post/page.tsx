@@ -25,7 +25,7 @@ const StrictModeDroppable = ({ children, ...props }: DroppableProps) => {
 
 export default function CreatePost() {
     const { user, isLoading } = useAuth();
-    const [uploadedFiles, setUploadedFiles] = useState<{ signedReadUrl: string, filetype: string }[]>([]);
+    const [uploadedFiles, setUploadedFiles] = useState<{ signedReadUrl: string, filetype: string, taggedPeople: { x: number, y: number, username: string }[] }[]>([]);
     const [isUploading, setIsUploading] = useState(false);
     const [caption, setCaption] = useState('');
     const [isPublishing, setIsPublishing] = useState(false);
@@ -33,7 +33,6 @@ export default function CreatePost() {
     const [showErrorDialog, setShowErrorDialog] = useState(false);
     const [mediaData, setMediaData] = useState<{ media_url: string, caption: string, media_type: string, permalink: string } | null>(null);
     const [showTagDialog, setShowTagDialog] = useState(false);
-    const [taggedPeople, setTaggedPeople] = useState<{ x: number, y: number, username: string }[]>([]);
 
     const router = useRouter();
 
@@ -79,9 +78,10 @@ export default function CreatePost() {
                     await uploadToGoogleCloud(signedWriteUrls[i].signedWriteUrl, e.target.files[i])
                 }
 
-                setUploadedFiles(prev => [...prev, ...signedReadUrls.map((url: { signedReadUrl: string, filetype: string }) => ({
+                setUploadedFiles(prev => [...prev, ...signedReadUrls.map((url: { signedReadUrl: string, filetype: string, taggedPeople: { x: number, y: number, username: string }[] }) => ({
                     signedReadUrl: url.signedReadUrl,
-                    filetype: url.filetype
+                    filetype: url.filetype,
+                    taggedPeople: []
                 }))])
             } else {
                 console.error('Upload failed:', data.error);
@@ -141,7 +141,8 @@ export default function CreatePost() {
                         body: JSON.stringify({
                             caption,
                             fileURL: file.signedReadUrl,
-                            isCarouselItem: true
+                            isCarouselItem: true,
+                            taggedPeople: file.taggedPeople
                         })
                     })
                     const data = await response.json();
@@ -171,7 +172,7 @@ export default function CreatePost() {
                         fileURL: uploadedFiles[0].signedReadUrl,
                         fileType: uploadedFiles[0].filetype,
                         isCarouselItem: false,
-                        taggedPeople: taggedPeople
+                        taggedPeople: uploadedFiles[0].taggedPeople
                     })
                 })
 
@@ -189,7 +190,8 @@ export default function CreatePost() {
                                 'Content-Type': 'application/json',
                             },
                             body: JSON.stringify({
-                                containerId: containerIdData.id
+                                containerId: containerIdData.id,
+                                taggedPeople: file.taggedPeople
                             })
                         })
 
@@ -246,7 +248,6 @@ export default function CreatePost() {
 
                 setUploadedFiles([]);
                 setCaption('');
-                setTaggedPeople([]);
             } else {
                 setShowErrorDialog(true);
             }
@@ -261,7 +262,7 @@ export default function CreatePost() {
         }
     }
 
-    const addTag = (e: React.MouseEvent<HTMLImageElement>) => {
+    const addTag = (e: React.MouseEvent<HTMLImageElement | HTMLVideoElement>, index: number) => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -277,7 +278,7 @@ export default function CreatePost() {
         console.log('--------------------------------');
 
         
-        setTaggedPeople(prev => [...prev, { x: x / rect.width, y: y / rect.height, username: '' }]);
+        setUploadedFiles(prev => prev.map((file, i) => i === index ? { ...file, taggedPeople: [...file.taggedPeople, { x: x / rect.width, y: y / rect.height, username: '' }] } : file));
         
         // Focus will happen in the next render when the new input is created
         // setTimeout(() => {
@@ -286,7 +287,7 @@ export default function CreatePost() {
     }
 
     const closeTagDialog = () => {
-        setTaggedPeople(prev => prev.filter(tag => tag.username.trim() !== ''));
+        setUploadedFiles(prev => prev.map(file => ({ ...file, taggedPeople: file.taggedPeople.filter(tag => tag.username.trim() !== '') })));
     }
 
     const removeFile = async(fileToRemove: string) => {
@@ -469,10 +470,28 @@ export default function CreatePost() {
                         <div>
                             <div className="mt-4 flex gap-4 overflow-x-auto w-full no-scrollbar">
                                 {uploadedFiles.length > 0 && (
-                                    uploadedFiles.map((file) => (
+                                    uploadedFiles.map((file, index) => (
                                         <div key={file.signedReadUrl} className="relative flex-shrink-0 w-[80%] first:ml-[10%] h-auto">
                                             {file.filetype === 'video/mp4' || file.filetype === 'video/mov' || file.filetype === 'video/quicktime' ? (
-                                                <video src={file.signedReadUrl} className="w-full object-cover rounded-xl" controls />
+                                                <div className="relative">
+                                                    <video src={file.signedReadUrl} className="w-full object-cover rounded-xl" controls onClick={(e) => addTag(e, index)} />
+                                                    {file.taggedPeople.map((tag, index2) => (
+                                                        <div key={index} className="absolute flex flex-col items-center top-0 left-0 bg-opacity-50 rounded-xl" style={{ left: `calc(${tag.x * 100}% - 50px)`, top: `calc(${tag.y * 100}% - 9px)` }}>
+                                                            <div className="w-0 h-0 border-l-[8px] border-r-[8px] border-b-[12px] border-l-transparent border-r-transparent border-b-black/50"></div>
+                                                            <input 
+                                                                // ref={tags.length - 1 === index ? lastInputRef : undefined}
+                                                                className="text-white bg-black/50 rounded-xl py-1 px-4 w-[100px] text-center" 
+                                                                value={tag.username} 
+                                                                onChange={(e) => {
+                                                                    const newTags = [...file.taggedPeople];
+                                                                    newTags[index2].username = e.target.value;
+                                                                    setUploadedFiles(prev => prev.map(file => ({ ...file, taggedPeople: newTags })));
+                                                                }}
+                                                                onKeyDown={(e) => { if (e.key === 'Enter') { closeTagDialog(); setShowTagDialog(false); }}}
+                                                            />
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             ) : ( 
                                                 <div className="relative">
                                                     <Image
@@ -482,19 +501,19 @@ export default function CreatePost() {
                                                         height={256}
                                                         className="w-full object-cover rounded-xl"
                                                         unoptimized
-                                                        onClick={(e) => addTag(e)}
+                                                        onClick={(e) => addTag(e, index)}
                                                     />
-                                                    {taggedPeople.map((tag, index) => (
-                                                        <div key={index} className="absolute flex flex-col items-center top-0 left-0 bg-opacity-50 rounded-xl" style={{ left: `calc(${tag.x * 100}% - 50px)`, top: `calc(${tag.y * 100}% - 9px)` }}>
+                                                    {file.taggedPeople.map((person, index2) => (
+                                                        <div key={index2} className="absolute flex flex-col items-center top-0 left-0 bg-opacity-50 rounded-xl" style={{ left: `calc(${person.x * 100}% - 50px)`, top: `calc(${person.y * 100}% - 9px)` }}>
                                                             <div className="w-0 h-0 border-l-[8px] border-r-[8px] border-b-[12px] border-l-transparent border-r-transparent border-b-black/50"></div>
                                                             <input 
                                                                 // ref={tags.length - 1 === index ? lastInputRef : undefined}
                                                                 className="text-white bg-black/50 rounded-xl py-1 px-4 w-[100px] text-center" 
-                                                                value={tag.username} 
+                                                                value={person.username} 
                                                                 onChange={(e) => {
-                                                                    const newTags = [...taggedPeople];
-                                                                    newTags[index].username = e.target.value;
-                                                                    setTaggedPeople(newTags);
+                                                                    const newTags = [...file.taggedPeople];
+                                                                    newTags[index2].username = e.target.value;
+                                                                    setUploadedFiles(prev => prev.map((file, i) => i === index ? { ...file, taggedPeople: newTags } : file));
                                                                 }}
                                                                 onKeyDown={(e) => { if (e.key === 'Enter') { closeTagDialog(); setShowTagDialog(false); }}}
                                                             />
