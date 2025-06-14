@@ -33,6 +33,7 @@ export default function CreatePost() {
     const [showErrorDialog, setShowErrorDialog] = useState(false);
     const [mediaData, setMediaData] = useState<{ media_url: string, caption: string, media_type: string, permalink: string } | null>(null);
     const [showTagDialog, setShowTagDialog] = useState(false);
+    const [tagText, setTagText] = useState('');
 
     const router = useRouter();
 
@@ -457,9 +458,14 @@ export default function CreatePost() {
                 <div className="flex flex-col mt-4 rounded-xl overflow-hidden">
                     <Dialog open={showTagDialog} onOpenChange={setShowTagDialog}>
                     <DialogTrigger className="outline-none">
-                        <div className="flex gap-2 items-center p-4 bg-white w-full">
-                            <User className="w-6 h-6 stroke-[1.6]" />
-                            <p className="text-xl">Tag people</p>
+                        <div className="flex justify-between gap-2 items-center p-4 bg-white w-full">
+                            <div className="flex gap-2 items-center">
+                                <User className="w-6 h-6 stroke-[1.6]" />
+                                <p className="text-xl">Tag people</p>
+                            </div>
+                            <p className="max-w-[200px] truncate text-sm text-slate-500 overflow-hidden text-ellipsis">
+                                {[...new Set(uploadedFiles.flatMap(file => file.taggedPeople.map(person => person.username.length > 0 && ` @${person.username}`)))].join(', ')}
+                            </p>
                         </div>
                     </DialogTrigger>
                     <DialogContent>
@@ -515,6 +521,7 @@ export default function CreatePost() {
                                                                 onChange={(e) => {
                                                                     const newTags = [...file.taggedPeople];
                                                                     newTags[index2].username = e.target.value;
+                                                                    setTagText([...tagText.split(', '), newTags.map(person => `@${person.username}`)].join(', '));
                                                                     setUploadedFiles(prev => prev.map((file, i) => i === index ? { ...file, taggedPeople: newTags } : file));
                                                                 }}
                                                                 onKeyDown={(e) => { if (e.key === 'Enter') { closeTagDialog(); setShowTagDialog(false); }}}
@@ -542,6 +549,7 @@ export default function CreatePost() {
                                                                 onChange={(e) => {
                                                                     const newTags = [...file.taggedPeople];
                                                                     newTags[index2].username = e.target.value;
+                                                                    setTagText([...tagText.split(', '), newTags.map(person => `@${person.username}`)].join(', '));
                                                                     setUploadedFiles(prev => prev.map((file, i) => i === index ? { ...file, taggedPeople: newTags } : file));
                                                                 }}
                                                                 onKeyDown={(e) => { if (e.key === 'Enter') { closeTagDialog(); setShowTagDialog(false); }}}
@@ -563,15 +571,15 @@ export default function CreatePost() {
                     </DialogContent>
                     </Dialog>
                     <hr className="border-slate-200" />
-                    <div className="flex gap-2 items-center p-4 bg-white w-full">
+                    <button className="flex gap-2 items-center p-4 bg-white w-full disabled:text-slate-400 disabled:cursor-not-allowed" disabled>
                         <MapPin className="w-6 h-6 stroke-[1.6]" />
                         <p className="text-xl">Add location</p>
-                    </div>
+                    </button>
                     <hr className="border-slate-200" />
-                    <div className="flex gap-2 items-center p-4 bg-white w-full">
+                    <button className="flex gap-2 items-center p-4 bg-white w-full disabled:text-slate-400 disabled:cursor-not-allowed" disabled>
                         <Music4 className="w-6 h-6 stroke-[1.6]" />
                         <p className="text-xl">Add music</p>
-                    </div>
+                    </button>
                 </div>
                 <Dialog>
                 <DialogTrigger asChild>
