@@ -34,6 +34,7 @@ export default function CreatePost() {
     const [mediaData, setMediaData] = useState<{ media_url: string, caption: string, media_type: string, permalink: string } | null>(null);
     const [showTagDialog, setShowTagDialog] = useState(false);
     const [tagText, setTagText] = useState('');
+    const [publishState, setPublishState] = useState('Publish');
 
     const router = useRouter();
 
@@ -186,6 +187,7 @@ export default function CreatePost() {
 
     const handlePublish = async () => {
         setIsPublishing(true);
+        setPublishState('Publishing...');
         try {
             let containerIdData;
 
@@ -207,6 +209,8 @@ export default function CreatePost() {
                     const data = await response.json();
                     containerIds.push(data.id);
                 }
+
+                setPublishState('Creating carousel...');
 
                 const response = await fetch('/api/post/instagram/get-carousel-container-id', {
                     method: 'POST',
@@ -242,6 +246,8 @@ export default function CreatePost() {
                 if (file.filetype === 'video/mp4' || file.filetype === 'video/mov' || file.filetype === 'video/quicktime') {
                     let status = 'IN_PROGRESS';
 
+                    setPublishState('Processing video...');
+
                     while (status === 'IN_PROGRESS') {
                         const statusResponse = await fetch('/api/post/instagram/get-container-status', {
                             method: 'POST',
@@ -264,10 +270,13 @@ export default function CreatePost() {
                     if (status === 'ERROR') {
                         setShowErrorDialog(true);
                         setIsPublishing(false);
+                        setPublishState('Publish');
                         return;
                     }
                 }
             }
+
+            setPublishState('Posting...');
 
             const publishContainerResponse = await fetch('/api/post/instagram/publish-container', {
                 method: 'POST',
@@ -305,6 +314,7 @@ export default function CreatePost() {
                     });
                 }
 
+                setPublishState('Published');
                 setUploadedFiles([]);
                 setCaption('');
             } else {
@@ -312,11 +322,12 @@ export default function CreatePost() {
             }
 
             setIsPublishing(false);
-
+            setPublishState('Publish');
 
         } catch (error) {
             console.error('Error during publish:', error);
             setIsPublishing(false);
+            setPublishState('Publish');
             setShowErrorDialog(true);
         }
     }
@@ -607,7 +618,7 @@ export default function CreatePost() {
                 <Dialog>
                 <DialogTrigger asChild>
                     <Button className="rounded-2xl font-semibold text-xl p-6 mt-4 w-full hover:bg-blue-500" disabled={isUploading || uploadedFiles.length === 0 || isPublishing}>
-                        {isPublishing ? 'Publishing...' : 'Publish'}
+                        {publishState}
                     </Button>
                 </DialogTrigger>
                 <DialogContent>
@@ -638,7 +649,7 @@ export default function CreatePost() {
                     </DialogHeader>
                     {mediaData && (
                         <div className="flex flex-col items-center justify-center bg-white rounded-xl drop-shadow-sexy">
-                            <Image src={mediaData.media_url} alt={mediaData.caption} width={256} height={256} className="w-full rounded-t-xl" />
+                            <Image src={mediaData.media_url} alt={caption.length > 0 ? caption : 'Post'} width={256} height={256} className="w-full rounded-t-xl" />
                             <div className="p-4 border-t border-slate-200 w-full">
                                 <p className="text-sm" style={{ whiteSpace: 'pre-wrap' }}>{mediaData.caption}</p>
                                 <a href={mediaData.permalink} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-500">View on Instagram</a>
