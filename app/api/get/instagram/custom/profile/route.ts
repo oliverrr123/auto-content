@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
 		.single();
 
 	if (error) {
-		console.log(error);
+		console.error(error);
 		return NextResponse.json({ error: 'Instagram not connected' }, { status: 400 });
 	}
 

@@ -64,7 +64,6 @@ export default function CreatePost() {
         const newFiles: { signedReadUrl: string, filetype: string, taggedPeople: { x: number, y: number, username: string }[], isUploading?: boolean }[] = [];
 
         for (const file of e.target.files) {
-            console.log('file', file);
             if (file.type.startsWith('video/')) {
                 const duration: number = await new Promise((resolve) => {
                     const video = document.createElement('video');
@@ -122,12 +121,6 @@ export default function CreatePost() {
 
                 const offsetLength = uploadedFiles.length + (e.target.files?.length || 0);
 
-                console.log('offsetLength', offsetLength);
-
-                console.log('signedReadUrls', signedReadUrls);
-
-                console.log('uploadedFiles', uploadedFiles);
-
                 setUploadedFiles(prev => {
                     const updatedFiles = prev.map((file, i) => {
                         if (file.isUploading) {
@@ -142,7 +135,6 @@ export default function CreatePost() {
                     });
                     return updatedFiles;
                 });
-                console.log('updatedFiles', uploadedFiles);
             } else {
                 console.error('Upload failed:', data.error);
                 alert('Failed to upload files. Please try again.');
@@ -160,8 +152,6 @@ export default function CreatePost() {
             const xhr = new XMLHttpRequest();
             xhr.open('PUT', signedWriteUrl, true);
             xhr.setRequestHeader('Content-Type', file.type);
-
-            console.log(signedWriteUrl)
 
             // xhr.upload.onprogress = (event) => {
             //     if (event.lengthComputable) {
@@ -339,21 +329,8 @@ export default function CreatePost() {
         const rect = e.currentTarget.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
-
-        console.log('--------------------------------');
-        console.log(`Relative position: x=${x}px, y=${y}px`);
-        console.log(`Image dimensions: ${rect.width}px x ${rect.height}px`);
-        console.log(x / rect.width);
-        console.log(y / rect.height);
-        console.log('--------------------------------');
-
         
         setUploadedFiles(prev => prev.map((file, i) => i === index ? { ...file, taggedPeople: [...file.taggedPeople, { x: x / rect.width, y: y / rect.height, username: '' }] } : file));
-        
-        // Focus will happen in the next render when the new input is created
-        // setTimeout(() => {
-        //     lastInputRef.current?.focus();
-        // }, 0);
     }
 
     const closeTagDialog = () => {

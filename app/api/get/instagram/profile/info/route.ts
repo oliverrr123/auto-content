@@ -16,7 +16,7 @@ export async function GET() {
         .single();
 
     if (error) {
-        console.log(error);
+        console.error(error);
         return NextResponse.json({ error: "Instagram not connected" }, { status: 400 });
     }
 

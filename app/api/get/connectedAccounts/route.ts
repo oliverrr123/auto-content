@@ -15,7 +15,5 @@ export async function GET() {
         .eq('id', user.id)
         .single();
 
-    console.log({instagram});
-
     return NextResponse.json({instagram});
 }

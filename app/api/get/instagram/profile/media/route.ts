@@ -16,7 +16,7 @@ export async function GET() {
         .single();
 
     if (error) {
-        console.log(error);
+        console.error(error);
         return NextResponse.json({ error: "Instagram not connected" }, { status: 400 });
     }
 
@@ -37,10 +37,6 @@ export async function GET() {
             mediaArray.push({ media_url: mediaItemData.thumbnail_url, caption: mediaItemData.caption, media_type: mediaItemData.media_type, permalink: mediaItemData.permalink, timestamp: mediaItemData.timestamp, like_count: mediaItemData.like_count, comments_count: mediaItemData.comments_count })
         }
     }
-
-    console.log("--------------------------------");
-    console.log(data.instagram_id);
-    console.log("--------------------------------");
 
     return NextResponse.json({ mediaArray });
 }

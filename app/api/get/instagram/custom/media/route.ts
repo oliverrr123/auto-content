@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
 		.single();
 
 	if (error) {
-		console.log(error);
+		console.error(error);
 		return NextResponse.json({ error: 'Instagram not connected' }, { status: 400 });
 	}
 
@@ -34,10 +34,6 @@ export async function POST(req: NextRequest) {
 		const responseData = await response.json();
 		mediaArray.push(responseData);
 	}
-
-	console.log('--------------------------------');
-	console.log(mediaArray);
-	console.log('--------------------------------');
 
 	return NextResponse.json(mediaArray);
 }

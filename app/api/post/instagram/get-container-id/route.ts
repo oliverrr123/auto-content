@@ -82,11 +82,7 @@ export async function POST(req: NextRequest) {
             });
         }
 
-        
         const response = await request.json();
-        console.log(response);
-
-        console.log(taggedPeople[0])
         
         return NextResponse.json({ id: response.id }, { status: 200 });
     } catch (error) {

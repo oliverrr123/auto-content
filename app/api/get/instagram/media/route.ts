@@ -17,16 +17,12 @@ export async function POST(req: NextRequest) {
         .single();
 
     if (error) {
-        console.log(error);
+        console.error(error);
         return NextResponse.json({ error: "Instagram not connected" }, { status: 400 });
     }
 
     const response = await fetch(`https://graph.instagram.com/v23.0/${mediaId}?fields=caption,media_url,thumbnail_url,media_type,permalink&access_token=${data.access_token}`)
     const responseData = await response.json();
-
-    console.log("--------------------------------");
-    console.log(responseData);
-    console.log("--------------------------------");
 
     if (!responseData.thumbnail_url) {
         return NextResponse.json({ media_url: responseData.media_url, caption: responseData.caption, media_type: responseData.media_type, permalink: responseData.permalink });

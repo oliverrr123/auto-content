@@ -84,13 +84,6 @@ export async function GET(request: NextRequest) {
 
         // TODO: MAKE REFRESHING LOGIC BEFORE PRODUCTION!!!!!!!!!!
 
-        console.log('--------------------------------');
-        console.log(data);
-        console.log(accessToken);
-        console.log(tokenType);
-        console.log(expiresIn);
-        console.log('--------------------------------');
-
         return NextResponse.redirect(new URL('/context', request.url));
 
         
