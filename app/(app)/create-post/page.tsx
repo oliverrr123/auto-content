@@ -119,12 +119,20 @@ export default function CreatePost() {
                 //     isUploading: false
                 // }))])
 
+                const offsetLength = uploadedFiles.length + (e.target.files?.length || 0);
+
+                console.log('offsetLength', offsetLength);
+
+                console.log('signedReadUrls', signedReadUrls);
+
+                console.log('uploadedFiles', uploadedFiles);
+
                 setUploadedFiles(prev => {
                     const updatedFiles = prev.map((file, i) => {
                         if (file.isUploading) {
                             return {
-                                signedReadUrl: signedReadUrls[i].signedReadUrl,
-                                filetype: signedReadUrls[i].filetype,
+                                signedReadUrl: signedReadUrls[i-offsetLength+1].signedReadUrl,
+                                filetype: signedReadUrls[i-offsetLength+1].filetype,
                                 taggedPeople: [],
                                 isUploading: false
                             };
@@ -514,31 +522,6 @@ export default function CreatePost() {
                         <DialogTitle>Tag people</DialogTitle>
                         </DialogHeader>
 
-                        {/* <div className="flex flex-col gap-2">
-                            <div className="flex items-center gap-2 p-4 bg-white rounded-xl w-full">
-                                <User className="w-6 h-6 stroke-[1.6] text-slate-400" />
-                                <input type="url" className="w-full outline-none focus:outline-none" placeholder="username" value={tagValue} onChange={(e) => setTagValue(e.target.value)}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                        if (tagValue.length > 0) {
-                                            addTag();
-                                        } else {
-                                            setShowTagDialog(false);
-                                        }
-                                    }
-                                }} />
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                                {taggedPeople.map((person, index) => (
-                                    <div key={index} className="flex items-center gap-2 p-2 bg-white rounded-xl">
-                                        <User className="w-6 h-6 stroke-[1.6] text-slate-400" />
-                                        <p className="text-sm">{person}</p>
-                                        <X className="w-4 h-4" onClick={() => setTaggedPeople(prev => prev.filter(p => p !== person))} />
-                                    </div>
-                                ))}
-                            </div>
-                        </div> */}
-
                         <div>
                             <div className="mt-4 flex gap-4 overflow-x-auto w-full no-scrollbar">
                                 {uploadedFiles.length > 0 && (
@@ -556,7 +539,6 @@ export default function CreatePost() {
                                                         <div key={index} className="absolute flex flex-col items-center top-0 left-0 bg-opacity-50 rounded-xl" style={{ left: `calc(${tag.x * 100}% - 50px)`, top: `calc(${tag.y * 100}% - 9px)` }}>
                                                             <div className="w-0 h-0 border-l-[8px] border-r-[8px] border-b-[12px] border-l-transparent border-r-transparent border-b-black/50"></div>
                                                             <input 
-                                                                // ref={tags.length - 1 === index ? lastInputRef : undefined}
                                                                 className="text-white bg-black/50 rounded-xl py-1 px-4 w-[100px] text-center" 
                                                                 value={tag.username} 
                                                                 onChange={(e) => {
@@ -664,7 +646,7 @@ export default function CreatePost() {
                         </div>
                     )}
                     <DialogFooter>
-                        <DialogClose className="rounded-2xl font-semibold text-xl p-2 drop-shadow-sexy w-full bg-primary text-white hover:bg-blue-500" onClick={() => { router.push('/') }}>Done</DialogClose>
+                        <DialogClose className="rounded-2xl font-semibold text-xl p-2 drop-shadow-sexy w-full bg-primary text-white hover:bg-blue-500" onClick={() => { window.location.href = '/' }}>Done</DialogClose>
                     </DialogFooter>
                 </DialogContent>
                 </Dialog>
