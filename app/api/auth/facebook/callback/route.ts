@@ -42,9 +42,9 @@ export async function GET(request: NextRequest) {
             // TODO
         }
 
-        const accessToken = data.access_token;
-        const tokenType = data.token_type;
-        const expiresIn = data.expires_in;
+        // const accessToken = data.access_token;
+        // const tokenType = data.token_type;
+        // const expiresIn = data.expires_in;
 
         // const responseGetUserInfo = await fetch(`https://graph.instagram.com/v22.0/me?fields=username,name,profile_picture_url&access_token=${longLivedAccessToken}`)
 
