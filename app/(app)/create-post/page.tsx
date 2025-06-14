@@ -7,6 +7,11 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { DragDropContext, Droppable, Draggable, DropResult, DroppableProvided, DroppableProps } from 'react-beautiful-dnd';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Calendar } from "@/components/ui/calendar";
+import { Clock2Icon } from "lucide-react";
 
 const StrictModeDroppable = ({ children, ...props }: DroppableProps) => {
     const [enabled, setEnabled] = useState(false);
@@ -35,6 +40,8 @@ export default function CreatePost() {
     const [showTagDialog, setShowTagDialog] = useState(false);
     const [tagText, setTagText] = useState('');
     const [publishState, setPublishState] = useState('Publish');
+    const [date, setDate] = useState<Date | undefined>(undefined);
+    const [time, setTime] = useState<string>('');
 
     const router = useRouter();
 
@@ -43,6 +50,15 @@ export default function CreatePost() {
             router.push('/login');
         }
     }, [user, isLoading, router]);
+
+    useEffect(() => {
+        if (date && time) {
+            const [hours, minutes, seconds] = time.split(':').map(Number);
+            const dateTime = new Date(date);
+            dateTime.setHours(hours, minutes, seconds);
+            console.log(`${date.toLocaleDateString()} ${time}`);
+        }
+    }, [date, time]);
 
     if (!user) {
         return null;
@@ -616,6 +632,57 @@ export default function CreatePost() {
                 </DialogContent>
                 </Dialog>
 
+                <Dialog>
+                <DialogTrigger asChild>
+                    <Button className="rounded-2xl font-semibold text-xl p-6 mt-2 w-full bg-white text-slate-500" disabled={isUploading || uploadedFiles.length === 0 || isPublishing}>
+                        Schedule
+                    </Button>
+                </DialogTrigger>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle className="text-2xl">Schedule post</DialogTitle>
+                        <DialogDescription>
+                            Schedule a post to be published at a later date.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <Card className="w-fit pt-4 mx-auto">
+                    <CardContent className="px-4">
+                        <Calendar
+                        mode="single"
+                        selected={date}
+                        onSelect={setDate}
+                        className="bg-transparent p-0"
+                        style={{'--cell-size': '40px'} as React.CSSProperties}
+                        />
+                    </CardContent>
+                    <CardFooter className="flex flex-col gap-6 border-t px-4 !pt-4">
+                        <div className="flex w-full flex-col gap-3">
+                            <Label htmlFor="time-from">Time</Label>
+                            <div className="relative flex w-full items-center gap-2">
+                                <Clock2Icon className="text-muted-foreground pointer-events-none absolute left-2.5 size-4 select-none" />
+                                <Input
+                                    id="time-from"
+                                    type="time"
+                                    step="1"
+                                    defaultValue="10:30:00"
+                                    className="appearance-none pl-8 [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
+                                    onChange={(e) => setTime(e.target.value)}
+                                />
+                            </div>
+                        </div>
+                    </CardFooter>
+                    </Card>
+                    <DialogFooter className="w-full flex gap-3">
+                        <DialogClose className="rounded-2xl text-xl p-3 w-full text-slate-500 bg-white drop-shadow-sexy">
+                            Cancel
+                        </DialogClose>
+                        <DialogClose onClick={handlePublish} disabled={isUploading || uploadedFiles.length === 0 || isPublishing} className="rounded-2xl font-semibold text-xl p-3 w-full drop-shadow-sexy bg-primary text-white hover:bg-blue-500">
+                            {isPublishing ? 'Publishing...' : 'Publish'}
+                        </DialogClose>
+                    </DialogFooter>
+                </DialogContent>
+                </Dialog>
+
                 <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
                 <DialogContent className="bg-slate-100">
                     <DialogHeader>
@@ -639,6 +706,8 @@ export default function CreatePost() {
                 </DialogContent>
                 </Dialog>
 
+                
+
                 <Dialog open={showErrorDialog} onOpenChange={setShowErrorDialog}>
                     <DialogContent>
                         <DialogHeader>
@@ -656,3 +725,17 @@ export default function CreatePost() {
         )
     }
 }
+
+/*
+
+table: posts
+columns:
+- id
+- user_id (fk)
+- platform
+- parameters
+- scheduled_date
+- created_at
+- updated_at
+
+*/
