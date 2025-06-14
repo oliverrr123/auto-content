@@ -25,7 +25,7 @@ const StrictModeDroppable = ({ children, ...props }: DroppableProps) => {
 
 export default function CreatePost() {
     const { user, isLoading } = useAuth();
-    const [uploadedFiles, setUploadedFiles] = useState<{ signedReadUrl: string, filetype: string, taggedPeople: { x: number, y: number, username: string }[] }[]>([]);
+    const [uploadedFiles, setUploadedFiles] = useState<{ signedReadUrl: string, filetype: string, taggedPeople: { x: number, y: number, username: string }[], isUploading?: boolean }[]>([]);
     const [isUploading, setIsUploading] = useState(false);
     const [caption, setCaption] = useState('');
     const [isPublishing, setIsPublishing] = useState(false);
@@ -60,6 +60,8 @@ export default function CreatePost() {
 
         const formData = new FormData();
 
+        let newFiles = [];
+
         for (const file of e.target.files) {
             console.log('file', file);
             if (file.type.startsWith('video/')) {
@@ -81,8 +83,18 @@ export default function CreatePost() {
                     return;
                 }
             }
+
+            newFiles.push({
+                signedReadUrl: URL.createObjectURL(file),
+                filetype: file.type,
+                taggedPeople: [],
+                isUploading: true
+            });
+
             formData.append('file', JSON.stringify({ filename: file.name, filetype: file.type }));
         }
+
+        setUploadedFiles(prev => [...prev, ...newFiles]);
 
         try {
             const response = await fetch('/api/file-upload', {
@@ -100,11 +112,26 @@ export default function CreatePost() {
                     await uploadToGoogleCloud(signedWriteUrls[i].signedWriteUrl, e.target.files[i])
                 }
 
-                setUploadedFiles(prev => [...prev, ...signedReadUrls.map((url: { signedReadUrl: string, filetype: string, taggedPeople: { x: number, y: number, username: string }[] }) => ({
-                    signedReadUrl: url.signedReadUrl,
-                    filetype: url.filetype,
-                    taggedPeople: []
-                }))])
+                // setUploadedFiles(prev => [...prev, ...signedReadUrls.map((url: { signedReadUrl: string, filetype: string, taggedPeople: { x: number, y: number, username: string }[] }) => ({
+                //     signedReadUrl: url.signedReadUrl,
+                //     filetype: url.filetype,
+                //     taggedPeople: []
+                // }))])
+
+                setUploadedFiles(prev => {
+                    const updatedFiles = prev.map((file) => {
+                        if (file.isUploading) {
+                            return {
+                                signedReadUrl: file.signedReadUrl,
+                                filetype: file.filetype,
+                                taggedPeople: [],
+                                isUploading: false
+                            };
+                        }
+                        return file;
+                    });
+                    return updatedFiles;
+                });
             } else {
                 console.error('Upload failed:', data.error);
                 alert('Failed to upload files. Please try again.');
@@ -381,21 +408,35 @@ export default function CreatePost() {
                                                         }}
                                                     >
                                                         {file.filetype === 'video/mp4' || file.filetype === 'video/mov' || file.filetype === 'video/quicktime' ? (
-                                                            <video 
-                                                                src={file.signedReadUrl} 
-                                                                className="w-full object-cover rounded-xl" 
-                                                                poster={file.signedReadUrl}
-                                                                controls
-                                                            />
+                                                            <div className="relative">
+                                                                <video 
+                                                                    src={file.signedReadUrl} 
+                                                                    className="w-full object-cover rounded-xl" 
+                                                                    poster={file.signedReadUrl}
+                                                                    controls
+                                                                />
+                                                                {file.isUploading && (
+                                                                    <div className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center">
+                                                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                                                                    </div>
+                                                                )}
+                                                            </div>
                                                         ) : ( 
-                                                            <Image
-                                                                src={file.signedReadUrl}
-                                                                alt={file.signedReadUrl}
-                                                                width={256}
-                                                                height={256}
-                                                                className="w-full object-cover rounded-xl"
-                                                                unoptimized
-                                                            />
+                                                            <div className="relative">
+                                                                <Image
+                                                                    src={file.signedReadUrl}
+                                                                    alt={file.signedReadUrl}
+                                                                    width={256}
+                                                                    height={256}
+                                                                    className="w-full object-cover rounded-xl"
+                                                                    unoptimized
+                                                                />
+                                                                {file.isUploading && (
+                                                                    <div className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center">
+                                                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                                                                    </div>
+                                                                )}
+                                                            </div>
                                                         )}
                                                         <button onClick={() => removeFile(file.signedReadUrl)} className="absolute top-2 right-2 p-1 bg-black bg-opacity-50 rounded-full text-white hover:bg-opacity-70">
                                                             <X className="w-4 h-4" />
@@ -409,7 +450,7 @@ export default function CreatePost() {
                                 </div>
                             )}
                         </StrictModeDroppable>
-                        <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-gray-400 transition-colors cursor-pointer flex-shrink-0 w-64">
+                        <div className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:border-slate-400 transition-colors cursor-pointer flex-shrink-0 w-64">
                             <input 
                                 type="file" 
                                 className="hidden" 
@@ -417,10 +458,10 @@ export default function CreatePost() {
                                 id="file-upload"
                                 multiple
                                 onChange={handleFileUpload}
-                                disabled={isUploading || uploadedFiles.length >= 10}
+                                disabled={uploadedFiles.length >= 10}
                             />
                             <label htmlFor="file-upload" className="cursor-pointer flex items-center justify-center h-full">
-                                <div className="text-gray-500">
+                                <div className="text-slate-500">
                                     <svg 
                                         className="mx-auto h-12 w-12 mb-4" 
                                         stroke="currentColor" 
@@ -435,10 +476,8 @@ export default function CreatePost() {
                                             d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" 
                                         />
                                     </svg>
-                                    <p className="text-sm">
-                                        {isUploading ? 'Uploading...' : 'Click to upload or drag and drop'}
-                                    </p>
-                                    <p className="text-xs mt-1">PNG, JPG, GIF up to 10MB</p>
+                                    <p className="text-sm">Click to upload or drag and drop</p>
+                                    <p className="text-xs mt-1 text-slate-400">PNG, JPG, GIF, MP4, MOV</p>
                                 </div>
                             </label>
                         </div>
