@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
                     "video_url": fileURL,
                     "caption": caption,
                     "media_type": "REELS",
-                    "user_tags": taggedPeople.map((user: { username: string, x: number, y: number}) => ({ 'username': user.username }))
+                    // "user_tags": taggedPeople.map((user: { username: string, x: number, y: number}) => ({ 'username': user.username }))
                 })
             });
         } else {

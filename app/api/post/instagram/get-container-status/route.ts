@@ -18,11 +18,15 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-        const request = await fetch(`https://graph.instagram.com/v23.0/${containerId}?fields=status_code&access_token=${data.access_token}`);
+        const request = await fetch(`https://graph.instagram.com/v23.0/${containerId}?fields=status_code,status&access_token=${data.access_token}`);
 
         const response = await request.json();
 
-        return NextResponse.json({ status_code: response.status_code }, { status: 200 });
+        console.log(response.status_code);
+        console.log(response.status);
+        console.log(response);
+
+        return NextResponse.json({ status_code: response.status_code, status: response.status }, { status: 200 });
     } catch (error) {
         console.error(error);
         return NextResponse.json({ error: 'Failed to get container id' }, { status: 400 });

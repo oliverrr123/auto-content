@@ -56,11 +56,32 @@ export default function CreatePost() {
         }
 
         setIsUploading(true);
+
         const formData = new FormData();
 
-        Array.from(e.target.files).forEach((file) => {
+        for (const file of e.target.files) {
+            console.log('file', file);
+            if (file.type.startsWith('video/')) {
+                const duration: number = await new Promise((resolve) => {
+                    const video = document.createElement('video');
+                    video.preload = 'metadata';
+                    video.onloadedmetadata = () => {
+                        resolve(video.duration);
+                    }
+                    video.src = URL.createObjectURL(file);
+                })
+                if (duration < 3) {
+                    alert('Video duration must be at least 3 seconds');
+                    setIsUploading(false);
+                    return;
+                } else if (duration > 180) {
+                    alert('Video duration must be less than 3 minutes');
+                    setIsUploading(false);
+                    return;
+                }
+            }
             formData.append('file', JSON.stringify({ filename: file.name, filetype: file.type }));
-        })
+        }
 
         try {
             const response = await fetch('/api/file-upload', {
@@ -291,6 +312,7 @@ export default function CreatePost() {
     }
 
     const removeFile = async(fileToRemove: string) => {
+        setUploadedFiles(prev => prev.filter(file => file.signedReadUrl !== fileToRemove));
         try {
             const response = await fetch('/api/file-delete', {
                 method: 'POST',
@@ -304,9 +326,7 @@ export default function CreatePost() {
 
             const data = await response.json();
             
-            if (response.ok && data.success) {
-                setUploadedFiles(prev => prev.filter(file => file.signedReadUrl !== fileToRemove));
-            } else {
+            if (!response.ok || !data.success) {
                 const errorMessage = data.error || 'Unknown error occurred';
                 console.error('Failed to delete file:', errorMessage);
                 alert(`Failed to delete file: ${errorMessage}`);
@@ -360,7 +380,12 @@ export default function CreatePost() {
                                                         }}
                                                     >
                                                         {file.filetype === 'video/mp4' || file.filetype === 'video/mov' || file.filetype === 'video/quicktime' ? (
-                                                            <video src={file.signedReadUrl} className="w-full object-cover rounded-xl" controls />
+                                                            <video 
+                                                                src={file.signedReadUrl} 
+                                                                className="w-full object-cover rounded-xl" 
+                                                                poster={file.signedReadUrl}
+                                                                controls
+                                                            />
                                                         ) : ( 
                                                             <Image
                                                                 src={file.signedReadUrl}
@@ -474,7 +499,12 @@ export default function CreatePost() {
                                         <div key={file.signedReadUrl} className="relative flex-shrink-0 w-[80%] first:ml-[10%] h-auto">
                                             {file.filetype === 'video/mp4' || file.filetype === 'video/mov' || file.filetype === 'video/quicktime' ? (
                                                 <div className="relative">
-                                                    <video src={file.signedReadUrl} className="w-full object-cover rounded-xl" controls onClick={(e) => addTag(e, index)} />
+                                                    <video 
+                                                        src={file.signedReadUrl} 
+                                                        className="w-full object-cover rounded-xl" 
+                                                        onClick={(e) => addTag(e, index)}
+                                                        poster={file.signedReadUrl}
+                                                    />
                                                     {file.taggedPeople.map((tag, index2) => (
                                                         <div key={index} className="absolute flex flex-col items-center top-0 left-0 bg-opacity-50 rounded-xl" style={{ left: `calc(${tag.x * 100}% - 50px)`, top: `calc(${tag.y * 100}% - 9px)` }}>
                                                             <div className="w-0 h-0 border-l-[8px] border-r-[8px] border-b-[12px] border-l-transparent border-r-transparent border-b-black/50"></div>
@@ -485,7 +515,7 @@ export default function CreatePost() {
                                                                 onChange={(e) => {
                                                                     const newTags = [...file.taggedPeople];
                                                                     newTags[index2].username = e.target.value;
-                                                                    setUploadedFiles(prev => prev.map(file => ({ ...file, taggedPeople: newTags })));
+                                                                    setUploadedFiles(prev => prev.map((file, i) => i === index ? { ...file, taggedPeople: newTags } : file));
                                                                 }}
                                                                 onKeyDown={(e) => { if (e.key === 'Enter') { closeTagDialog(); setShowTagDialog(false); }}}
                                                             />
@@ -507,7 +537,6 @@ export default function CreatePost() {
                                                         <div key={index2} className="absolute flex flex-col items-center top-0 left-0 bg-opacity-50 rounded-xl" style={{ left: `calc(${person.x * 100}% - 50px)`, top: `calc(${person.y * 100}% - 9px)` }}>
                                                             <div className="w-0 h-0 border-l-[8px] border-r-[8px] border-b-[12px] border-l-transparent border-r-transparent border-b-black/50"></div>
                                                             <input 
-                                                                // ref={tags.length - 1 === index ? lastInputRef : undefined}
                                                                 className="text-white bg-black/50 rounded-xl py-1 px-4 w-[100px] text-center" 
                                                                 value={person.username} 
                                                                 onChange={(e) => {
