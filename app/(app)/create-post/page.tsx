@@ -60,7 +60,7 @@ export default function CreatePost() {
 
         const formData = new FormData();
 
-        let newFiles = [];
+        const newFiles: { signedReadUrl: string, filetype: string, taggedPeople: { x: number, y: number, username: string }[], isUploading?: boolean }[] = [];
 
         for (const file of e.target.files) {
             console.log('file', file);
