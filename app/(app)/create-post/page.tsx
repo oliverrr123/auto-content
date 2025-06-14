@@ -115,15 +115,16 @@ export default function CreatePost() {
                 // setUploadedFiles(prev => [...prev, ...signedReadUrls.map((url: { signedReadUrl: string, filetype: string, taggedPeople: { x: number, y: number, username: string }[] }) => ({
                 //     signedReadUrl: url.signedReadUrl,
                 //     filetype: url.filetype,
-                //     taggedPeople: []
+                //     taggedPeople: [],
+                //     isUploading: false
                 // }))])
 
                 setUploadedFiles(prev => {
-                    const updatedFiles = prev.map((file) => {
+                    const updatedFiles = prev.map((file, i) => {
                         if (file.isUploading) {
                             return {
-                                signedReadUrl: file.signedReadUrl,
-                                filetype: file.filetype,
+                                signedReadUrl: signedReadUrls[i].signedReadUrl,
+                                filetype: signedReadUrls[i].filetype,
                                 taggedPeople: [],
                                 isUploading: false
                             };
@@ -132,6 +133,7 @@ export default function CreatePost() {
                     });
                     return updatedFiles;
                 });
+                console.log('updatedFiles', uploadedFiles);
             } else {
                 console.error('Upload failed:', data.error);
                 alert('Failed to upload files. Please try again.');
@@ -458,7 +460,7 @@ export default function CreatePost() {
                                 id="file-upload"
                                 multiple
                                 onChange={handleFileUpload}
-                                disabled={uploadedFiles.length >= 10}
+                                disabled={isUploading || uploadedFiles.length >= 10}
                             />
                             <label htmlFor="file-upload" className="cursor-pointer flex items-center justify-center h-full">
                                 <div className="text-slate-500">
@@ -476,7 +478,7 @@ export default function CreatePost() {
                                             d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" 
                                         />
                                     </svg>
-                                    <p className="text-sm">Click to upload or drag and drop</p>
+                                    <p className="text-sm">{isUploading ? 'Uploading...' : 'Click to upload or drag and drop'}</p>
                                     <p className="text-xs mt-1 text-slate-400">PNG, JPG, GIF, MP4, MOV</p>
                                 </div>
                             </label>
