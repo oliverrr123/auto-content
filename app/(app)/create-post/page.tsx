@@ -76,6 +76,7 @@ export default function CreatePost() {
         setIsUploading(true);
 
         const formData = new FormData();
+        const newFilesStartIndex = uploadedFiles.length;
 
         const newFiles: { signedReadUrl: string, filetype: string, taggedPeople: { x: number, y: number, username: string }[], isUploading?: boolean }[] = [];
 
@@ -124,7 +125,7 @@ export default function CreatePost() {
                 const signedWriteUrls = data.signedWriteUrls;
                 const signedReadUrls = data.signedReadUrls;
 
-                for (let i=0; i < e.target.files.length; i++) {
+                for (let i = 0; i < e.target.files.length; i++) {
                     await uploadToGoogleCloud(signedWriteUrls[i].signedWriteUrl, e.target.files[i])
                 }
 
@@ -135,29 +136,31 @@ export default function CreatePost() {
                 //     isUploading: false
                 // }))])
 
-                const offsetLength = uploadedFiles.length + (e.target.files?.length || 0);
+                // const offsetLength = uploadedFiles.length + (e.target.files?.length || 0);
 
                 setUploadedFiles(prev => {
-                    const updatedFiles = prev.map((file, i) => {
+                    return prev.map((file, index) => {
                         if (file.isUploading) {
+                            const signedUrlIndex = index - newFilesStartIndex;
                             return {
-                                signedReadUrl: signedReadUrls[i-offsetLength+1].signedReadUrl,
-                                filetype: signedReadUrls[i-offsetLength+1].filetype,
+                                signedReadUrl: signedReadUrls[signedUrlIndex].signedReadUrl,
+                                filetype: signedReadUrls[signedUrlIndex].filetype,
                                 taggedPeople: [],
                                 isUploading: false
                             };
                         }
                         return file;
                     });
-                    return updatedFiles;
                 });
             } else {
                 console.error('Upload failed:', data.error);
                 alert('Failed to upload files. Please try again.');
+                setUploadedFiles(prev => prev.filter(file => !file.isUploading));
             }
         } catch (error) {
             console.error('Upload error:', error);
             alert('Failed to upload files. Please try again.');
+            setUploadedFiles(prev => prev.filter(file => !file.isUploading));
         } finally {
             setIsUploading(false);
         }
@@ -376,6 +379,32 @@ export default function CreatePost() {
         } catch (error) {
             console.error('Network error while deleting file:', error);
             alert('Network error while trying to delete file. Please try again.');
+        }
+    }
+
+    const handleSchedule = async () => {
+        try {
+            const response = await fetch('/api/post/instagram/schedule', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    uploadedFiles: uploadedFiles,
+                    caption: caption,
+                    scheduledDate: date,
+                    scheduledTime: time
+                })
+            })
+
+            const data = await response.json();
+
+            if (data.error) {
+                setShowErrorDialog(true);
+            }
+        } catch (error) {
+            console.error('Error scheduling post:', error);
+            setShowErrorDialog(true);
         }
     }
 
@@ -664,7 +693,7 @@ export default function CreatePost() {
                                     id="time-from"
                                     type="time"
                                     step="1"
-                                    defaultValue="10:30:00"
+                                    defaultValue={time || '10:30:00'}
                                     className="appearance-none pl-8 [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
                                     onChange={(e) => setTime(e.target.value)}
                                 />
@@ -676,8 +705,8 @@ export default function CreatePost() {
                         <DialogClose className="rounded-2xl text-xl p-3 w-full text-slate-500 bg-white drop-shadow-sexy">
                             Cancel
                         </DialogClose>
-                        <DialogClose onClick={handlePublish} disabled={isUploading || uploadedFiles.length === 0 || isPublishing} className="rounded-2xl font-semibold text-xl p-3 w-full drop-shadow-sexy bg-primary text-white hover:bg-blue-500">
-                            {isPublishing ? 'Publishing...' : 'Publish'}
+                        <DialogClose onClick={handleSchedule} disabled={isUploading || uploadedFiles.length === 0 || isPublishing} className="rounded-2xl font-semibold text-xl p-3 w-full drop-shadow-sexy bg-primary text-white hover:bg-blue-500">
+                            Schedule
                         </DialogClose>
                     </DialogFooter>
                 </DialogContent>
