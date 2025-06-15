@@ -1,6 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { MapPin, Music4, User, X } from "lucide-react";
+import { Clock, MapPin, Music4, User, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
@@ -11,7 +11,6 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
-import { Clock2Icon } from "lucide-react";
 
 const StrictModeDroppable = ({ children, ...props }: DroppableProps) => {
     const [enabled, setEnabled] = useState(false);
@@ -40,8 +39,9 @@ export default function CreatePost() {
     const [showTagDialog, setShowTagDialog] = useState(false);
     const [tagText, setTagText] = useState('');
     const [publishState, setPublishState] = useState('Publish');
-    const [date, setDate] = useState<Date | undefined>(undefined);
-    const [time, setTime] = useState<string>('');
+    const [date, setDate] = useState<Date>(new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() + 1));
+    const [time, setTime] = useState<string>('10:00');
+    const [invalidTime, setInvalidTime] = useState(false);
 
     const router = useRouter();
 
@@ -52,13 +52,21 @@ export default function CreatePost() {
     }, [user, isLoading, router]);
 
     useEffect(() => {
-        if (date && time) {
-            const [hours, minutes, seconds] = time.split(':').map(Number);
-            const dateTime = new Date(date);
-            dateTime.setHours(hours, minutes, seconds);
-            console.log(`${date.toLocaleDateString()} ${time}`);
+        if (date.getDate() === new Date().getDate()) {
+            const [hours, minutes] = time.split(':').map(Number);
+            const now = new Date();
+            const currentHours = now.getHours();
+            const currentMinutes = now.getMinutes();
+            
+            setInvalidTime(hours < currentHours || (hours === currentHours && minutes < currentMinutes));
+
+            console.log(hours, currentHours, minutes, currentMinutes);
+            console.log(hours < currentHours || (hours === currentHours && minutes < currentMinutes));
+            console.log(invalidTime);
+        } else {
+            setInvalidTime(false);
         }
-    }, [date, time]);
+    }, [time, date]);
 
     if (!user) {
         return null;
@@ -384,6 +392,16 @@ export default function CreatePost() {
 
     const handleSchedule = async () => {
         try {
+            const [hours, minutes] = time.split(':').map(Number);
+            const scheduledDateTime = new Date(date);
+            scheduledDateTime.setHours(hours, minutes);
+
+            // Check if trying to schedule in the past
+            if (scheduledDateTime <= new Date()) {
+                setShowErrorDialog(true);
+                return;
+            }
+
             const response = await fetch('/api/post/instagram/schedule', {
                 method: 'POST',
                 headers: {
@@ -392,8 +410,7 @@ export default function CreatePost() {
                 body: JSON.stringify({
                     uploadedFiles: uploadedFiles,
                     caption: caption,
-                    scheduledDate: date,
-                    scheduledTime: time
+                    scheduledDate: scheduledDateTime
                 })
             })
 
@@ -677,27 +694,35 @@ export default function CreatePost() {
                     <Card className="w-fit pt-4 mx-auto">
                     <CardContent className="px-4">
                         <Calendar
-                        mode="single"
-                        selected={date}
-                        onSelect={setDate}
-                        className="bg-transparent p-0"
-                        style={{'--cell-size': '40px'} as React.CSSProperties}
+                            mode="single"
+                            selected={date}
+                            onSelect={(newDate) => newDate && setDate(newDate)}
+                            className="bg-transparent p-0"
+                            style={{'--cell-size': '40px'} as React.CSSProperties}
+                            disabled={(date) => date < new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()) || date > new Date(new Date().getFullYear() + 1, new Date().getMonth(), new Date().getDate())}
+                            required
                         />
                     </CardContent>
                     <CardFooter className="flex flex-col gap-6 border-t px-4 !pt-4">
                         <div className="flex w-full flex-col gap-3">
                             <Label htmlFor="time-from">Time</Label>
                             <div className="relative flex w-full items-center gap-2">
-                                <Clock2Icon className="text-muted-foreground pointer-events-none absolute left-2.5 size-4 select-none" />
+                                <Clock className="text-muted-foreground pointer-events-none absolute left-2.5 size-4 select-none" />
                                 <Input
                                     id="time-from"
                                     type="time"
-                                    step="1"
-                                    defaultValue={time || '10:30:00'}
-                                    className="appearance-none pl-8 [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
+                                    step="60"
+                                    value={time}
+                                    className={`appearance-none pl-8 [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none ${invalidTime ? 'border-red-500' : ''}`}
                                     onChange={(e) => setTime(e.target.value)}
+                                    onBlur={() => console.log(time)}
                                 />
                             </div>
+                            {invalidTime && (
+                                <p className="text-sm text-red-500">
+                                    This time is in the past
+                                </p>
+                            )}
                         </div>
                     </CardFooter>
                     </Card>
@@ -705,7 +730,7 @@ export default function CreatePost() {
                         <DialogClose className="rounded-2xl text-xl p-3 w-full text-slate-500 bg-white drop-shadow-sexy">
                             Cancel
                         </DialogClose>
-                        <DialogClose onClick={handleSchedule} disabled={isUploading || uploadedFiles.length === 0 || isPublishing} className="rounded-2xl font-semibold text-xl p-3 w-full drop-shadow-sexy bg-primary text-white hover:bg-blue-500">
+                        <DialogClose onClick={handleSchedule} disabled={isUploading || uploadedFiles.length === 0 || isPublishing || invalidTime} className="rounded-2xl font-semibold text-xl p-3 w-full drop-shadow-sexy bg-primary disabled:opacity-50 disabled:cursor-not-allowed text-white hover:bg-blue-500">
                             Schedule
                         </DialogClose>
                     </DialogFooter>
