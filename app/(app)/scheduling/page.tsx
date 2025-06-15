@@ -67,7 +67,7 @@ export default function Scheduling() {
 
                 <div className="grid grid-rows-7 grid-cols-[auto_1fr] divide-x divide-y divide-dashed divide-slate-200 -m-[1px]">
                     {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => (
-                        <div key={index} className={`p-2 row-start-${index + 1} flex items-center text-slate-500`}>
+                        <div key={index} className={`p-2 col-start-1 col-end-2 flex items-center text-slate-500`} style={{gridRow: `${index + 1} / ${index + 2}`}}>
                             <p>{day}</p>
                         </div>
                     ))}
@@ -80,7 +80,7 @@ export default function Scheduling() {
                         [{ title: 'Social media tips', time: '10:00' }],
                         [{ title: 'Social media tips', time: '10:00' }],
                     ].map((day, index) => (
-                        <div key={index} className={`col-start-2 row-start-${index + 1} p-1 overflow-x-auto no-scrollbar`}>
+                        <div key={index} className={`col-start-2 col-end-3 p-1 overflow-x-auto no-scrollbar`} style={{gridRow: `${index + 1} / ${index + 2}`}}>
                             <div className="flex gap-2">
                                 {day.map((post, index2) => (
                                     <div key={index2} className='px-3 py-2 bg-primary text-white rounded-xl whitespace-nowrap'>
