@@ -44,7 +44,6 @@ export default function Scheduling() {
                 .then(res => res.json())
                 .then(data => {
                     setPosts(data.posts);
-                    console.log(data.posts);
                 })
                 .catch(err => {
                     console.error(err);
@@ -63,8 +62,6 @@ export default function Scheduling() {
             day.setDate(monday.getDate() + i);
             return day;
         });
-
-        console.log(week);
 
         const tempCurrentPosts: Post[][] = [];
         for (const day of week) {
@@ -85,9 +82,6 @@ export default function Scheduling() {
 
         setCurrentPosts(tempCurrentPosts);
 
-        // for (const post of tempCurrentPosts) {
-        //     console.log(post);
-        // }
     }, [posts, currentWeekDay]);
 
     if (!user) {
@@ -97,10 +91,33 @@ export default function Scheduling() {
     if (currentPosts.length >= 0) {  
         return (
             <>
-                <div className='w-full bg-white rounded-xl overflow-hidden'>
+                <div className='w-full bg-white rounded-xl overflow-hidden drop-shadow-sexy'>
                     <div className='flex items-center justify-between py-2 px-4 pt-3 border-b border-slate-200'>
                         <Button size='icon' variant='ghost' onClick={() => setCurrentWeekDay(new Date(currentWeekDay.setDate(currentWeekDay.getDate() - 7)))}><ChevronLeftIcon /></Button>
-                        <p className='font-medium'>This week</p>
+                        <p className='font-medium'>
+                            {currentWeekDay.toDateString() === new Date().toDateString() ? (
+                                'This week'
+                            ) : currentWeekDay.toDateString() === new Date(new Date().setDate(new Date().getDate() - 7)).toDateString() ? (
+                                'Last week'
+                            ) : currentWeekDay.toDateString() === new Date(new Date().setDate(new Date().getDate() + 7)).toDateString() ? (
+                                'Next week'
+                            ) : (
+                                (() => {
+                                    const monday = new Date(currentWeekDay);
+                                    const currentDay = currentWeekDay.getDay() || 7;
+                                    monday.setDate(currentWeekDay.getDate() - currentDay + 1);
+                                    
+                                    const sunday = new Date(monday);
+                                    sunday.setDate(monday.getDate() + 6);
+
+                                    const formatDate = (date: Date) => {
+                                        return `${date.getDate()}.${date.getMonth() + 1}`;
+                                    };
+
+                                    return `${formatDate(monday)} - ${formatDate(sunday)}`;
+                                })()
+                            )}
+                        </p>
                         <Button size='icon' variant='ghost' onClick={() => setCurrentWeekDay(new Date(currentWeekDay.setDate(currentWeekDay.getDate() + 7)))}><ChevronRightIcon /></Button>
                     </div>
     
@@ -108,8 +125,8 @@ export default function Scheduling() {
                         {['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map((day, index) => (
                             <div key={index} className={
                                 currentWeekDay.toDateString() === new Date().toDateString() && index === ((new Date().getDay() || 7) - 1) ?
-                                'p-4 col-start-1 col-end-2 flex items-center justify-center text-slate-500 bg-slate-50' :
-                                'p-4 col-start-1 col-end-2 flex items-center justify-center text-slate-500'} style={{gridRow: `${index + 1} / ${index + 2}`}}>
+                                'p-4 py-6 col-start-1 col-end-2 flex items-center justify-center text-slate-500 bg-slate-50' :
+                                'p-4 py-6 col-start-1 col-end-2 flex items-center justify-center text-slate-500'} style={{gridRow: `${index + 1} / ${index + 2}`}}>
                                 <p>
                                     {currentWeekDay.toDateString() === new Date().toDateString() && index === ((new Date().getDay() || 7) - 1) ? (
                                         <span className='text-primary font-bold'>{day}</span>
