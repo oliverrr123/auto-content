@@ -38,7 +38,7 @@ async function run() {
     const { data: instagramData, error: instagramError } = await supabase
         .from('instagram')
         .select('access_token, instagram_id')
-        .eq('user_id', userId)
+        .eq('id', userId)
         .single();
 
     if (instagramError) {
