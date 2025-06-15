@@ -58,8 +58,8 @@ async function run() {
         process.exit(1);
     }
 
-    if (scheduleParams.status !== 'scheduled' || scheduleParams.date < new Date()) {
-        console.error('Post is not scheduled or scheduled for a date in the past');
+    if (scheduleParams.status !== 'scheduled' || scheduleParams.date !== new Date().toISOString().split('T')[0]) {
+        console.error('Post is not scheduled or scheduled for a different day');
         process.exit(1);
     }
 
