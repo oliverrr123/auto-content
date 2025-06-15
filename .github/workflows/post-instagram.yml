@@ -1,0 +1,29 @@
+name: Post to Instagram
+
+on:
+  workflow_dispatch:
+    inputs:
+      post_id:
+        description: 'The ID of the post to post to Instagram'
+        required: true
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: npm install @supabase/supabase-js
+
+      - name: Post
+        run: node scripts/post.js
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          POST_ID: ${{ inputs.post_id }}
+

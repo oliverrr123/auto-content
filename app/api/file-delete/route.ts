@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Storage } from '@google-cloud/storage';
+import { createClient } from '@/utils/supabase/server';
 
 const storage = new Storage({
     projectId: process.env.PROJECT_ID,
@@ -13,6 +14,14 @@ const bucket = storage.bucket(process.env.BUCKET_NAME || "");
 
 export async function POST(req: Request) {
     try {
+        // Check authentication
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+            return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+        }
+
         const { fileUrl } = await req.json();
 
         let fileName;

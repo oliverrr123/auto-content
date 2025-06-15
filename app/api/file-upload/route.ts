@@ -1,9 +1,18 @@
 import { NextResponse } from 'next/server';
 import { Storage } from '@google-cloud/storage';
 import crypto from 'crypto';
+import { createClient } from '@/utils/supabase/server';
 
 export async function POST(req: Request) {
     try {
+        // Check authentication
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+            return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+        }
+
         const formData = await req.formData();
         const fileData = formData.getAll('file');
         const files = fileData.map(data => JSON.parse(data.toString()) as { filename: string, filetype: string });
