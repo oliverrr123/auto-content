@@ -3,7 +3,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, ChevronLeftIcon, ChevronRightIcon, Clock } from "lucide-react";
+import { CheckCircle, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 
 interface Post {
     id: string;
