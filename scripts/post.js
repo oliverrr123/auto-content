@@ -15,18 +15,24 @@ const bucket = storage.bucket(process.env.BUCKET_NAME || "");
 
 async function run() {
     const postId = process.env.POST_ID;
+    console.log('Fetching post with ID:', postId);
 
-    const { data: { post, error } } = await supabase.from('posts').select('*').eq('id', postId).single();
+    const { data, error } = await supabase.from('posts').select('*').eq('id', postId).single();
 
-    if (error || !post) {
+    if (error) {
         console.error('Error fetching post:', error);
         process.exit(1);
     }
 
-    const userId = post.user_id;
-    const caption = post.caption;
-    const uploadedFiles = post.params;
-    const scheduleParams = post.schedule_params;
+    if (!data) {
+        console.error('No post found with ID:', postId);
+        process.exit(1);
+    }
+
+    const userId = data.user_id;
+    const caption = data.caption;
+    const uploadedFiles = data.params;
+    const scheduleParams = data.schedule_params;
 
     const { data: { instagram_access_token, instagram_id, error: instagramError } } = await supabase.from('instagram').select('instagram_access_token, instagram_id').eq('user_id', userId).single();
     if (instagramError || !instagram_access_token) {
