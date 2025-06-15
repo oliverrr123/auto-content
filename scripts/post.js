@@ -158,6 +158,16 @@ async function run() {
             }
 
             if (!response.ok) {
+                console.log(await response.json());
+                console.log(response);
+                console.log(uploadedFiles[0]);
+                console.log(uploadedFiles[0].signedReadUrl);
+                console.log(caption);
+                console.log(uploadedFiles[0].taggedPeople);
+                console.log(uploadedFiles[0].taggedPeople.map((user) => ({ 'username': user.username, x: user.x, y: user.y})));
+                console.log(uploadedFiles[0].taggedPeople.map((user) => ({ 'username': user.username })));
+                console.log(uploadedFiles[0].taggedPeople.map((user) => ({ 'username': user.username, x: user.x, y: user.y})));
+                console.log(uploadedFiles[0].taggedPeople.map((user) => ({ 'username': user.username, x: user.x, y: user.y})));
                 console.error(`Instagram API error 3: ${response.status} ${response.statusText}`);
                 process.exit(1);
             }
