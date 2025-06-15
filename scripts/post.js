@@ -37,7 +37,7 @@ async function run() {
     console.log('Fetching Instagram credentials for user:', userId);
     const { data: instagramData, error: instagramError } = await supabase
         .from('instagram')
-        .select('instagram_access_token, instagram_id')
+        .select('access_token, instagram_id')
         .eq('user_id', userId)
         .single();
 
@@ -51,9 +51,9 @@ async function run() {
         process.exit(1);
     }
 
-    const { instagram_access_token, instagram_id } = instagramData;
+    const { access_token, instagram_id } = instagramData;
 
-    if (!instagram_access_token || !instagram_id) {
+    if (!access_token || !instagram_id) {
         console.error('Missing required Instagram credentials. Access token or ID not found.');
         process.exit(1);
     }
@@ -73,7 +73,7 @@ async function run() {
                     response = await fetch(`https://graph.instagram.com/v23.0/${instagram_id}/media`, {
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${instagram_access_token}`
+                            'Authorization': `Bearer ${access_token}`
                         },
                         method: 'POST',
                         body: JSON.stringify({
@@ -86,7 +86,7 @@ async function run() {
                     response = await fetch(`https://graph.instagram.com/v23.0/${instagram_id}/media`, {
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${instagram_access_token}`
+                            'Authorization': `Bearer ${access_token}`
                         },
                         method: 'POST',
                         body: JSON.stringify({
@@ -109,7 +109,7 @@ async function run() {
             const response = await fetch(`https://graph.instagram.com/v23.0/${instagram_id}/media`, {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${instagram_access_token}`
+                    'Authorization': `Bearer ${access_token}`
                 },
                 method: 'POST',
                 body: JSON.stringify({
@@ -132,7 +132,7 @@ async function run() {
                 response = await fetch(`https://graph.instagram.com/v23.0/${instagram_id}/media`, {
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${instagram_access_token}`
+                        'Authorization': `Bearer ${access_token}`
                     },
                     method: 'POST',
                     body: JSON.stringify({
@@ -146,7 +146,7 @@ async function run() {
                 response = await fetch(`https://graph.instagram.com/v23.0/${instagram_id}/media`, {
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${instagram_access_token}`
+                        'Authorization': `Bearer ${access_token}`
                     },
                     method: 'POST',
                     body: JSON.stringify({
@@ -171,7 +171,7 @@ async function run() {
                 let status = 'IN_PROGRESS';
     
                 while (status === 'IN_PROGRESS') {
-                    const statusResponse = await fetch(`https://graph.instagram.com/v23.0/${containerId}?fields=status_code,status&access_token=${instagram_access_token}`);
+                    const statusResponse = await fetch(`https://graph.instagram.com/v23.0/${containerId}?fields=status_code,status&access_token=${access_token}`);
                     
                     if (!statusResponse.ok) {
                         console.error(`Instagram API error: ${statusResponse.status} ${statusResponse.statusText}`);
@@ -194,7 +194,7 @@ async function run() {
         const publishContainerResponse = await fetch(`https://graph.instagram.com/v23.0/${instagram_id}/media_publish`, {
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${instagram_access_token}`
+                'Authorization': `Bearer ${access_token}`
             },
             method: 'POST',
             body: JSON.stringify({
