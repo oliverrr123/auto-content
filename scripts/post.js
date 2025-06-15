@@ -98,7 +98,7 @@ async function run() {
                 }
 
                 if (!response.ok) {
-                    console.error(`Instagram API error: ${response.status} ${response.statusText}`);
+                    console.error(`Instagram API error 1: ${response.status} ${response.statusText}`);
                     process.exit(1);
                 }
 
@@ -120,7 +120,7 @@ async function run() {
             });
 
             if (!response.ok) {
-                console.error(`Instagram API error: ${response.status} ${response.statusText}`);
+                console.error(`Instagram API error 2: ${response.status} ${response.statusText}`);
                 process.exit(1);
             }
     
@@ -158,7 +158,7 @@ async function run() {
             }
 
             if (!response.ok) {
-                console.error(`Instagram API error: ${response.status} ${response.statusText}`);
+                console.error(`Instagram API error 3: ${response.status} ${response.statusText}`);
                 process.exit(1);
             }
 
@@ -174,7 +174,7 @@ async function run() {
                     const statusResponse = await fetch(`https://graph.instagram.com/v23.0/${containerId}?fields=status_code,status&access_token=${access_token}`);
                     
                     if (!statusResponse.ok) {
-                        console.error(`Instagram API error: ${statusResponse.status} ${statusResponse.statusText}`);
+                        console.error(`Instagram API error 4: ${statusResponse.status} ${statusResponse.statusText}`);
                         process.exit(1);
                     }
 
@@ -203,7 +203,7 @@ async function run() {
         });
 
         if (!publishContainerResponse.ok) {
-            console.error(`Instagram API error: ${publishContainerResponse.status} ${publishContainerResponse.statusText}`);
+            console.error(`Instagram API error 5: ${publishContainerResponse.status} ${publishContainerResponse.statusText}`);
             process.exit(1);
         }
     
