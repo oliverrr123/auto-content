@@ -34,9 +34,27 @@ async function run() {
     const uploadedFiles = data.params;
     const scheduleParams = data.schedule_params;
 
-    const { data: { instagram_access_token, instagram_id, error: instagramError } } = await supabase.from('instagram').select('instagram_access_token, instagram_id').eq('user_id', userId).single();
-    if (instagramError || !instagram_access_token) {
-        console.error('Error fetching instagram access token:', instagramError);
+    console.log('Fetching Instagram credentials for user:', userId);
+    const { data: instagramData, error: instagramError } = await supabase
+        .from('instagram')
+        .select('instagram_access_token, instagram_id')
+        .eq('user_id', userId)
+        .single();
+
+    if (instagramError) {
+        console.error('Error fetching Instagram credentials:', instagramError);
+        process.exit(1);
+    }
+
+    if (!instagramData) {
+        console.error('No Instagram credentials found for user:', userId);
+        process.exit(1);
+    }
+
+    const { instagram_access_token, instagram_id } = instagramData;
+
+    if (!instagram_access_token || !instagram_id) {
+        console.error('Missing required Instagram credentials. Access token or ID not found.');
         process.exit(1);
     }
 
