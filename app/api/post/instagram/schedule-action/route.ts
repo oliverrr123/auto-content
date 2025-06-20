@@ -2,17 +2,30 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
     try {
+        console.log('Request headers:', Object.fromEntries(req.headers.entries()));
+        console.log('Request method:', req.method);
+        
         // Try to parse the body, handling both string and JSON input
         const body = await req.text();
         console.log('Received raw body:', body);
+        
+        if (!body) {
+            return NextResponse.json({ 
+                success: false, 
+                error: 'Empty request body' 
+            }, { status: 400 });
+        }
         
         let data;
         try {
             data = JSON.parse(body);
         } catch (e) {
-            console.log(e);
-            console.log('Failed to parse body as JSON, trying toString:', body.toString());
-            data = JSON.parse(body.toString());
+            console.log('Failed to parse as JSON, error:', e);
+            console.log('Raw body:', body);
+            return NextResponse.json({ 
+                success: false, 
+                error: 'Invalid JSON in request body' 
+            }, { status: 400 });
         }
         
         console.log('Parsed data:', data);

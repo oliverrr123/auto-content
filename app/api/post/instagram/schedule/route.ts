@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
                     headers: [
                         { name: 'Content-Type', value: 'application/json' }
                     ],
-                    body: JSON.stringify({ post_id: post.id }),
+                    body: `{"post_id":"${post.id}"}`,
                     schedule: {
                         timezone: 'UTC',
                         minutes: [scheduleDateTime.getUTCMinutes()],
