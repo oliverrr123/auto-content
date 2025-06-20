@@ -40,6 +40,19 @@ const nextConfig: NextConfig = {
       }
     ],
   },
+  async headers() {
+    return [
+      {
+        source: '/api/:path*',
+        headers: [
+          {
+            key: 'Access-Control-Allow-Origin',
+            value: 'https://api.cron-job.org',
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

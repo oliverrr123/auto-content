@@ -419,6 +419,7 @@ export default function CreatePost() {
             if (data.error) {
                 setShowErrorDialog(true);
             }
+
         } catch (error) {
             console.error('Error scheduling post:', error);
             setShowErrorDialog(true);
@@ -779,17 +780,3 @@ export default function CreatePost() {
         )
     }
 }
-
-/*
-
-table: posts
-columns:
-- id
-- user_id (fk)
-- platform
-- parameters
-- scheduled_date
-- created_at
-- updated_at
-
-*/
