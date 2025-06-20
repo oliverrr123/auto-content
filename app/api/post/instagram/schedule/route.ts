@@ -39,6 +39,8 @@ export async function POST(req: NextRequest) {
             .select()
             .single();
 
+        console.log(post);
+
         if (error) {
             throw error;
         }
