@@ -58,7 +58,7 @@ async function run() {
         process.exit(1);
     }
 
-    const accountCheck = await fetch(`https://graph.instagram.com/me?fields=id,username&access_token=${data.access_token}`);
+    const accountCheck = await fetch(`https://graph.instagram.com/me?fields=id,username&access_token=${access_token}`);
     const accountData = await accountCheck.json();
 
     const new_instagram_id = accountData.id;
