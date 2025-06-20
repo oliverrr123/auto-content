@@ -71,21 +71,21 @@ export async function POST(req: NextRequest) {
             })
         })
 
-        const responseData = await response.json();
+        // Check if the response is ok before trying to parse JSON
+        if (!response.ok) {
+            console.error('Cron job API error:', await response.text());
+            throw new Error(`Failed to schedule cron job: ${response.status} ${response.statusText}`);
+        }
 
-        console.log(responseData)
+        // Only try to parse JSON if we have a response
+        const responseData = await response.json().catch(err => {
+            console.error('Failed to parse cron job response:', err);
+            return null;
+        });
 
-        // const scheduleDate = new Date(scheduledDate);
-        // // Format expiration date as YYYYMMDDhhmmss (1 minute after scheduled time)
-        // const expirationDate = new Date(scheduleDate.getTime() + 60000);
-        // const formattedExpiration = Number(
-        //     expirationDate.getUTCFullYear().toString() +
-        //     String(expirationDate.getUTCMonth() + 1).padStart(2, '0') +
-        //     String(expirationDate.getUTCDate()).padStart(2, '0') +
-        //     String(expirationDate.getUTCHours()).padStart(2, '0') +
-        //     String(expirationDate.getUTCMinutes()).padStart(2, '0') +
-        //     String(expirationDate.getUTCSeconds()).padStart(2, '0')
-        //   )
+        if (!responseData) {
+            throw new Error('Invalid response from cron job API');
+        }
 
         // const response = await fetch('https://api.cron-job.org/jobs', {
         //     method: 'POST',
@@ -130,6 +130,8 @@ export async function POST(req: NextRequest) {
         // if (!cronData.jobId) {
         //     return NextResponse.json({ success: false, error: 'Failed to create cron job' }, { status: 400 });
         // }
+
+        console.log(responseData);
         
         return NextResponse.json({ success: true }, { status: 200 });
     } catch (error) {
