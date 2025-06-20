@@ -51,7 +51,7 @@ async function run() {
         process.exit(1);
     }
 
-    const { access_token, instagram_id } = instagramData;
+    let { access_token, instagram_id } = instagramData;
 
     if (!access_token || !instagram_id) {
         console.error('Missing required Instagram credentials. Access token or ID not found.');
