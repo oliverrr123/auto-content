@@ -22,6 +22,7 @@ export default function SignupPage() {
           alt="Image"
           fill
           className="object-cover dark:brightness-[0.2] dark:grayscale"
+          unoptimized
         />
       </div>
     </div>

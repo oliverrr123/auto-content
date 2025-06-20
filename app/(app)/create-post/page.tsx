@@ -747,7 +747,7 @@ export default function CreatePost() {
                     </DialogHeader>
                     {mediaData && (
                         <div className="flex flex-col items-center justify-center bg-white rounded-xl drop-shadow-sexy">
-                            <Image src={mediaData.media_url} alt={caption.length > 0 ? caption : 'Post'} width={256} height={256} className="w-full rounded-t-xl" />
+                            <Image src={mediaData.media_url} unoptimized alt={caption.length > 0 ? caption : 'Post'} width={256} height={256} className="w-full rounded-t-xl" />
                             <div className="p-4 border-t border-slate-200 w-full">
                                 <p className="text-sm" style={{ whiteSpace: 'pre-wrap' }}>{mediaData.caption}</p>
                                 <a href={mediaData.permalink} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-500">View on Instagram</a>

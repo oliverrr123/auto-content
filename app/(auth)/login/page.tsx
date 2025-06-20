@@ -22,6 +22,7 @@ export default function LoginPage() {
           alt="Image"
           fill
           className="object-cover dark:brightness-[0.2] dark:grayscale"
+          unoptimized
         />
       </div>
     </div>

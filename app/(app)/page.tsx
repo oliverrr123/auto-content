@@ -161,7 +161,7 @@ export default function Home() {
 				  </DialogHeader>
 					{media && media.length > 0 && ( 
 					  <div className="flex flex-col items-center justify-center bg-white rounded-xl drop-shadow-sexy border-b border-slate-200">
-						  <Image src={mediaItem.media_url} alt={mediaItem.caption} width={256} height={256} className="w-full rounded-t-xl" />
+						  <Image src={mediaItem.media_url} unoptimized alt={mediaItem.caption} width={256} height={256} className="w-full rounded-t-xl" />
 						  <div className="flex justify-between w-full p-4">
 							<div className="flex gap-3">
 							  <div className="flex gap-1.5 items-center">
