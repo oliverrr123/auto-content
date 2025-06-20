@@ -58,6 +58,11 @@ async function run() {
         process.exit(1);
     }
 
+    const accountCheck = await fetch(`https://graph.instagram.com/me?fields=id,username&access_token=${data.access_token}`);
+    const accountData = await accountCheck.json();
+
+    instagram_id = accountData.id;
+
     if (scheduleParams.status !== 'scheduled' || scheduleParams.scheduled_date.split('T')[0] !== new Date().toISOString().split('T')[0]) {
         console.error(`Post is not scheduled or scheduled for a different day: ${scheduleParams.status} ${scheduleParams.scheduled_date} ${new Date().toISOString().split('T')[0]}`);
         process.exit(1);
