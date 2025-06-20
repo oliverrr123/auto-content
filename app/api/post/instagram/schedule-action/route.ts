@@ -10,6 +10,7 @@ export async function POST(req: NextRequest) {
         try {
             data = JSON.parse(body);
         } catch (e) {
+            console.log(e);
             console.log('Failed to parse body as JSON, trying toString:', body.toString());
             data = JSON.parse(body.toString());
         }
