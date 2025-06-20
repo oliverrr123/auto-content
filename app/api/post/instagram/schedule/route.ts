@@ -45,6 +45,9 @@ export async function POST(req: NextRequest) {
             throw error;
         }
 
+        // Ensure scheduledDate is a proper Date object
+        const scheduleDateTime = new Date(scheduledDate);
+
         const response = await fetch('https://api.cron-job.org/jobs', {
             method: 'POST',
             headers: {
@@ -55,13 +58,14 @@ export async function POST(req: NextRequest) {
                 job: {
                     url: 'https://growbyte.cz/api/post/instagram/schedule-action',
                     enabled: true,
+                    body: JSON.stringify({ post_id: post.id }),
                     schedule: {
                         timezone: 'UTC',
-                        minutes: [scheduledDate.getUTCMinutes()],
-                        hours: [scheduledDate.getUTCHours()],
-                        mdays: [scheduledDate.getUTCDate()],
-                        months: [scheduledDate.getUTCMonth() + 1],
-                        expiresAt: scheduledDate.getTime() + 60000
+                        minutes: [scheduleDateTime.getUTCMinutes()],
+                        hours: [scheduleDateTime.getUTCHours()],
+                        mdays: [scheduleDateTime.getUTCDate()],
+                        months: [scheduleDateTime.getUTCMonth() + 1],
+                        expiresAt: scheduleDateTime.getTime() + 60000
                     }
                 }
             })
