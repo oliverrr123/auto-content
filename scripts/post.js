@@ -51,7 +51,7 @@ async function run() {
         process.exit(1);
     }
 
-    let { access_token, instagram_id } = instagramData;
+    const { access_token, instagram_id } = instagramData;
 
     if (!access_token || !instagram_id) {
         console.error('Missing required Instagram credentials. Access token or ID not found.');
@@ -61,7 +61,7 @@ async function run() {
     const accountCheck = await fetch(`https://graph.instagram.com/me?fields=id,username&access_token=${data.access_token}`);
     const accountData = await accountCheck.json();
 
-    instagram_id = accountData.id;
+    const new_instagram_id = accountData.id;
 
     if (scheduleParams.status !== 'scheduled' || scheduleParams.scheduled_date.split('T')[0] !== new Date().toISOString().split('T')[0]) {
         console.error(`Post is not scheduled or scheduled for a different day: ${scheduleParams.status} ${scheduleParams.scheduled_date} ${new Date().toISOString().split('T')[0]}`);
@@ -75,7 +75,7 @@ async function run() {
             for (const file of uploadedFiles) {
                 let response;
                 if (file.filetype === 'video/mp4' || file.filetype === 'video/mov' || file.filetype === 'video/quicktime') {
-                    response = await fetch(`https://graph.instagram.com/v23.0/${instagram_id}/media`, {
+                    response = await fetch(`https://graph.instagram.com/v23.0/${new_instagram_id}/media`, {
                         headers: {
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${access_token}`
