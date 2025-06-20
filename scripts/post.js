@@ -88,7 +88,7 @@ async function run() {
                         })
                     });
                 } else {
-                    response = await fetch(`https://graph.instagram.com/v23.0/${instagram_id}/media`, {
+                    response = await fetch(`https://graph.instagram.com/v23.0/${new_instagram_id}/media`, {
                         headers: {
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${access_token}`
@@ -111,7 +111,7 @@ async function run() {
                 containerIds.push(data.id);
             }
 
-            const response = await fetch(`https://graph.instagram.com/v23.0/${instagram_id}/media`, {
+            const response = await fetch(`https://graph.instagram.com/v23.0/${new_instagram_id}/media`, {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${access_token}`
@@ -134,7 +134,7 @@ async function run() {
         } else {
             let response;
             if (uploadedFiles[0].filetype === 'video/mp4' || uploadedFiles[0].filetype === 'video/mov' || uploadedFiles[0].filetype === 'video/quicktime') {
-                response = await fetch(`https://graph.instagram.com/v23.0/${instagram_id}/media`, {
+                response = await fetch(`https://graph.instagram.com/v23.0/${new_instagram_id}/media`, {
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${access_token}`
@@ -148,7 +148,7 @@ async function run() {
                     })
                 });
             } else {
-                response = await fetch(`https://graph.instagram.com/v23.0/${instagram_id}/media`, {
+                response = await fetch(`https://graph.instagram.com/v23.0/${new_instagram_id}/media`, {
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${access_token}`
@@ -206,7 +206,7 @@ async function run() {
             }
         }
     
-        const publishContainerResponse = await fetch(`https://graph.instagram.com/v23.0/${instagram_id}/media_publish`, {
+        const publishContainerResponse = await fetch(`https://graph.instagram.com/v23.0/${new_instagram_id}/media_publish`, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${access_token}`
