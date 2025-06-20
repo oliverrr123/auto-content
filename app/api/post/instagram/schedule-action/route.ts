@@ -48,11 +48,11 @@ export async function POST(req: NextRequest) {
         }
 
         return NextResponse.json({ success: true }, { status: 200 });
-    } catch (error: any) {
+    } catch (error) {
         console.error('Error processing request:', error);
         return NextResponse.json({ 
             success: false, 
-            error: 'Failed to process request: ' + (error.message || 'Unknown error') 
+            error: 'Failed to process request: ' + (error instanceof Error ? error.message : 'Unknown error') 
         }, { status: 400 });
     }
 }
