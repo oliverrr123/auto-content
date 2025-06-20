@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
                     saveResponses: true,
                     requestMethod: 1,
                     headers: [
-                        { 'Content-Type': 'application/json' }
+                        { name: 'Content-Type', value: 'application/json' }
                     ],
                     body: JSON.stringify({ post_id: post.id }),
                     schedule: {

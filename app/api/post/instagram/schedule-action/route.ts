@@ -7,21 +7,22 @@ export async function POST(req: NextRequest) {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${process.env.GITHUB_PAT}`,
-            'Accept': 'applicataion/vnd.github.v3+json',
+            'Accept': 'application/vnd.github.v3+json',
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
             ref: 'main',
             inputs: { post_id: post_id }
         })
-    })
+    });
 
-    const responseData = await response.json()
-
-    if (!responseData) {
-        return NextResponse.json({ success: false, error: 'Failed to schedule post' }, { status: 500 });
+    // GitHub returns 204 No Content for successful workflow dispatch
+    if (!response.ok) {
+        return NextResponse.json({ 
+            success: false, 
+            error: `Failed to trigger workflow: ${response.status} ${response.statusText}` 
+        }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, data: responseData }, { status: 200 });
-
+    return NextResponse.json({ success: true }, { status: 200 });
 }
