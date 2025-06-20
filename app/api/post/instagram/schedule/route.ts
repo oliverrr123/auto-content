@@ -58,6 +58,11 @@ export async function POST(req: NextRequest) {
                 job: {
                     url: 'https://growbyte.cz/api/post/instagram/schedule-action',
                     enabled: true,
+                    saveResponses: true,
+                    requestMethod: 1,
+                    headers: [
+                        { 'Content-Type': 'application/json' }
+                    ],
                     body: JSON.stringify({ post_id: post.id }),
                     schedule: {
                         timezone: 'UTC',
@@ -65,6 +70,7 @@ export async function POST(req: NextRequest) {
                         hours: [scheduleDateTime.getUTCHours()],
                         mdays: [scheduleDateTime.getUTCDate()],
                         months: [scheduleDateTime.getUTCMonth() + 1],
+                        weekdays: [-1],
                         expiresAt: scheduleDateTime.getTime() + 60000
                     }
                 }
