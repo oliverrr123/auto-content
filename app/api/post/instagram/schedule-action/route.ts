@@ -5,34 +5,40 @@ export async function POST(req: NextRequest) {
         console.log('Request headers:', Object.fromEntries(req.headers.entries()));
         console.log('Request method:', req.method);
         
-        // Try to parse the body, handling both string and JSON input
-        const body = await req.text();
-        console.log('Received raw body:', body);
+        let post_id: string;
         
-        if (!body) {
-            return NextResponse.json({ 
-                success: false, 
-                error: 'Empty request body' 
-            }, { status: 400 });
+        // Check content type and handle accordingly
+        const contentType = req.headers.get('content-type');
+        if (contentType?.includes('application/x-www-form-urlencoded')) {
+            const formData = await req.formData();
+            post_id = formData.get('post_id') as string;
+            console.log('Form data post_id:', post_id);
+        } else {
+            // Try to parse as JSON for backward compatibility
+            const body = await req.text();
+            console.log('Received raw body:', body);
+            
+            if (!body) {
+                return NextResponse.json({ 
+                    success: false, 
+                    error: 'Empty request body' 
+                }, { status: 400 });
+            }
+            
+            try {
+                const data = JSON.parse(body);
+                post_id = data.post_id;
+            } catch (e) {
+                console.log('Failed to parse as JSON, error:', e);
+                console.log('Raw body:', body);
+                return NextResponse.json({ 
+                    success: false, 
+                    error: 'Invalid JSON in request body' 
+                }, { status: 400 });
+            }
         }
-        
-        let data;
-        try {
-            data = JSON.parse(body);
-        } catch (e) {
-            console.log('Failed to parse as JSON, error:', e);
-            console.log('Raw body:', body);
-            return NextResponse.json({ 
-                success: false, 
-                error: 'Invalid JSON in request body' 
-            }, { status: 400 });
-        }
-        
-        console.log('Parsed data:', data);
-        const post_id = data.post_id;
         
         if (!post_id) {
-            console.error('No post_id found in request data:', data);
             return NextResponse.json({ 
                 success: false, 
                 error: 'No post_id provided in request' 

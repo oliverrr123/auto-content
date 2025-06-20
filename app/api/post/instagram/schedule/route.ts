@@ -61,9 +61,9 @@ export async function POST(req: NextRequest) {
                     saveResponses: true,
                     requestMethod: 1,
                     headers: [
-                        { name: 'Content-Type', value: 'application/json' }
+                        { name: 'Content-Type', value: 'application/x-www-form-urlencoded' }
                     ],
-                    body: `{"post_id":"${post.id}"}`,
+                    body: `post_id=${post.id}`,
                     schedule: {
                         timezone: 'UTC',
                         minutes: [scheduleDateTime.getUTCMinutes()],
