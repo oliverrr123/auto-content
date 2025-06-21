@@ -4,6 +4,9 @@ export async function POST(req: NextRequest) {
     try {
         console.log('Request headers:', Object.fromEntries(req.headers.entries()));
         console.log('Request method:', req.method);
+
+        const body = await req.json();
+        console.log('Request body:', body);
         
         let post_id: string;
         
