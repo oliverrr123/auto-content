@@ -35,6 +35,8 @@ export default function CreatePost() {
     const [isPublishing, setIsPublishing] = useState(false);
     const [showSuccessDialog, setShowSuccessDialog] = useState(false);
     const [showErrorDialog, setShowErrorDialog] = useState(false);
+    const [showScheduleSuccessDialog, setShowScheduleSuccessDialog] = useState(false);
+    const [showScheduleErrorDialog, setShowScheduleErrorDialog] = useState(false);
     const [mediaData, setMediaData] = useState<{ media_url: string, caption: string, media_type: string, permalink: string } | null>(null);
     const [showTagDialog, setShowTagDialog] = useState(false);
     const [tagText, setTagText] = useState('');
@@ -398,7 +400,7 @@ export default function CreatePost() {
 
             // Check if trying to schedule in the past
             if (scheduledDateTime <= new Date()) {
-                setShowErrorDialog(true);
+                setShowScheduleErrorDialog(true);
                 return;
             }
 
@@ -417,12 +419,13 @@ export default function CreatePost() {
             const data = await response.json();
 
             if (data.error) {
-                setShowErrorDialog(true);
+                setShowScheduleErrorDialog(true);
             }
 
+            setShowScheduleSuccessDialog(true);
         } catch (error) {
             console.error('Error scheduling post:', error);
-            setShowErrorDialog(true);
+            setShowScheduleErrorDialog(true);
         }
     }
 
@@ -761,14 +764,40 @@ export default function CreatePost() {
                 </DialogContent>
                 </Dialog>
 
-                
-
                 <Dialog open={showErrorDialog} onOpenChange={setShowErrorDialog}>
                     <DialogContent>
                         <DialogHeader>
                             <DialogTitle className="text-2xl">Error publishing post</DialogTitle>
                             <DialogDescription>
                                 Failed to publish post. Please try again.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter>
+                            <DialogClose className="rounded-2xl font-medium text-xl p-2 mt-4 w-full drop-shadow-sexy bg-primary text-white hover:bg-blue-500">OK</DialogClose>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+                <Dialog open={showScheduleSuccessDialog} onOpenChange={setShowScheduleSuccessDialog}>
+                <DialogContent className="bg-slate-100">
+                    <DialogHeader>
+                        <DialogTitle className="text-2xl">Post scheduled!</DialogTitle>
+                        <DialogDescription>
+                            Your post has been successfully scheduled to be published at {new Date(date).getHours()}:{new Date(date).getMinutes().toString().padStart(2, '0')} on {new Date(date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                            <DialogClose className="rounded-2xl font-semibold text-xl p-2 drop-shadow-sexy w-full bg-primary text-white hover:bg-blue-500" onClick={() => { window.location.reload() }}>Done</DialogClose>
+                    </DialogFooter>
+                </DialogContent>
+                </Dialog>
+
+                <Dialog open={showScheduleErrorDialog} onOpenChange={setShowScheduleErrorDialog}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle className="text-2xl">Error scheduling post</DialogTitle>
+                            <DialogDescription>
+                                Failed to schedule post. Please try again.
                             </DialogDescription>
                         </DialogHeader>
                         <DialogFooter>
