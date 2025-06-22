@@ -61,9 +61,9 @@ export async function POST(req: NextRequest) {
                     saveResponses: true,
                     requestMethod: 1,
                     headers: [
-                        { name: 'Content-Type', value: 'application/x-www-form-urlencoded' }
+                        { name: 'Content-Type', value: 'application/json' }
                     ],
-                    body: JSON.stringify({ post_id: post.id }),
+                    body: { post_id: post.id },
                     schedule: {
                         timezone: 'UTC',
                         minutes: [scheduleDateTime.getUTCMinutes()],
@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
                         mdays: [scheduleDateTime.getUTCDate()],
                         months: [scheduleDateTime.getUTCMonth() + 1],
                         weekdays: [-1],
-                        expiresAt: scheduleDateTime.getTime() + 60000
+                        expiresAt: 0
                     }
                 }
             })
