@@ -157,7 +157,11 @@ export default function Scheduling() {
                     {currentPosts.map((day, index) => (
                         <div key={index} className={`col-start-2 col-end-3 p-2 overflow-x-auto no-scrollbar`} style={{gridRow: `${index + 1} / ${index + 2}`}}>
                             <div className='flex gap-2'>
-                                {day.map((post, index2) => (
+                                {day.sort((a, b) => {
+                                    const timeA = new Date(a.schedule_params.scheduled_date);
+                                    const timeB = new Date(b.schedule_params.scheduled_date);
+                                    return timeA.getTime() - timeB.getTime();
+                                }).map((post, index2) => (
                                     post.schedule_params.status === 'scheduled' ? (
                                         <div key={index2} className='flex items-center gap-2 px-3 py-2 bg-primary text-white rounded-xl whitespace-nowrap'>
                                             <div>
@@ -166,7 +170,7 @@ export default function Scheduling() {
                                             </div>
                                         </div>
                                     ) : (
-                                        <div key={index2} className='flex items-center gap-2 px-3 py-2 bg-primary text-white rounded-xl whitespace-nowrap'>
+                                        <div key={index2} className='flex items-center gap-2 px-3 py-2 bg-blue-400 text-white rounded-xl whitespace-nowrap'>
                                             <CheckCircle className='w-4 h-4' />
                                             <div>
                                                 <p className="text-sm">{post.caption}</p>

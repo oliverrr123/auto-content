@@ -31,6 +31,7 @@ export default function CreatePost() {
     const { user, isLoading } = useAuth();
     const [uploadedFiles, setUploadedFiles] = useState<{ signedReadUrl: string, filetype: string, taggedPeople: { x: number, y: number, username: string }[], isUploading?: boolean }[]>([]);
     const [isUploading, setIsUploading] = useState(false);
+    const [isScheduling, setIsScheduling] = useState(false);
     const [caption, setCaption] = useState('');
     const [isPublishing, setIsPublishing] = useState(false);
     const [showSuccessDialog, setShowSuccessDialog] = useState(false);
@@ -393,6 +394,7 @@ export default function CreatePost() {
     }
 
     const handleSchedule = async () => {
+        setIsScheduling(true);
         try {
             const [hours, minutes] = time.split(':').map(Number);
             const scheduledDateTime = new Date(date);
@@ -426,6 +428,8 @@ export default function CreatePost() {
         } catch (error) {
             console.error('Error scheduling post:', error);
             setShowScheduleErrorDialog(true);
+        } finally {
+            setIsScheduling(false);
         }
     }
 
@@ -675,7 +679,7 @@ export default function CreatePost() {
                         <DialogClose className="rounded-2xl text-xl p-3 w-full text-slate-500 bg-white drop-shadow-sexy">
                             Cancel
                         </DialogClose>
-                        <DialogClose onClick={handlePublish} disabled={isUploading || uploadedFiles.length === 0 || isPublishing} className="rounded-2xl font-semibold text-xl p-3 w-full drop-shadow-sexy bg-primary text-white hover:bg-blue-500">
+                        <DialogClose onClick={handlePublish} disabled={isUploading || uploadedFiles.length === 0 || isPublishing || isScheduling} className="rounded-2xl font-semibold text-xl p-3 w-full drop-shadow-sexy bg-primary text-white hover:bg-blue-500">
                             {isPublishing ? 'Publishing...' : 'Publish'}
                         </DialogClose>
                     </DialogFooter>
@@ -734,8 +738,8 @@ export default function CreatePost() {
                         <DialogClose className="rounded-2xl text-xl p-3 w-full text-slate-500 bg-white drop-shadow-sexy">
                             Cancel
                         </DialogClose>
-                        <DialogClose onClick={handleSchedule} disabled={isUploading || uploadedFiles.length === 0 || isPublishing || invalidTime} className="rounded-2xl font-semibold text-xl p-3 w-full drop-shadow-sexy bg-primary disabled:opacity-50 disabled:cursor-not-allowed text-white hover:bg-blue-500">
-                            Schedule
+                        <DialogClose onClick={handleSchedule} disabled={isUploading || uploadedFiles.length === 0 || isPublishing || invalidTime || isScheduling} className="rounded-2xl font-semibold text-xl p-3 w-full drop-shadow-sexy bg-primary disabled:opacity-50 disabled:cursor-not-allowed text-white hover:bg-blue-500">
+                            {isScheduling ? 'Scheduling...' : 'Schedule'}
                         </DialogClose>
                     </DialogFooter>
                 </DialogContent>
