@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
         const scheduleDateTime = new Date(scheduledDate);
 
         const response = await fetch('https://api.cron-job.org/jobs', {
-            method: 'POST',
+            method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${process.env.CRONJOB_API_KEY}`,
                 'Content-Type': 'application/json'
