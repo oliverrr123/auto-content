@@ -783,11 +783,11 @@ export default function CreatePost() {
                     <DialogHeader>
                         <DialogTitle className="text-2xl">Post scheduled!</DialogTitle>
                         <DialogDescription>
-                            Your post has been successfully scheduled to be published at {new Date(date).getHours()}:{new Date(date).getMinutes().toString().padStart(2, '0')} on {new Date(date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                            Your post has been successfully scheduled to be published at {time} on {new Date(date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
-                            <DialogClose className="rounded-2xl font-semibold text-xl p-2 drop-shadow-sexy w-full bg-primary text-white hover:bg-blue-500" onClick={() => { window.location.reload() }}>Done</DialogClose>
+                        <DialogClose className="rounded-2xl font-semibold text-xl p-2 drop-shadow-sexy w-full bg-primary text-white hover:bg-blue-500" onClick={() => { window.location.reload() }}>Done</DialogClose>
                     </DialogFooter>
                 </DialogContent>
                 </Dialog>

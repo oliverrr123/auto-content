@@ -65,7 +65,12 @@ export async function POST(req: NextRequest) {
                     saveResponses: true,
                     schedule: {
                         timezone: 'UTC',
-                        expiresAt: Math.floor(scheduleDateTime.getTime() / 1000) + 60,
+                        expiresAt: parseInt(scheduleDateTime.getFullYear() +
+                            (scheduleDateTime.getMonth() + 1).toString().padStart(2, '0') +
+                            scheduleDateTime.getDate().toString().padStart(2, '0') +
+                            scheduleDateTime.getHours().toString().padStart(2, '0') +
+                            (scheduleDateTime.getMinutes() + 1).toString().padStart(2, '0') +
+                            '00'),
                         hours: [scheduleDateTime.getHours()],
                         mdays: [scheduleDateTime.getDate()],
                         minutes: [scheduleDateTime.getMinutes()],
