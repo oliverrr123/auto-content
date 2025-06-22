@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
                     saveResponses: true,
                     schedule: {
                         timezone: 'UTC',
-                        expiresAt: 0,
+                        expiresAt: Math.floor(scheduleDateTime.getTime() / 1000) + 60,
                         hours: [scheduleDateTime.getHours()],
                         mdays: [scheduleDateTime.getDate()],
                         minutes: [scheduleDateTime.getMinutes()],
@@ -76,7 +76,6 @@ export async function POST(req: NextRequest) {
             })
         });
 
-        // Check if the response is ok before trying to parse JSON
         if (!response.ok) {
             const errorText = await response.text();
             console.error('Cron job API error:', errorText);
