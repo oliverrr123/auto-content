@@ -102,8 +102,10 @@ async function run() {
                     });
                 }
 
+                console.log(new_instagram_id);
+
                 if (!response.ok) {
-                    console.error(`Instagram API error 1: ${response.status} ${response.statusText}`);
+                    console.error(`Instagram API error 1: ${response.status} ${response.statusText} ${new_instagram_id}`);
                     process.exit(1);
                 }
 
