@@ -80,6 +80,7 @@ export async function POST(req: NextRequest) {
         // Check if the response is ok before trying to parse JSON
         if (!response.ok) {
             console.error('Cron job API error:', await response.text());
+            console.log(response);
             throw new Error(`Failed to schedule cron job: ${response.status} ${response.statusText}`);
         }
 
