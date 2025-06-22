@@ -105,7 +105,14 @@ async function run() {
                 console.log(new_instagram_id);
 
                 if (!response.ok) {
-                    console.error(`Instagram API error 1: ${response.status} ${response.statusText} ${new_instagram_id}`);
+                    console.error(`Instagram API error 1: ${response.status} ${response.statusText}`);
+                    console.log(response);
+                    console.log(file);
+                    console.log(file.taggedPeople);
+                    console.log(file.taggedPeople.map((user) => ({ 'username': user.username, x: user.x, y: user.y})));
+                    console.log(file.taggedPeople.map((user) => ({ 'username': user.username })));
+                    console.log(file.taggedPeople.map((user) => ({ 'username': user.username, x: user.x, y: user.y})));
+                    console.log(file.taggedPeople.map((user) => ({ 'username': user.username, x: user.x, y: user.y})));
                     process.exit(1);
                 }
 
