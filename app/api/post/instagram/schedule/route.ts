@@ -39,6 +39,8 @@ export async function POST(req: NextRequest) {
             .select()
             .single();
 
+        console.log(post);
+
         if (error) {
             throw error;
         }
@@ -62,7 +64,7 @@ export async function POST(req: NextRequest) {
                     enabled: true,
                     saveResponses: true,
                     schedule: {
-                        timezone: 'Europe/Berlin',
+                        timezone: 'UTC',
                         expiresAt: 0,
                         hours: [scheduleDateTime.getHours()],
                         mdays: [scheduleDateTime.getDate()],
@@ -86,10 +88,7 @@ export async function POST(req: NextRequest) {
         
         return NextResponse.json({ success: true }, { status: 200 });
     } catch (error) {
-        console.error('Error:', error);
-        return NextResponse.json({ 
-            success: false, 
-            error: error instanceof Error ? error.message : 'Failed to schedule post'
-        }, { status: 400 });
+        console.error(error);
+        return NextResponse.json({ success: false, error: 'Failed to schedule post' }, { status: 400 });
     }
 }
