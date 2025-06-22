@@ -2,7 +2,23 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
     try {
-        const data = await req.json();
+        // Log the raw request body for debugging
+        const rawBody = await req.text();
+        console.log('Raw request body:', rawBody);
+
+        // Try to parse the JSON
+        let data;
+        try {
+            data = JSON.parse(rawBody);
+        } catch (error) {
+            const parseError = error as Error;
+            console.error('JSON parse error:', parseError);
+            return NextResponse.json({ 
+                success: false, 
+                error: `Invalid JSON in request body: ${parseError.message}`,
+                receivedBody: rawBody
+            }, { status: 400 });
+        }
 
         const post_id = data.post_id;
         
