@@ -2,7 +2,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { signout } from "@/lib/auth-actions";
+import { logout } from "@/lib/auth-actions";
 import { useAuth } from "@/context/AuthContext";
 
 export default function LoginLogoutButton() {
@@ -11,7 +11,7 @@ export default function LoginLogoutButton() {
 
     if (user) {
         return (
-            <Button onClick={() => { signout(); }}>Log out</Button>
+            <Button onClick={() => { logout(); }}>Log out</Button>
         )
     }
     return (
