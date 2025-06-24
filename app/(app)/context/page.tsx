@@ -1,5 +1,5 @@
 "use client";
-import { FacebookIcon, InstagramIcon, LinkIcon, PlusIcon, UploadIcon } from "lucide-react";
+import { InstagramIcon, LinkIcon, PlusIcon, UploadIcon } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useEffect, useState } from "react";
 import {
@@ -51,14 +51,21 @@ export default function Context() {
             <div>
                 <h2 className="text-2xl font-bold">Instagram</h2>
                 <div className="flex gap-4 mt-4 pr-4 w-[calc(100%+1rem)] no-scrollbar overflow-x-scroll">
-                    <div>
-                        {!connectedAccounts || !connectedAccounts.instagram && (
-                            <Link href="https://www.instagram.com/oauth/authorize?enable_fb_login=0&force_authentication=1&client_id=1436609137340002&redirect_uri=https://growbyte.cz/api/auth/instagram/callback&response_type=code&scope=instagram_business_basic%2Cinstagram_business_manage_messages%2Cinstagram_business_manage_comments%2Cinstagram_business_content_publish%2Cinstagram_business_manage_insights" className="flex flex-col gap-2 items-center justify-center bg-white border-primary border-2 rounded-xl p-4 w-32 h-32 flex-shrink-0">
-                                <PlusIcon className="w-10 h-10 text-primary" />
-                                <p className="text-sm font-semibold text-primary">Add</p>
-                            </Link>
+                        {connectedAccounts && !connectedAccounts.instagram ? (
+                            <div>
+                                <Link href="https://www.instagram.com/oauth/authorize?enable_fb_login=0&force_authentication=1&client_id=1436609137340002&redirect_uri=https://growbyte.cz/api/auth/instagram/callback&response_type=code&scope=instagram_business_basic%2Cinstagram_business_manage_messages%2Cinstagram_business_manage_comments%2Cinstagram_business_content_publish%2Cinstagram_business_manage_insights" className="flex flex-col gap-2 items-center justify-center bg-white border-primary border-2 rounded-xl p-4 w-32 h-32 flex-shrink-0">
+                                    <PlusIcon className="w-10 h-10 text-primary" />
+                                    <p className="text-sm font-semibold text-primary">Add</p>
+                                </Link>
+                            </div>
+                        ) : connectedAccounts && connectedAccounts.instagram ? (
+                            <div className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 flex-shrink-0">
+                                <InstagramIcon className="w-10 h-10" />
+                                <p className="text-sm font-semibold truncate max-w-28">@{connectedAccounts.instagram.username}</p>
+                            </div>
+                        ) : (
+                            <Skeleton className="h-32 w-32 rounded-xl" />
                         )}
-                    </div>
                     {/* <Dialog>
                     <DialogTrigger>
                         {connectedAccounts && connectedAccounts.instagram ? (
@@ -98,18 +105,18 @@ export default function Context() {
                         </DialogClose>
                     </DialogContent>
                     </Dialog> */}
-                    {connectedAccounts && connectedAccounts.instagram && (
+                    {/* {connectedAccounts && connectedAccounts.instagram && (
                         <div className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 flex-shrink-0">
                             <InstagramIcon className="w-10 h-10" />
                             <p className="text-sm font-semibold truncate max-w-28">@{connectedAccounts.instagram.username}</p>
                         </div>
-                    )}
-                    {user.user_metadata.facebook_id && (
+                    )} */}
+                    {/* {user.user_metadata.facebook_id && (
                         <div className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 flex-shrink-0">
                             <FacebookIcon className="w-10 h-10" />
                             <p className="text-sm font-semibold truncate max-w-28">Facebook</p>
                         </div>
-                    )}
+                    )} */}
                 </div>
                 <h2 className="text-2xl font-bold mt-4">Websites</h2>
                 <div className="flex gap-4 mt-4 pr-4 w-[calc(100%+1rem)] no-scrollbar overflow-x-scroll">

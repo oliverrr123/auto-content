@@ -3,7 +3,9 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
+import { CheckCircle, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose, DialogFooter } from "@/components/ui/dialog";
+import Image from "next/image";
 
 interface Post {
     id: string;
@@ -22,11 +24,17 @@ interface Post {
     schedule_params: {
         status: string;
         scheduled_date: string;
-        scheduled_time: string;
     };
     caption: string;
 }
 
+const formatDate = (timestamp: string | number) => {
+    const date = new Date(typeof timestamp === 'string' ? timestamp : timestamp * 1000);
+    return `
+        ${date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+        at ${date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+    `;
+};
 export default function Scheduling() {
     const { user, isLoading } = useAuth();
 
@@ -83,6 +91,15 @@ export default function Scheduling() {
 
     }, [posts, currentWeekDay]);
 
+    const [expandedCaptions, setExpandedCaptions] = useState<{ [key: string]: boolean }>({});
+
+    const toggleCaption = (postId: string) => {
+        setExpandedCaptions(prev => ({
+        ...prev,
+        [postId]: !prev[postId]
+        }));
+    };
+
     if (!user) {
         return null;
     }
@@ -91,7 +108,7 @@ export default function Scheduling() {
         <>
             <div className='w-full bg-white rounded-xl overflow-hidden drop-shadow-sexy'>
                 <div className='flex items-center justify-between py-2 px-4 pt-3 border-b border-slate-200'>
-                    <Button size='icon' variant='ghost' onClick={() => setCurrentWeekDay(new Date(currentWeekDay.setDate(currentWeekDay.getDate() - 7)))}><ChevronLeftIcon /></Button>
+                    <Button size='icon' variant='ghost' onClick={() => setCurrentWeekDay(new Date(currentWeekDay.setDate(currentWeekDay.getDate() - 7)))}><ChevronLeft /></Button>
                     <p className='font-medium'>
                         {currentWeekDay.toDateString() === new Date().toDateString() ? (
                             'This week'
@@ -116,7 +133,7 @@ export default function Scheduling() {
                             })()
                         )}
                     </p>
-                    <Button size='icon' variant='ghost' onClick={() => setCurrentWeekDay(new Date(currentWeekDay.setDate(currentWeekDay.getDate() + 7)))}><ChevronRightIcon /></Button>
+                    <Button size='icon' variant='ghost' onClick={() => setCurrentWeekDay(new Date(currentWeekDay.setDate(currentWeekDay.getDate() + 7)))}><ChevronRight /></Button>
                 </div>
 
                 <div className='grid grid-rows-7 grid-cols-[auto_1fr] divide-x divide-y divide-dashed divide-slate-200 -m-[1px]'>
@@ -134,26 +151,6 @@ export default function Scheduling() {
                             </p>
                         </div>
                     ))}
-                    {/* {[
-                        [{ title: 'Best times to post on IG', time: '10:00' }, { title: 'Social media tips this is a long text', time: '10:00' }],
-                        [{ title: 'Social media tips', time: '10:00' }],
-                        [{ title: 'How to achieve greatness?', time: '10:00' }],
-                        [{ title: 'Social media tips', time: '10:00' }],
-                        [{ title: 'Social media tips', time: '10:00' }],
-                        [{ title: 'Social media tips', time: '10:00' }],
-                        [{ title: 'Social media tips', time: '10:00' }],
-                    ].map((day, index) => (
-                        <div key={index} className={`col-start-2 col-end-3 p-2 overflow-x-auto no-scrollbar`} style={{gridRow: `${index + 1} / ${index + 2}`}}>
-                            <div className='flex gap-2'>
-                                {day.map((post, index2) => (
-                                    <div key={index2} className='px-3 py-2 bg-primary text-white rounded-xl whitespace-nowrap'>
-                                        <p className="text-sm">{post.title}</p>
-                                        <p className="text-xs opacity-70">{post.time}</p>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    ))} */}
                     {currentPosts.map((day, index) => (
                         <div key={index} className={`col-start-2 col-end-3 p-2 overflow-x-auto no-scrollbar`} style={{gridRow: `${index + 1} / ${index + 2}`}}>
                             <div className='flex gap-2'>
@@ -163,31 +160,123 @@ export default function Scheduling() {
                                     return timeA.getTime() - timeB.getTime();
                                 }).map((post, index2) => (
                                     post.schedule_params.status === 'scheduled' ? (
-                                        <div key={index2} className='flex items-center gap-2 px-3 py-2 bg-primary text-white rounded-xl whitespace-nowrap'>
-                                            <div>
-                                                <p className="text-sm">{post.caption}</p>
-                                                <p className="text-xs opacity-70">{new Date(post.schedule_params.scheduled_date).getHours()}:{new Date(post.schedule_params.scheduled_date).getMinutes().toString().padStart(2, '0')}</p>
+                                        <Dialog key={post.id}>
+                                        <DialogTrigger>
+                                            <div key={index2} className='flex items-center gap-2 px-3 py-2 bg-primary text-white rounded-xl whitespace-nowrap'>
+                                                <div className="flex flex-col items-start">
+                                                    <p className="text-sm">{post.caption}</p>
+                                                    <p className="text-xs opacity-70">{new Date(post.schedule_params.scheduled_date).getHours()}:{new Date(post.schedule_params.scheduled_date).getMinutes().toString().padStart(2, '0')}</p>
+                                                </div>
                                             </div>
-                                        </div>
+                                        </DialogTrigger>
+                                        <DialogContent className="bg-slate-100 [&>button]:hidden max-h-[90vh] overflow-y-auto">
+                                            <DialogHeader className="hidden">
+                                                <DialogTitle>Instagram post</DialogTitle>
+                                            </DialogHeader>
+                                            {post && ( 
+                                                <div className="flex flex-col items-center justify-center bg-white rounded-xl drop-shadow-sexy border-b border-slate-200">
+                                                <Image src={post.params[0].signedReadUrl} unoptimized alt={post.caption} width={256} height={256} className="w-full rounded-t-xl" />
+                                                <div className="flex items-center justify-between w-full p-4">
+                                                    <div></div>
+                                                    <p className="text-sm text-slate-500">{formatDate(post.schedule_params.scheduled_date)}</p>
+                                                </div>
+                                                <div className="pb-4 px-4 w-full">
+                                                    <div className="relative">
+                                                    <p 
+                                                        className={`text-sm ${!expandedCaptions[post.id] ? 'line-clamp-3' : ''}`} 
+                                                        style={{ whiteSpace: 'pre-wrap' }}
+                                                    >
+                                                        {post.caption}
+                                                    </p>
+                                                    {post.caption && post.caption.length > 150 && (
+                                                        <button
+                                                        onClick={() => toggleCaption(post.id)}
+                                                        className="text-sm text-blue-500 mt-1 flex items-center gap-1"
+                                                        >
+                                                        {expandedCaptions[post.id] ? (
+                                                            <>
+                                                            Show less <ChevronUp className="w-4 h-4" />
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                            Show more <ChevronDown className="w-4 h-4" />
+                                                            </>
+                                                        )}
+                                                        </button>
+                                                    )}
+                                                    </div>
+                                                </div>
+                                                </div>
+                                            )}
+                                            <DialogFooter className="flex gap-3">
+                                                <DialogClose className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-white text-slate-700">Close</DialogClose>
+                                                <Button className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-primary text-white hover:bg-blue-500">Edit</Button>
+                                            </DialogFooter>
+                                        </DialogContent>
+                                        </Dialog>
                                     ) : (
-                                        <div key={index2} className='flex items-center gap-2 px-3 py-2 bg-blue-400 text-white rounded-xl whitespace-nowrap'>
-                                            <CheckCircle className='w-4 h-4' />
-                                            <div>
-                                                <p className="text-sm">{post.caption}</p>
-                                                <p className="text-xs opacity-70">{new Date(post.schedule_params.scheduled_date).getHours()}:{new Date(post.schedule_params.scheduled_date).getMinutes().toString().padStart(2, '0')}</p>
+                                        <Dialog key={post.id}>
+                                        <DialogTrigger>
+                                            <div key={index2} className='flex items-center gap-2 px-3 py-2 bg-blue-400 text-white rounded-xl whitespace-nowrap'>
+                                                <CheckCircle className='w-4 h-4' />
+                                                <div className="flex flex-col items-start">
+                                                    <p className="text-sm">{post.caption}</p>
+                                                    <p className="text-xs opacity-70">{new Date(post.schedule_params.scheduled_date).getHours()}:{new Date(post.schedule_params.scheduled_date).getMinutes().toString().padStart(2, '0')}</p>
+                                                </div>
                                             </div>
-                                        </div>
+                                        </DialogTrigger>
+                                        <DialogContent className="bg-slate-100 [&>button]:hidden max-h-[90vh] overflow-y-auto">
+                                            <DialogHeader className="hidden">
+                                                <DialogTitle>Instagram post</DialogTitle>
+                                            </DialogHeader>
+                                            {post && ( 
+                                                <div className="flex flex-col items-center justify-center bg-white rounded-xl drop-shadow-sexy border-b border-slate-200">
+                                                <Image src={post.params[0].signedReadUrl} unoptimized alt={post.caption} width={256} height={256} className="w-full rounded-t-xl" />
+                                                <div className="flex items-center justify-between w-full p-4">
+                                                    <div></div>
+                                                    <p className="text-sm text-slate-500">{formatDate(post.schedule_params.scheduled_date)}</p>
+                                                </div>
+                                                <div className="pb-4 px-4 w-full">
+                                                    <div className="relative">
+                                                    <p 
+                                                        className={`text-sm ${!expandedCaptions[post.id] ? 'line-clamp-3' : ''}`} 
+                                                        style={{ whiteSpace: 'pre-wrap' }}
+                                                    >
+                                                        {post.caption}
+                                                    </p>
+                                                    {post.caption && post.caption.length > 150 && (
+                                                        <button
+                                                        onClick={() => toggleCaption(post.id)}
+                                                        className="text-sm text-blue-500 mt-1 flex items-center gap-1"
+                                                        >
+                                                        {expandedCaptions[post.id] ? (
+                                                            <>
+                                                            Show less <ChevronUp className="w-4 h-4" />
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                            Show more <ChevronDown className="w-4 h-4" />
+                                                            </>
+                                                        )}
+                                                        </button>
+                                                    )}
+                                                    </div>
+                                                </div>
+                                                </div>
+                                            )}
+                                            <DialogFooter className="flex gap-3">
+                                                <DialogClose className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-white text-slate-700">Close</DialogClose>
+                                                <Button className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-primary text-white hover:bg-blue-500">Edit</Button>
+                                            </DialogFooter>
+                                        </DialogContent>
+                                        </Dialog>
                                     )
                                 ))}
                             </div>
                         </div>
                     ))}
-                    
                 </div>
             </div>
-            <br />
-            <br />
-            <br />
         </>
     )
 }
