@@ -51,12 +51,23 @@ export async function GET(request: NextRequest) {
         // exchange short lived access token for long lived access token
 
         try {
-            const response = await fetch(`https://graph.instagram.com/access_token?grant_type=ig_exchange_token&client_secret=${clientSecret}&access_token=${accessToken}`);
+            const response = await fetch(`https://graph.instagram.com/access_token?grant_type=ig_exchange_token&client_secret=${clientSecret}&access_token=${accessToken}`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                }
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Token exchange error response:', errorText);
+                return NextResponse.redirect(new URL('/error?message=Failed to exchange short lived access token for long lived access token', request.url));
+            }
         
             const data = await response.json();
 
-            if (!response.ok || data.error_type) {
-                console.error('Failed to exchange short lived access token for long lived access token:', data);
+            if (data.error) {
+                console.error('Token exchange error:', data.error);
                 return NextResponse.redirect(new URL('/error?message=Failed to exchange short lived access token for long lived access token', request.url));
             }
 
