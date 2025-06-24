@@ -51,11 +51,14 @@ export async function GET(request: NextRequest) {
         // exchange short lived access token for long lived access token
 
         try {
-            const response = await fetch(`https://graph.instagram.com/access_token?grant_type=ig_exchange_token&client_secret=${clientSecret}&access_token=${accessToken}`, {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                }
+            // Exchange short-lived token for long-lived token using GET request
+            const longLivedTokenUrl = new URL('https://graph.instagram.com/access_token');
+            longLivedTokenUrl.searchParams.append('grant_type', 'ig_exchange_token');
+            longLivedTokenUrl.searchParams.append('client_secret', clientSecret);
+            longLivedTokenUrl.searchParams.append('access_token', accessToken);
+
+            const response = await fetch(longLivedTokenUrl.toString(), {
+                method: 'GET'
             });
 
             if (!response.ok) {
