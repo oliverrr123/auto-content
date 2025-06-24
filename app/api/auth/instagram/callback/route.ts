@@ -6,7 +6,8 @@ export async function GET(request: NextRequest) {
     const code = searchParams.get('code');
 
     if (!code) {
-        // TODO
+        console.error('No code found in request');
+        return NextResponse.redirect(new URL('/error?message=No code found in request', request.url));
     }
 
     // exchange code for short lived access token
@@ -16,7 +17,7 @@ export async function GET(request: NextRequest) {
     const redirectUri = process.env.INSTAGRAM_REDIRECT_URI;
 
     if (!clientId || !clientSecret || !redirectUri) {
-        // TODO
+        console.error('Missing Instagram client credentials');
         return
     }
 
@@ -40,7 +41,8 @@ export async function GET(request: NextRequest) {
         const data = await response.json();
 
         if (!response.ok || data.error_type) {
-            // TODO
+            console.error('Failed to exchange code for access token:', data);
+            return NextResponse.redirect(new URL('/error?message=Failed to exchange code for access token', request.url));
         }
 
         const accessToken = data.access_token;
@@ -54,7 +56,8 @@ export async function GET(request: NextRequest) {
             const data = await response.json();
 
             if (!response.ok || data.error_type) {
-                // TODO
+                console.error('Failed to exchange short lived access token for long lived access token:', data);
+                return NextResponse.redirect(new URL('/error?message=Failed to exchange short lived access token for long lived access token', request.url));
             }
 
             const longLivedAccessToken = data.access_token;
@@ -110,16 +113,17 @@ export async function GET(request: NextRequest) {
             // TODO: MAKE REFRESHING LOGIC BEFORE PRODUCTION!!!!!!!!!!
 
         } catch (error) {
-            // TODO
+            console.error('Failed to exchange code for access token in route:', error);
             console.error(error);
+            return NextResponse.redirect(new URL('/error?message=Failed to exchange code for access token in route', request.url));
         }
 
         return NextResponse.redirect(new URL('/context', request.url));
 
         
     } catch (error) {
-        // TODO
-
+        console.error('Failed to exchange code for access token in route:', error);
         console.error(error);
+        return NextResponse.redirect(new URL('/error?message=Failed to exchange code for access token in route', request.url));
     }
 }
