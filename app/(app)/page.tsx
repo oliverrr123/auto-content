@@ -73,6 +73,12 @@ export default function Home() {
     }
   }, [user, isLoading, router]);
 
+  useEffect(() => {
+    console.log('--- media')
+    console.log(media)
+    console.log('--- media')
+  }, [media]);
+
   if (isLoading || isLoadingProfile) {
     return (
       <div className="flex flex-col gap-4">
@@ -96,13 +102,19 @@ export default function Home() {
     )
   }
 
-  if (user && profile && !isLoadingProfile) {
+  if (user && profile && !isLoadingProfile && media) {
     return (
       <div className="flex flex-col gap-4">
         <div className="flex gap-4 items-center">
           <div>
-              <Image src={profile.profilePictureUrl} alt="User Avatar" width={100} height={100} unoptimized className="rounded-full absolute z-10" />
-              <div className="w-[100px] h-[100px] bg-slate-200 rounded-full relative" />
+              {profile.profilePictureUrl ? (
+                <>
+                  <Image src={profile.profilePictureUrl} alt="User Avatar" width={100} height={100} unoptimized className="rounded-full absolute z-10" />
+                  <div className="w-[100px] h-[100px] bg-slate-200 rounded-full relative" />
+                </>
+              ) : (
+                <Skeleton className="rounded-full w-[100px] h-[100px]" />
+              )}
           </div>
           <div>
             <h1 className="text-2xl font-bold">{profile.name}</h1>
@@ -223,6 +235,14 @@ export default function Home() {
         ) }
       </div>
     );
+  }
+
+  if (user && profile && !isLoadingProfile && !media) {
+    return (
+      <div className="flex flex-col gap-4">
+        <h1 className="text-2xl font-bold">Start by linking your Instagram account <span className="text-blue-500" onClick={() => window.location.href = '/context'}>here</span></h1>
+      </div>
+    )
   }
 
   return null
