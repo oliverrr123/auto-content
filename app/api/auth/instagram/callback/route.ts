@@ -65,8 +65,20 @@ export async function GET(request: NextRequest) {
 
             const userInfo = await responseGetUserInfo.json();
 
+            console.log(`User info: ${userInfo}`)
+
+            if (!responseGetUserInfo.ok || userInfo.error) {
+                console.error('Failed to fetch user info:', userInfo);
+                return NextResponse.redirect(new URL('/error?message=Failed to fetch Instagram user info', request.url));
+            }
+
+            if (!userInfo.username) {
+                console.error('Username not found in Instagram response:', userInfo);
+                return NextResponse.redirect(new URL('/error?message=Instagram username not available', request.url));
+            }
+
             const username = userInfo.username;
-            const name = userInfo.name;
+            const name = userInfo.name || username; // Fallback to username if name is not provided
             const profilePictureUrl = userInfo.profile_picture_url;
 
             // save to supabase
@@ -91,8 +103,8 @@ export async function GET(request: NextRequest) {
                 });
 
             if (instagramError) {
-                // TODO
-                console.error(instagramError);
+                console.error('Failed to save Instagram data:', instagramError);
+                return NextResponse.redirect(new URL('/error?message=Failed to save Instagram connection', request.url));
             }
 
             // TODO: MAKE REFRESHING LOGIC BEFORE PRODUCTION!!!!!!!!!!

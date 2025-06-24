@@ -68,8 +68,8 @@ export default function Home() {
   }, [user])
 
   useEffect(() => {
-    if (!user && !isLoading) {
-      router.push('/login');
+    if (!isLoading && !user) {
+      router.replace('/login');
     }
   }, [user, isLoading, router]);
 

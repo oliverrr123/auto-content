@@ -5,14 +5,21 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { login } from "@/lib/auth-actions"
 import { GoogleButton } from "@/components/google-login-button"
-import { useActionState } from 'react'
-import { Alert, AlertDescription } from "./ui/alert"
+import { useActionState } from "react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { useEffect } from "react"
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"form">) {
   const [state, formAction] = useActionState(login, null)
+
+  useEffect(() => {
+    if (state?.success) {
+      window.location.href = '/'
+    }
+  }, [state?.success])
 
   return (
     <form className={cn("flex flex-col gap-6", className)} action={formAction} {...props}>
@@ -25,11 +32,7 @@ export function LoginForm({
       {state?.error && (
         <Alert variant="destructive">
           <AlertDescription>
-            {state.error === 'Email not confirmed' 
-              ? 'Please check your email and confirm your account before logging in.'
-              : state.error === 'Invalid credentials'
-              ? 'Invalid email or password. Please try again.'
-              : state.error}
+            {state.error}
           </AlertDescription>
         </Alert>
       )}

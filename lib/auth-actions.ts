@@ -5,112 +5,79 @@ import { redirect } from "next/navigation";
 
 import { createClient } from "@/utils/supabase/server";
 
-type LoginState = {
-    error?: 'Email not confirmed' | 'Invalid credentials' | string;
-} | null;
-
-type SignupState = {
-    error?: 'Email already exists' | string;
-    redirect?: string;
-} | null;
-
-export async function login(prevState: LoginState, formData: FormData): Promise<LoginState> {
-    try {
-		const supabase = await createClient();
-
-		const data = {
-			email: formData.get("email") as string,
-			password: formData.get("password") as string,
-		};
-
-		const { error } = await supabase.auth.signInWithPassword(data);
-
-		if (error) {
-			if (error.message.includes('Email not confirmed')) {
-				return { error: 'Email not confirmed' };
-			}
-			if (error.message.includes('Invalid login credentials')) {
-				return { error: 'Invalid credentials' };
-			}
-			return { error: error.message };
-		}
-
-		revalidatePath("/", "layout");
-		redirect("/");
-	} catch (error) {
-		return { error: error instanceof Error ? error.message : 'An error occurred' };
-	}
+type AuthState = {
+  error?: string
+  success?: boolean
 }
 
-export async function signup(prevState: SignupState, formData: FormData): Promise<SignupState> {
-	try {
-		const supabase = await createClient();
+export async function login(prevState: AuthState | null, formData: FormData): Promise<AuthState> {
+  const email = formData.get('email') as string // fix typecasting
+  const password = formData.get('password') as string // fix typecasting
+  const supabase = await createClient();
 
-		const firstName = formData.get("first-name") as string;
-		const lastName = formData.get("last-name") as string;
-		const email = formData.get("email") as string;
+  const { error, data } = await supabase.auth.signInWithPassword({email, password});
 
-		// Check if email already exists
-		const { data: existingUser } = await supabase
-			.from('users')
-			.select()
-			.eq('email', email)
-			.single();
+  if (error) {
+    return { error: error.message }
+  }
 
-		if (existingUser) {
-			return { error: 'Email already exists' };
-		}
+  if (data.user) {
+    await supabase.auth.getSession();
+    return { success: true }
+  }
 
-		const data = {
-			email,
-			password: formData.get("password") as string,
-			options: {
-				data: {
-					full_name: `${firstName} ${lastName}`,
-					email,
-				},
-			},
-		};
-
-		const { error } = await supabase.auth.signUp(data);
-
-		if (error) {
-			return { error: error.message };
-		}
-
-		return { redirect: '/signup/success' };
-	} catch (error) {
-		return { error: error instanceof Error ? error.message : 'An error occurred' };
-	}
+  return { error: 'Something went wrong. Please try again.' }
 }
 
-export async function signout() {
-	const supabase = await createClient();
-	const { error } = await supabase.auth.signOut();
-	if (error) {
-		console.error(error);
-		redirect("/error");
-	}
+export async function signup(prevState: AuthState | null, formData: FormData): Promise<AuthState> {
+  const email = formData.get('email') as string // fix typecasting
+  const password = formData.get('password') as string // fix typecasting
+  const firstName = formData.get('first-name') as string // fix typecasting
+  const lastName = formData.get('last-name') as string // fix typecasting
+  const supabase = await createClient();
 
-	redirect("/logout");
+  const { error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        first_name: firstName,
+        last_name: lastName,
+      },
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/confirm`,
+    }
+  })
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  revalidatePath("/", "layout");
+  redirect("/");
+}
+
+export async function logout() {
+  const supabase = await createClient()
+  await supabase.auth.signOut()
+  redirect('/login')
 }
 
 export async function signInWithGoogle() {
-	const supabase = await createClient();
-	const { data, error } = await supabase.auth.signInWithOAuth({
-		provider: "google",
-		options: {
-			queryParams: {
-			access_type: "offline",
-			prompt: "consent",
-			},
-		},
-	});
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      queryParams: {
+        access_type: "offline",
+        prompt: "consent",
+      },
+    },
+  });
 
-	if (error) {
-		console.error(error);
-		redirect("/error");
-	}
+  if (error) {
+    console.error(error);
+    redirect("/error");
+  }
 
-	redirect(data.url);
+  redirect(data.url);
 }
