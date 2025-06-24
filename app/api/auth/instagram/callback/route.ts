@@ -57,6 +57,12 @@ export async function GET(request: NextRequest) {
 
             if (!response.ok || data.error_type) {
                 console.error('Failed to exchange short lived access token for long lived access token:', data);
+                console.error(response.status)
+                console.error(response.statusText)
+                console.error(response.headers)
+                console.error(response.body)
+                console.error(clientSecret)
+                console.error(accessToken)
                 return NextResponse.redirect(new URL('/error?message=Failed to exchange short lived access token for long lived access token', request.url));
             }
 
