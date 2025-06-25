@@ -5,8 +5,13 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, X, User } from "lucide-react";
 import { DragDropContext, Droppable, Draggable, DropResult, DroppableProvided, DroppableProps } from 'react-beautiful-dnd';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import Image from "next/image";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Calendar } from "@/components/ui/calendar";
+import { Clock } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 interface Post {
     id: string;
@@ -68,6 +73,7 @@ export default function Scheduling() {
     const [showTagDialog, setShowTagDialog] = useState(false);
     const [tagText, setTagText] = useState('');
     const [showTags, setShowTags] = useState(false);
+    const [invalidTime, setInvalidTime] = useState(false);
 
     const handleDragEnd = (result: DropResult) => {
         if (!result.destination) return;
@@ -387,13 +393,55 @@ export default function Scheduling() {
         })
         const data = await response.json();
         if (response.ok) {
-            setPosts(prev => prev.map(post => post.id === cleanedPost.id ? cleanedPost : post));
+            setPosts(prev => prev.filter(post => post.id !== cleanedPost.id));
             setShowEditDialog(false);
-            location.reload();
+            // location.reload();
         } else {
             console.error(data.error);
         }
     }
+
+    useEffect(() => {
+        if (editedPost?.schedule_params.scheduled_date) {
+            const scheduledDate = new Date(editedPost.schedule_params.scheduled_date);
+            const today = new Date();
+            
+            // If it's the same day, check if the time is in the past
+            if (scheduledDate.getFullYear() === today.getFullYear() &&
+                scheduledDate.getMonth() === today.getMonth() &&
+                scheduledDate.getDate() === today.getDate()) {
+                const currentTime = today.getHours() * 60 + today.getMinutes();
+                const scheduledTime = scheduledDate.getHours() * 60 + scheduledDate.getMinutes();
+                setInvalidTime(scheduledTime <= currentTime);
+            } else {
+                setInvalidTime(false);
+            }
+        }
+    }, [editedPost?.schedule_params.scheduled_date]);
+
+    const formatTimeForInput = (dateString: string) => {
+        const date = new Date(dateString);
+        return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+    };
+
+    const updateScheduledDateTime = (newTime: string) => {
+        if (!editedPost) return;
+        
+        const [hours, minutes] = newTime.split(':').map(Number);
+        const currentDate = new Date(editedPost.schedule_params.scheduled_date);
+        currentDate.setHours(hours, minutes, 0, 0);
+        
+        setEditedPost(prev => {
+            if (!prev) return null;
+            return {
+                ...prev,
+                schedule_params: { 
+                    ...prev.schedule_params, 
+                    scheduled_date: currentDate.toISOString()
+                }
+            };
+        });
+    };
 
     if (!user) {
         return null;
@@ -820,6 +868,69 @@ export default function Scheduling() {
                                 <DialogClose asChild>
                                     <Button className="text-xl font-semibold h-12 p-0 rounded-2xl hover:bg-blue-500" onClick={closeTagDialog}>Done</Button>
                                 </DialogClose>
+                            </DialogContent>
+                            </Dialog>
+                            <hr className="border-slate-200" />
+                            <Dialog>
+                            <DialogTrigger>
+                                <div className="flex gap-2 items-center p-4 bg-white w-full">
+                                    <Clock className="w-6 h-6 stroke-[1.6]" />
+                                    <p className="text-xl">Edit schedule</p>
+                                </div>
+                            </DialogTrigger>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle className="text-2xl">Schedule post</DialogTitle>
+                                    <DialogDescription>
+                                        Schedule a post to be published at a later date.
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <Card className="w-fit pt-4 mx-auto">
+                                <CardContent className="px-4">
+                                    <Calendar
+                                        mode="single"
+                                        selected={editedPost?.schedule_params.scheduled_date ? new Date(editedPost.schedule_params.scheduled_date) : undefined}
+                                        onSelect={(newDate) => newDate && setEditedPost(prev => {
+                                            if (!prev) return null;
+                                            return {
+                                                ...prev,
+                                                schedule_params: { ...prev.schedule_params, scheduled_date: newDate.toISOString() }
+                                            };
+                                        })}
+                                        className="bg-transparent p-0"
+                                        style={{'--cell-size': '40px'} as React.CSSProperties}
+                                        disabled={(date) => date < new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()) || date > new Date(new Date().getFullYear() + 1, new Date().getMonth(), new Date().getDate())}
+                                        required
+                                    />
+                                </CardContent>
+                                <CardFooter className="flex flex-col gap-6 border-t px-4 !pt-4">
+                                    <div className="flex w-full flex-col gap-3">
+                                        <Label htmlFor="time-from">Time</Label>
+                                        <div className="relative flex w-full items-center gap-2">
+                                            <Clock className="text-muted-foreground pointer-events-none absolute left-2.5 size-4 select-none" />
+                                            <Input
+                                                id="time-from"
+                                                type="time"
+                                                step="60"
+                                                value={editedPost?.schedule_params.scheduled_date ? formatTimeForInput(editedPost.schedule_params.scheduled_date) : ''}
+                                                className={`appearance-none pl-8 [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none ${invalidTime ? 'border-red-500' : ''}`}
+                                                onChange={(e) => updateScheduledDateTime(e.target.value)}
+                                            />
+                                        </div>
+                                        {invalidTime && (
+                                            <p className="text-sm text-red-500">
+                                                This time is in the past
+                                            </p>
+                                        )}
+                                    </div>
+                                </CardFooter>
+                                </Card>
+                                <DialogFooter className="w-full flex gap-3">
+                                    <DialogClose className="rounded-2xl text-xl p-3 w-full text-slate-500 bg-white drop-shadow-sexy">
+                                        Cancel
+                                    </DialogClose>
+                                    <DialogClose className="rounded-2xl font-semibold text-xl p-3 w-full drop-shadow-sexy bg-primary disabled:opacity-50 disabled:cursor-not-allowed text-white hover:bg-blue-500">Edit schedule</DialogClose>
+                                </DialogFooter>
                             </DialogContent>
                             </Dialog>
                         </div>
