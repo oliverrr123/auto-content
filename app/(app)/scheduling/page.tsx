@@ -373,6 +373,28 @@ export default function Scheduling() {
         }
     }
 
+    const deletePost = async () => {
+        const cleanedPost = {
+            ...editedPost!,
+            params: editedPost!.params.map(param => ({
+                ...param,
+                taggedPeople: param.taggedPeople.filter(tag => tag.username.trim() !== '')
+            }))
+        };
+        const response = await fetch('/api/post/instagram/delete', {
+            method: 'POST',
+            body: JSON.stringify({postData: cleanedPost})
+        })
+        const data = await response.json();
+        if (response.ok) {
+            setPosts(prev => prev.map(post => post.id === cleanedPost.id ? cleanedPost : post));
+            setShowEditDialog(false);
+            location.reload();
+        } else {
+            console.error(data.error);
+        }
+    }
+
     if (!user) {
         return null;
     }
@@ -818,6 +840,20 @@ export default function Scheduling() {
                             </Dialog>
                             <Dialog>
                                 <DialogTrigger asChild>
+                                    <Button className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-red-500 text-white hover:bg-red-600">Delete schedule</Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                    <DialogHeader>
+                                        <DialogTitle>Delete scheduled post?</DialogTitle>
+                                    </DialogHeader>
+                                    <DialogFooter className="flex gap-3">
+                                        <DialogClose className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-white text-slate-700">Go back</DialogClose>
+                                        <DialogClose onClick={() => { deletePost(); setShowEditDialog(false); setEditPostId(null); setEditedPost(null); setShowTags(false); }} className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-red-500 text-white hover:bg-red-600">Delete</DialogClose>
+                                    </DialogFooter>
+                                </DialogContent>
+                            </Dialog>
+                            <Dialog>
+                                <DialogTrigger asChild>
                                     <Button className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-primary text-white hover:bg-blue-500">Save</Button>
                                 </DialogTrigger>
                                 <DialogContent>
@@ -825,7 +861,7 @@ export default function Scheduling() {
                                         <DialogTitle>Save edits?</DialogTitle>
                                     </DialogHeader>
                                     <DialogFooter className="flex gap-3">
-                                        <DialogClose className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-white text-slate-700">Cancel</DialogClose>
+                                        <DialogClose className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-white text-slate-700">Go back</DialogClose>
                                         <DialogClose onClick={() => { saveEdits(); setShowEditDialog(false); setEditPostId(null); setEditedPost(null); setShowTags(false); }} className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-primary text-white hover:bg-blue-500">Save</DialogClose>
                                     </DialogFooter>
                                 </DialogContent>

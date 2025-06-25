@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
 
     const { data, error } = await supabase
         .from('posts')
-        .update(postData)
+        .delete()
         .eq('id', postData.id)
         .select()
 
