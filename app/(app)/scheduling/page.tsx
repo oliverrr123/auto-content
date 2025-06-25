@@ -352,7 +352,7 @@ export default function Scheduling() {
         }));
     };
 
-    const saveEdits = () => {
+    const saveEdits = async () => {
         const cleanedPost = {
             ...editedPost!,
             params: editedPost!.params.map(param => ({
@@ -360,8 +360,17 @@ export default function Scheduling() {
                 taggedPeople: param.taggedPeople.filter(tag => tag.username.trim() !== '')
             }))
         };
-        setPosts(prev => prev.map(post => post.id === cleanedPost.id ? cleanedPost : post));
-        setShowEditDialog(false);
+        const response = await fetch('/api/post/instagram/edit', {
+            method: 'POST',
+            body: JSON.stringify({postData: cleanedPost})
+        })
+        const data = await response.json();
+        if (response.ok) {
+            setPosts(prev => prev.map(post => post.id === cleanedPost.id ? cleanedPost : post));
+            setShowEditDialog(false);
+        } else {
+            console.error(data.error);
+        }
     }
 
     if (!user) {

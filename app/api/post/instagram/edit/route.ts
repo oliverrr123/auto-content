@@ -14,10 +14,19 @@ export async function POST(request: NextRequest) {
         .from('posts')
         .update(postData)
         .eq('id', postData.id)
+        .select()
 
-    if (!data || error) {
-        return NextResponse.json({ error: "Post not found" }, { status: 404 });
+    console.log(data, error);
+
+    console.log(postData);
+
+    if (error) {
+        return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
-    return NextResponse.json({ post: data });
+    if (!data || data.length === 0) {
+        return NextResponse.json({ error: "Post not found or no changes were made" }, { status: 404 });
+    }
+
+    return NextResponse.json({ post: data[0] });
 }
