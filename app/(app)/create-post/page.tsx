@@ -400,15 +400,6 @@ export default function CreatePost() {
             const scheduledDateTime = new Date(date);
             scheduledDateTime.setHours(hours, minutes);
 
-            // Convert to UTC
-            const scheduledDateTimeUTC = new Date(
-                scheduledDateTime.getUTCFullYear(),
-                scheduledDateTime.getUTCMonth(),
-                scheduledDateTime.getUTCDate(),
-                scheduledDateTime.getUTCHours(),
-                scheduledDateTime.getUTCMinutes()
-            );
-
             // Check if trying to schedule in the past
             if (scheduledDateTime <= new Date()) {
                 setShowScheduleErrorDialog(true);
@@ -423,11 +414,11 @@ export default function CreatePost() {
                 body: JSON.stringify({
                     uploadedFiles: uploadedFiles,
                     caption: caption,
-                    scheduledDate: scheduledDateTimeUTC.toString()
+                    scheduledDate: scheduledDateTime.toString()
                 })
             })
 
-            console.log(`scheduled date: ${scheduledDateTimeUTC.toString()}`);
+            console.log(`scheduled date: ${scheduledDateTime.toString()}`);
 
             const data = await response.json();
 
