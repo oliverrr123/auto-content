@@ -79,12 +79,24 @@ export async function POST(req: NextRequest) {
             })
         });
 
+        const data = await response.json();
+
+        console.log('--------------------------------');
+        console.log(data);
+        console.log('--------------------------------');
+
         if (!response.ok) {
             const errorText = await response.text();
             console.error('Cron job API error:', errorText);
             throw new Error(`Failed to schedule cron job: ${response.status} ${response.statusText}`);
         }
-        
+
+        if (data.jobId) {
+            const cronJobId = data.jobId;
+            await supabase.from('posts').update({
+                job_id: cronJobId
+            }).eq('id', post.id);
+        }
         return NextResponse.json({ success: true }, { status: 200 });
     } catch (error) {
         console.error(error);

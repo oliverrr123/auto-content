@@ -392,10 +392,9 @@ export default function Scheduling() {
             body: JSON.stringify({postData: cleanedPost})
         })
         const data = await response.json();
-        if (response.ok) {
+        if (data.success) {
             setPosts(prev => prev.filter(post => post.id !== cleanedPost.id));
             setShowEditDialog(false);
-            // location.reload();
         } else {
             console.error(data.error);
         }
