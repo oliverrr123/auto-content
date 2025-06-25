@@ -162,7 +162,7 @@ export default function Scheduling() {
                                     post.schedule_params.status === 'scheduled' ? (
                                         <Dialog key={post.id}>
                                         <DialogTrigger>
-                                            <div key={index2} className='flex items-center gap-2 px-3 py-2 bg-primary text-white rounded-xl whitespace-nowrap'>
+                                            <div className='flex items-center gap-2 px-3 py-2 bg-primary text-white rounded-xl whitespace-nowrap'>
                                                 <div className="flex flex-col items-start">
                                                     <p className="text-sm">{post.caption}</p>
                                                     <p className="text-xs opacity-70">{new Date(post.schedule_params.scheduled_date).getHours()}:{new Date(post.schedule_params.scheduled_date).getMinutes().toString().padStart(2, '0')}</p>
@@ -217,7 +217,7 @@ export default function Scheduling() {
                                     ) : (
                                         <Dialog key={post.id}>
                                         <DialogTrigger>
-                                            <div key={index2} className='flex items-center gap-2 px-3 py-2 bg-blue-400 text-white rounded-xl whitespace-nowrap'>
+                                            <div className='flex items-center gap-2 px-3 py-2 bg-blue-400 text-white rounded-xl whitespace-nowrap'>
                                                 <CheckCircle className='w-4 h-4' />
                                                 <div className="flex flex-col items-start">
                                                     <p className="text-sm">{post.caption}</p>
@@ -266,7 +266,6 @@ export default function Scheduling() {
                                             )}
                                             <DialogFooter className="flex gap-3">
                                                 <DialogClose className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-white text-slate-700">Close</DialogClose>
-                                                <Button className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-primary text-white hover:bg-blue-500">Edit</Button>
                                             </DialogFooter>
                                         </DialogContent>
                                         </Dialog>

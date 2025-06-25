@@ -5,8 +5,6 @@ export async function POST(req: NextRequest) {
     const { uploadedFiles, caption, scheduledDate } = await req.json();
     const supabase = await createClient();
 
-    console.log(`scheduled date: ${scheduledDate}`);
-
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
@@ -48,8 +46,6 @@ export async function POST(req: NextRequest) {
         // Ensure scheduledDate is a proper Date object
         const scheduleDateTime = new Date(scheduledDate);
 
-        console.log(`scheduleDateTime: ${scheduleDateTime}`);
-
         const response = await fetch('https://api.cron-job.org/jobs', {
             method: 'PUT',
             headers: {
@@ -90,7 +86,6 @@ export async function POST(req: NextRequest) {
         }
 
         const responseData = await response.json();
-        console.log('Cron job created:', responseData);
         
         return NextResponse.json({ success: true }, { status: 200 });
     } catch (error) {

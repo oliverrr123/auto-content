@@ -62,10 +62,6 @@ export default function CreatePost() {
             const currentMinutes = now.getMinutes();
             
             setInvalidTime(hours < currentHours || (hours === currentHours && minutes < currentMinutes));
-
-            console.log(hours, currentHours, minutes, currentMinutes);
-            console.log(hours < currentHours || (hours === currentHours && minutes < currentMinutes));
-            console.log(invalidTime);
         } else {
             setInvalidTime(false);
         }
@@ -418,8 +414,6 @@ export default function CreatePost() {
                 })
             })
 
-            console.log(`scheduled date: ${scheduledDateTime.toString()}`);
-
             const data = await response.json();
 
             if (data.error) {
@@ -725,7 +719,6 @@ export default function CreatePost() {
                                     value={time}
                                     className={`appearance-none pl-8 [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none ${invalidTime ? 'border-red-500' : ''}`}
                                     onChange={(e) => setTime(e.target.value)}
-                                    onBlur={() => console.log(time)}
                                 />
                             </div>
                             {invalidTime && (
