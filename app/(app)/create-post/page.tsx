@@ -427,13 +427,6 @@ export default function CreatePost() {
                 })
             })
 
-            console.log(`scheduled date: ${scheduledDateTimeUTC}`);
-            console.log(`scheduled date: ${scheduledDateTime}`);
-            console.log(`scheduled date: ${scheduledDateTime.toLocaleString()}`);
-            console.log(`scheduled date: ${scheduledDateTime.toLocaleString('en-US', { timeZone: 'UTC' })}`);
-            console.log(`current date: ${new Date().toLocaleString()}`);
-            console.log(`current date: ${new Date().toLocaleString('en-US', { timeZone: 'UTC' })}`);
-
             const data = await response.json();
 
             if (data.error) {

@@ -39,7 +39,11 @@ export async function POST(req: NextRequest) {
             .select()
             .single();
 
-        console.log(post);
+        console.log(`scheduled date: ${scheduledDate}`);
+        console.log(`scheduled date: ${scheduledDate.toLocaleString()}`);
+        console.log(`scheduled date: ${scheduledDate.toLocaleString('en-US', { timeZone: 'UTC' })}`);
+        console.log(`current date: ${new Date().toLocaleString()}`);
+        console.log(`current date: ${new Date().toLocaleString('en-US', { timeZone: 'UTC' })}`);
 
         if (error) {
             throw error;
