@@ -48,6 +48,8 @@ export async function POST(req: NextRequest) {
         // Ensure scheduledDate is a proper Date object
         const scheduleDateTime = new Date(scheduledDate);
 
+        console.log(`scheduleDateTime: ${scheduleDateTime}`);
+
         const response = await fetch('https://api.cron-job.org/jobs', {
             method: 'PUT',
             headers: {
