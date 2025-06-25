@@ -67,6 +67,7 @@ export default function Scheduling() {
     const [editedPost, setEditedPost] = useState<Post | null>(null);
     const [showTagDialog, setShowTagDialog] = useState(false);
     const [tagText, setTagText] = useState('');
+    const [showTags, setShowTags] = useState(false);
 
     const handleDragEnd = (result: DropResult) => {
         if (!result.destination) return;
@@ -249,13 +250,7 @@ export default function Scheduling() {
     }
 
     const closeTagDialog = () => {
-        setEditedPost(prev => {
-            if (!prev) return null;
-            return {
-                ...prev,
-                params: prev.params.map(file => ({ ...file, taggedPeople: file.taggedPeople.filter(tag => tag.username.trim() !== '') }))
-            };
-        });
+        setShowTagDialog(false);
     }
 
     async function uploadToGoogleCloud(signedWriteUrl: string, file: File) {
@@ -337,10 +332,16 @@ export default function Scheduling() {
         if (editPostId) {
             const post = posts.find(post => post.id === editPostId);
             if (post) {
-                setEditedPost(post);
+                setEditedPost({
+                    ...post,
+                    params: post.params.map(param => ({
+                        ...param,
+                        taggedPeople: param.taggedPeople.map(tag => ({ ...tag }))
+                    }))
+                });
             }
         }
-    }, [editPostId]);
+    }, [editPostId, posts]);
 
     const [expandedCaptions, setExpandedCaptions] = useState<{ [key: string]: boolean }>({});
 
@@ -352,7 +353,14 @@ export default function Scheduling() {
     };
 
     const saveEdits = () => {
-        setPosts(prev => prev.map(post => post.id === editedPost?.id ? editedPost : post));
+        const cleanedPost = {
+            ...editedPost!,
+            params: editedPost!.params.map(param => ({
+                ...param,
+                taggedPeople: param.taggedPeople.filter(tag => tag.username.trim() !== '')
+            }))
+        };
+        setPosts(prev => prev.map(post => post.id === cleanedPost.id ? cleanedPost : post));
         setShowEditDialog(false);
     }
 
@@ -414,7 +422,7 @@ export default function Scheduling() {
                                     const timeA = new Date(a.schedule_params.scheduled_date);
                                     const timeB = new Date(b.schedule_params.scheduled_date);
                                     return timeA.getTime() - timeB.getTime();
-                                }).map((post, index2) => (
+                                }).map((post) => (
                                     post.schedule_params.status === 'scheduled' ? (
                                         <Dialog key={post.id}>
                                         <DialogTrigger>
@@ -425,13 +433,26 @@ export default function Scheduling() {
                                                 </div>
                                             </div>
                                         </DialogTrigger>
-                                        <DialogContent className="bg-slate-100 [&>button]:hidden max-h-[90vh] overflow-y-auto">
+                                        <DialogContent className="bg-slate-100 [&>button]:hidden max-h-[90vh] overflow-y-auto overflow-x-hidden">
                                             <DialogHeader className="hidden">
                                                 <DialogTitle>Instagram post</DialogTitle>
                                             </DialogHeader>
                                             {post && ( 
                                                 <div className="flex flex-col items-center justify-center bg-white rounded-xl drop-shadow-sexy border-b border-slate-200">
-                                                <Image src={post.params[0].signedReadUrl} unoptimized alt={post.caption} width={256} height={256} className="w-full rounded-t-xl" />
+                                                <div className="relative">
+                                                    <Image onClick={() => setShowTags(!showTags)} src={post.params[0].signedReadUrl} unoptimized alt={post.caption} width={256} height={256} className="w-full rounded-t-xl" />
+                                                    {post.params[0].taggedPeople.length > 0 && (
+                                                        <div className="absolute bottom-2 left-2 bg-black/50 rounded-full flex items-center justify-center h-7 w-7">
+                                                            <svg aria-label="Tags" className="x1lliihq x1n2onr6 x9bdzbf" fill="white" height="12" role="img" viewBox="0 0 24 24" width="12"><title>Tags</title><path d="M21.334 23H2.666a1 1 0 0 1-1-1v-1.354a6.279 6.279 0 0 1 6.272-6.272h8.124a6.279 6.279 0 0 1 6.271 6.271V22a1 1 0 0 1-1 1ZM12 13.269a6 6 0 1 1 6-6 6.007 6.007 0 0 1-6 6Z"></path></svg>
+                                                        </div>
+                                                    )}
+                                                    {showTags && post.params[0].taggedPeople.map((tag, index2) => (
+                                                        <div key={index2} className="absolute flex flex-col items-center top-0 left-0 bg-opacity-50 rounded-xl" style={{ left: `calc(${tag.x * 100}% - 50px)`, top: `calc(${tag.y * 100}% - 9px)` }}>
+                                                            <div className="w-0 h-0 border-l-[8px] border-r-[8px] border-b-[12px] border-l-transparent border-r-transparent border-b-black/50"></div>
+                                                            <p className="text-white bg-black/50 rounded-xl py-1 px-4 w-[100px] text-center">{tag.username}</p>
+                                                        </div>
+                                                    ))}
+                                                </div>
                                                 <div className="flex items-center justify-between w-full p-4">
                                                     <div></div>
                                                     <p className="text-sm text-slate-500">{formatDate(post.schedule_params.scheduled_date)}</p>
@@ -465,7 +486,7 @@ export default function Scheduling() {
                                                 </div>
                                             )}
                                             <DialogFooter className="flex gap-3">
-                                                <DialogClose className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-white text-slate-700">Close</DialogClose>
+                                                <DialogClose className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-white text-slate-700" onClick={() => {setShowTags(false)}}>Close</DialogClose>
                                                 <DialogClose className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-primary text-white hover:bg-blue-500" onClick={() => {setShowEditDialog(true); setEditPostId(post.id)}}>Edit</DialogClose>
                                             </DialogFooter>
                                         </DialogContent>
@@ -665,7 +686,7 @@ export default function Scheduling() {
                                         <User className="w-6 h-6 stroke-[1.6]" />
                                         <p className="text-xl">Tag people</p>
                                     </div>
-                                    <p className="max-w-[200px] truncate text-sm text-slate-500 overflow-hidden text-ellipsis">
+                                    <p className="max-w-[160px] truncate text-sm text-slate-500 overflow-hidden text-ellipsis">
                                         {[...new Set(editedPost?.params.flatMap(file => file.taggedPeople.map(person => person.username.length > 0 && ` @${person.username}`)))].join(', ')}
                                     </p>
                                 </div>
@@ -695,8 +716,14 @@ export default function Scheduling() {
                                                                         className="text-white bg-black/50 rounded-xl py-1 px-4 w-[100px] text-center" 
                                                                         value={tag.username} 
                                                                         onChange={(e) => {
+                                                                            const newValue = e.target.value;
                                                                             const newTags = [...file.taggedPeople];
-                                                                            newTags[index2].username = e.target.value;
+                                                                            if (newValue === '') {
+                                                                                // Remove the tag if text is empty
+                                                                                newTags.splice(index2, 1);
+                                                                            } else {
+                                                                                newTags[index2].username = newValue;
+                                                                            }
                                                                             setTagText([...tagText.split(', '), newTags.map(person => `@${person.username}`)].join(', '));
                                                                             setEditedPost(prev => {
                                                                                 if (!prev) return null;
@@ -706,7 +733,7 @@ export default function Scheduling() {
                                                                                 };
                                                                             });
                                                                         }}
-                                                                        onKeyDown={(e) => { if (e.key === 'Enter') { closeTagDialog(); setShowTagDialog(false); }}}
+                                                                        onKeyDown={(e) => { if (e.key === 'Enter') { closeTagDialog(); }}}
                                                                     />
                                                                 </div>
                                                             ))}
@@ -729,8 +756,14 @@ export default function Scheduling() {
                                                                         className="text-white bg-black/50 rounded-xl py-1 px-4 w-[100px] text-center" 
                                                                         value={person.username} 
                                                                         onChange={(e) => {
+                                                                            const newValue = e.target.value;
                                                                             const newTags = [...file.taggedPeople];
-                                                                            newTags[index2].username = e.target.value;
+                                                                            if (newValue === '') {
+                                                                                // Remove the tag if text is empty
+                                                                                newTags.splice(index2, 1);
+                                                                            } else {
+                                                                                newTags[index2].username = newValue;
+                                                                            }
                                                                             setTagText([...tagText.split(', '), newTags.map(person => `@${person.username}`)].join(', '));
                                                                             setEditedPost(prev => {
                                                                                 if (!prev) return null;
@@ -740,7 +773,7 @@ export default function Scheduling() {
                                                                                 };
                                                                             });
                                                                         }}
-                                                                        onKeyDown={(e) => { if (e.key === 'Enter') { closeTagDialog(); setShowTagDialog(false); }}}
+                                                                        onKeyDown={(e) => { if (e.key === 'Enter') { closeTagDialog(); }}}
                                                                     />
                                                                 </div>
                                                             ))}
@@ -770,7 +803,7 @@ export default function Scheduling() {
                                     </DialogHeader>
                                     <DialogFooter className="flex gap-3">
                                         <DialogClose className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-white text-slate-700">Go back</DialogClose>
-                                        <DialogClose onClick={() => setShowEditDialog(false)} className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-primary text-white hover:bg-blue-500">Cancel editing</DialogClose>
+                                        <DialogClose onClick={() => { setShowEditDialog(false); setEditPostId(null); setEditedPost(null); setShowTags(false); }} className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-primary text-white hover:bg-blue-500">Cancel editing</DialogClose>
                                     </DialogFooter>
                                 </DialogContent>
                             </Dialog>
@@ -784,7 +817,7 @@ export default function Scheduling() {
                                     </DialogHeader>
                                     <DialogFooter className="flex gap-3">
                                         <DialogClose className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-white text-slate-700">Cancel</DialogClose>
-                                        <DialogClose onClick={saveEdits} className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-primary text-white hover:bg-blue-500">Save</DialogClose>
+                                        <DialogClose onClick={() => { saveEdits(); setShowEditDialog(false); setEditPostId(null); setEditedPost(null); setShowTags(false); }} className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-primary text-white hover:bg-blue-500">Save</DialogClose>
                                     </DialogFooter>
                                 </DialogContent>
                             </Dialog>
