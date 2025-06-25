@@ -666,7 +666,7 @@ export default function CreatePost() {
                 </DialogTrigger>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle className="text-2xl">Are sure you want post?</DialogTitle>
+                        <DialogTitle className="text-2xl">Are you sure you want to post?</DialogTitle>
                         <DialogDescription>
                             This will create a new post on your Instagram account.
                         </DialogDescription>
