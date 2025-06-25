@@ -5,6 +5,8 @@ export async function POST(req: NextRequest) {
     const { uploadedFiles, caption, scheduledDate } = await req.json();
     const supabase = await createClient();
 
+    console.log(`scheduled date: ${scheduledDate}`);
+
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
@@ -38,12 +40,6 @@ export async function POST(req: NextRequest) {
             })
             .select()
             .single();
-
-        console.log(`scheduled date: ${scheduledDate}`);
-        console.log(`scheduled date: ${scheduledDate.toLocaleString()}`);
-        console.log(`scheduled date: ${scheduledDate.toLocaleString('en-US', { timeZone: 'UTC' })}`);
-        console.log(`current date: ${new Date().toLocaleString()}`);
-        console.log(`current date: ${new Date().toLocaleString('en-US', { timeZone: 'UTC' })}`);
 
         if (error) {
             throw error;

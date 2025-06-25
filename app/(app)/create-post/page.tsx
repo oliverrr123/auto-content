@@ -423,9 +423,11 @@ export default function CreatePost() {
                 body: JSON.stringify({
                     uploadedFiles: uploadedFiles,
                     caption: caption,
-                    scheduledDate: scheduledDateTimeUTC
+                    scheduledDate: scheduledDateTimeUTC.toString()
                 })
             })
+
+            console.log(`scheduled date: ${scheduledDateTimeUTC.toString()}`);
 
             const data = await response.json();
 
