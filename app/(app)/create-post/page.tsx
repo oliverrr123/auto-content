@@ -427,6 +427,13 @@ export default function CreatePost() {
                 })
             })
 
+            console.log(`scheduled date: ${scheduledDateTimeUTC}`);
+            console.log(`scheduled date: ${scheduledDateTime}`);
+            console.log(`scheduled date: ${scheduledDateTime.toLocaleString()}`);
+            console.log(`scheduled date: ${scheduledDateTime.toLocaleString('en-US', { timeZone: 'UTC' })}`);
+            console.log(`current date: ${new Date().toLocaleString()}`);
+            console.log(`current date: ${new Date().toLocaleString('en-US', { timeZone: 'UTC' })}`);
+
             const data = await response.json();
 
             if (data.error) {
@@ -800,7 +807,7 @@ export default function CreatePost() {
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
-                        <DialogClose className="rounded-2xl font-semibold text-xl p-2 drop-shadow-sexy w-full bg-primary text-white hover:bg-blue-500" onClick={() => { window.location.reload() }}>Done</DialogClose>
+                        <DialogClose className="rounded-2xl font-semibold text-xl p-2 drop-shadow-sexy w-full bg-primary text-white hover:bg-blue-500" onClick={() => { window.location.href = '/scheduling' }}>Done</DialogClose>
                     </DialogFooter>
                 </DialogContent>
                 </Dialog>
