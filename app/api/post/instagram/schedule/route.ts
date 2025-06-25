@@ -84,8 +84,6 @@ export async function POST(req: NextRequest) {
             console.error('Cron job API error:', errorText);
             throw new Error(`Failed to schedule cron job: ${response.status} ${response.statusText}`);
         }
-
-        const responseData = await response.json();
         
         return NextResponse.json({ success: true }, { status: 200 });
     } catch (error) {
