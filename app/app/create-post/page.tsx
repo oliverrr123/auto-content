@@ -786,7 +786,7 @@ export default function CreatePost() {
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
-                        <DialogClose className="rounded-2xl font-semibold text-xl p-2 drop-shadow-sexy w-full bg-primary text-white hover:bg-blue-500" onClick={() => { window.location.href = '/scheduling' }}>Done</DialogClose>
+                        <DialogClose className="rounded-2xl font-semibold text-xl p-2 drop-shadow-sexy w-full bg-primary text-white hover:bg-blue-500" onClick={() => { window.location.href = '/app/scheduling' }}>Done</DialogClose>
                     </DialogFooter>
                 </DialogContent>
                 </Dialog>

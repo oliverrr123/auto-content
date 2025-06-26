@@ -15,7 +15,6 @@ const bucket = storage.bucket(process.env.BUCKET_NAME || "");
 
 async function run() {
     const postId = process.env.POST_ID;
-    console.log('Fetching post with ID:', postId);
 
     const { data, error } = await supabase.from('posts').select('*').eq('id', postId).single();
 
@@ -34,7 +33,6 @@ async function run() {
     const uploadedFiles = data.params;
     const scheduleParams = data.schedule_params;
 
-    console.log('Fetching Instagram credentials for user:', userId);
     const { data: instagramData, error: instagramError } = await supabase
         .from('instagram')
         .select('access_token, instagram_id')
@@ -65,8 +63,6 @@ async function run() {
 
     if (scheduleParams.status !== 'scheduled' || new Date(scheduleParams.scheduled_date).toISOString().split('T')[0] !== new Date().toISOString().split('T')[0]) {
         console.error(`Post is not scheduled or scheduled for a different day: ${scheduleParams.status} ${scheduleParams.scheduled_date} ${new Date().toISOString().split('T')[0]}`);
-        console.log(new Date(scheduleParams.scheduled_date).toISOString().split('T')[0]);
-        console.log(new Date().toISOString().split('T')[0]);
         process.exit(1);
     }
 
@@ -104,17 +100,8 @@ async function run() {
                     });
                 }
 
-                console.log(new_instagram_id);
-
                 if (!response.ok) {
                     console.error(`Instagram API error 1: ${response.status} ${response.statusText}`);
-                    console.log(response);
-                    console.log(file);
-                    console.log(file.taggedPeople);
-                    console.log(file.taggedPeople.map((user) => ({ 'username': user.username, x: user.x, y: user.y})));
-                    console.log(file.taggedPeople.map((user) => ({ 'username': user.username })));
-                    console.log(file.taggedPeople.map((user) => ({ 'username': user.username, x: user.x, y: user.y})));
-                    console.log(file.taggedPeople.map((user) => ({ 'username': user.username, x: user.x, y: user.y})));
                     process.exit(1);
                 }
 
@@ -174,16 +161,6 @@ async function run() {
             }
 
             if (!response.ok) {
-                console.log(await response.json());
-                console.log(response);
-                console.log(uploadedFiles[0]);
-                console.log(uploadedFiles[0].signedReadUrl);
-                console.log(caption);
-                console.log(uploadedFiles[0].taggedPeople);
-                console.log(uploadedFiles[0].taggedPeople.map((user) => ({ 'username': user.username, x: user.x, y: user.y})));
-                console.log(uploadedFiles[0].taggedPeople.map((user) => ({ 'username': user.username })));
-                console.log(uploadedFiles[0].taggedPeople.map((user) => ({ 'username': user.username, x: user.x, y: user.y})));
-                console.log(uploadedFiles[0].taggedPeople.map((user) => ({ 'username': user.username, x: user.x, y: user.y})));
                 console.error(`Instagram API error 3: ${response.status} ${response.statusText}`);
                 process.exit(1);
             }

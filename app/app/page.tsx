@@ -240,7 +240,7 @@ export default function Home() {
   if (user && profile && !isLoadingProfile && !media) {
     return (
       <div className="flex flex-col gap-4">
-        <h1 className="text-2xl font-bold">Start by linking your Instagram account <span className="text-blue-500" onClick={() => window.location.href = '/context'}>here</span></h1>
+        <h1 className="text-2xl font-bold">Start by linking your Instagram account <span className="text-blue-500" onClick={() => window.location.href = '/app/context'}>here</span></h1>
       </div>
     )
   }
@@ -248,7 +248,7 @@ export default function Home() {
   if (!isLoading && !user) {
     return (
       <div className="flex flex-col gap-4">
-        <h1 className="text-2xl font-bold">This is a landing page <span className="text-blue-500" onClick={() => window.location.href = '/context'}>here</span></h1>
+        <h1 className="text-2xl font-bold">This is a landing page <span className="text-blue-500" onClick={() => window.location.href = '/app/context'}>here</span></h1>
       </div>
     )
   }
