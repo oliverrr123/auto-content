@@ -11,13 +11,7 @@ const storage = new Storage({
     },
 });
 
-const bucketName = "autocontent-file-upload";
-if (!bucketName) {
-    console.error('BUCKET_NAME environment variable is not set');
-    process.exit(1);
-}
-console.log('Initializing with bucket name:', bucketName);
-const bucket = storage.bucket(bucketName);
+const bucket = storage.bucket("autocontent-file-upload");
 
 async function run() {
     const postId = process.env.POST_ID;
@@ -219,66 +213,16 @@ async function run() {
         const publishContainerData = await publishContainerResponse.json();
     
         if (publishContainerData.id) {
-            console.log('Starting file cleanup process...');
-            console.log('Number of files to process:', uploadedFiles.length);
-            
             for (const file of uploadedFiles) {
-                try {
-                    console.log('\n--- Processing file ---');
-                    console.log('Original signed URL:', file.signedReadUrl);
-                    
-                    const urlObj = new URL(file.signedReadUrl);
-                    console.log('Parsed URL object:', {
-                        protocol: urlObj.protocol,
-                        hostname: urlObj.hostname,
-                        pathname: urlObj.pathname
-                    });
-                    
-                    const path = decodeURIComponent(urlObj.pathname);
-                    console.log('Decoded pathname:', path);
-                    
-                    const parts = path.split('/').filter(Boolean);
-                    console.log('Path parts before shift:', parts);
-                    
-                    parts.shift();
-                    console.log('Path parts after shift:', parts);
-                    
-                    const fileName = parts.join('/');
-                    console.log('Constructed final fileName:', fileName);
-                    console.log('Bucket name being used:', bucketName);
-
-                    // List files with prefix to debug
-                    console.log('Listing files with same prefix...');
-                    const [files] = await bucket.getFiles({ prefix: parts[0] });
-                    console.log('Found files with same prefix:', files.map(f => f.name));
-
-                    console.log('Attempting to delete file:', fileName);
-                    
-                    // Check if file exists before trying to delete
-                    console.log('Checking if file exists...');
-                    const [exists] = await bucket.file(fileName).exists();
-                    console.log('File exists check result:', exists);
-                    
-                    if (!exists) {
-                        console.log(`File ${fileName} does not exist in bucket, skipping deletion`);
-                        continue;
-                    }
-                    
-                    console.log('File exists, proceeding with deletion...');
-                    await bucket.file(fileName).delete();
-                    console.log(`Successfully deleted file: ${fileName}`);
-                } catch (error) {
-                    console.error('Error details:', {
-                        message: error.message,
-                        code: error.code,
-                        stack: error.stack
-                    });
-                    console.error('Error deleting file:', file.signedReadUrl);
-                    // Continue with other files even if one fails
-                    continue;
-                }
+                const urlObj = new URL(file.signedReadUrl);
+                const path = urlObj.pathname;
+                
+                const parts = path.split('/').filter(Boolean);
+                parts.shift();
+                const fileName = parts.join('/');
+        
+                await bucket.file(fileName).delete();
             }
-            console.log('\nFile cleanup process completed.');
         } else {
             console.error('Error publishing container:', publishContainerData);
             process.exit(1);
