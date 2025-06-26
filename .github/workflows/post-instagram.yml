@@ -30,4 +30,5 @@ jobs:
           PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
           BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
           POST_ID: ${{ inputs.post_id }}
+          CRONJOB_API_KEY: ${{ secrets.CRONJOB_API_KEY }}
 

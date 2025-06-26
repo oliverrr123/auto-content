@@ -237,6 +237,19 @@ async function run() {
             console.error('Error publishing container:', publishContainerData);
             process.exit(1);
         }
+
+        const response = await fetch(`https://api.cron-job.org/jobs/${data.job_id}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${process.env.CRONJOB_API_KEY}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            console.error('Error deleting cron job:', response.statusText);
+            process.exit(1);
+        }
     
     } catch (error) {
         console.error('Error during publish:', error);
