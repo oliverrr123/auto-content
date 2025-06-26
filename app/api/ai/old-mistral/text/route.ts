@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server';
-import { OpenAI } from 'openai';
+import { Mistral } from '@mistralai/mistralai';
 import { createClient } from '@/utils/supabase/server';
 
 export async function POST(req: Request) {
 	try {
-		// Check authentication
 		const supabase = await createClient();
 		const { data: { user } } = await supabase.auth.getUser();
 
@@ -14,12 +13,12 @@ export async function POST(req: Request) {
 
 		const { messages, context } = await req.json();
 
-		const openai = new OpenAI({
-			apiKey: process.env.OPENAI_API_KEY,
-		});
+		const apiKey = process.env.MISTRAL_API_KEY;
 
-		const response = await openai.chat.completions.create({
-			model: 'gpt-4o-mini',
+		const client = new Mistral({apiKey: apiKey});
+
+		const chatResponse = await client.chat.complete({
+			model: 'mistral-large-latest',
 			messages: [
 				{
 					role: 'system',
@@ -28,13 +27,17 @@ export async function POST(req: Request) {
 						JSON.stringify(context),
 				},
 				...messages
-			],
-		});
+			]
+		})
 
-		if (!response.choices[0].message.content) {
+		console.log('--------------------------------');
+		console.log(context);
+		console.log('--------------------------------');
+
+		if (!chatResponse.choices[0].message.content) {
 			return NextResponse.json({ error: 'No response from OpenAI' }, { status: 500 });
 		}
-		return NextResponse.json({ content: response.choices[0].message.content });
+		return NextResponse.json({ content: chatResponse.choices[0].message.content });
 	} catch (error) {
 		console.error('Error processing OpenAI response:', error);
 		return NextResponse.json({ error: 'Error processing AI response' }, { status: 500 });
