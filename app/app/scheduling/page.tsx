@@ -379,8 +379,6 @@ export default function Scheduling() {
         }
     }
 
-
-
     const deletePost = async () => {
         const cleanedPost = {
             ...editedPost!,
@@ -389,8 +387,6 @@ export default function Scheduling() {
                 taggedPeople: param.taggedPeople.filter(tag => tag.username.trim() !== '')
             }))
         };
-
-        
 
         const response = await fetch('/api/post/instagram/delete', {
             method: 'POST',
