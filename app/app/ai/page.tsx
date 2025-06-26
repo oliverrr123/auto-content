@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Mic, Paperclip, Send } from 'lucide-react';
-// import Image from 'next/image';
 import { Markdown } from '@/components/markdown';
 
 export default function AI() {
