@@ -39,13 +39,13 @@ export async function POST(req: Request) {
 
 		const { lastMessage } = await req.json();
 
-		const chatResponse = await client.chat.parse({
+		const chatResponse = await client.chat.complete({
 			model: 'mistral-large-latest',
 			messages: [
 				{
 					role: 'system',
 					content:
-						'You are a helpful assistant that determines which external information is needed for a request. You will be given a request and you will need to determine which external information is needed to fulfill the request.',
+						'You are a helpful assistant that determines which external information is needed for a request. You will be given a request and you will need to determine which external information is needed to fulfill the request. Return your response in the following JSON format: { "instagram_username": boolean, "instagram_name": boolean, "instagram_profile_picture": boolean, "instagram_biography": boolean, "instagram_media": boolean, "instagram_media_data": { "media_url": boolean, "caption": boolean, "media_type": boolean, "permalink": boolean, "timestamp": boolean, "comments_count": boolean, "likes_count": boolean, "is_comment_enabled": boolean }, "instagram_followers": boolean, "instagram_following": boolean, "instagram_post_count": boolean }',
 				},
 				{
 					role: 'user',
@@ -54,39 +54,59 @@ export async function POST(req: Request) {
 						lastMessage.content,
 				},
 			],
-			responseFormat: Schema,
+			responseFormat: { type: 'json_object' },
+			temperature: 0.1,
 		});
 
-		if (!chatResponse?.choices?.[0]?.message?.parsed) {
+		if (!chatResponse?.choices?.[0]?.message?.content) {
 			return NextResponse.json({ error: 'No response from Mistral AI' }, { status: 500 });
 		}
 
-		const context = chatResponse.choices[0].message.parsed;
+		try {
+			const content = typeof chatResponse.choices[0].message.content === 'string'
+				? chatResponse.choices[0].message.content
+				: JSON.stringify(chatResponse.choices[0].message.content);
 
-		const profileParameters = [];
-		const mediaParameters = [];
+			const context = Schema.parse(JSON.parse(content));
 
-		if (context.instagram_username) profileParameters.push('username');
-		if (context.instagram_name) profileParameters.push('name');
-		if (context.instagram_profile_picture) profileParameters.push('profile_picture_url');
-		if (context.instagram_biography) profileParameters.push('biography');
-		if (context.instagram_followers) profileParameters.push('followers_count');
-		if (context.instagram_following) profileParameters.push('follows_count');
-		if (context.instagram_post_count) profileParameters.push('media_count');
+			const profileParameters: string[] = [];
+			const mediaParameters: string[] = [];
 
-		if (context.instagram_media) {
-			if (context.instagram_media_data.media_url) mediaParameters.push('media_url');
-			if (context.instagram_media_data.caption) mediaParameters.push('caption');
-			if (context.instagram_media_data.media_type) mediaParameters.push('media_type');
-			if (context.instagram_media_data.permalink) mediaParameters.push('permalink');
-			if (context.instagram_media_data.timestamp) mediaParameters.push('timestamp');
-			if (context.instagram_media_data.comments_count) mediaParameters.push('comments_count');
-			if (context.instagram_media_data.likes_count) mediaParameters.push('like_count');
-			if (context.instagram_media_data.is_comment_enabled)
-				mediaParameters.push('is_comment_enabled');
+			if (context.instagram_username) profileParameters.push('username');
+			if (context.instagram_name) profileParameters.push('name');
+			if (context.instagram_profile_picture) profileParameters.push('profile_picture_url');
+			if (context.instagram_biography) profileParameters.push('biography');
+			if (context.instagram_followers) profileParameters.push('followers_count');
+			if (context.instagram_following) profileParameters.push('follows_count');
+			if (context.instagram_post_count) profileParameters.push('media_count');
+
+			if (context.instagram_media) {
+				if (context.instagram_media_data.media_url) mediaParameters.push('media_url');
+				if (context.instagram_media_data.caption) mediaParameters.push('caption');
+				if (context.instagram_media_data.media_type) mediaParameters.push('media_type');
+				if (context.instagram_media_data.permalink) mediaParameters.push('permalink');
+				if (context.instagram_media_data.timestamp) mediaParameters.push('timestamp');
+				if (context.instagram_media_data.comments_count) mediaParameters.push('comments_count');
+				if (context.instagram_media_data.likes_count) mediaParameters.push('like_count');
+				if (context.instagram_media_data.is_comment_enabled)
+					mediaParameters.push('is_comment_enabled');
+			}
+
+			return NextResponse.json({ 
+				parameters: { 
+					profile: profileParameters, 
+					media: mediaParameters 
+				} 
+			});
+		} catch (error) {
+			console.error('Error parsing Mistral AI response:', error);
+			return NextResponse.json({ 
+				parameters: { 
+					profile: [], 
+					media: [] 
+				} 
+			});
 		}
-	
-		return NextResponse.json({ parameters: { profile: profileParameters, media: mediaParameters } });
 	} catch (error) {
 		console.error('Error processing Mistral AI response:', error);
 		return NextResponse.json({ error: 'Error processing AI response' }, { status: 500 });
