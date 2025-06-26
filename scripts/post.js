@@ -11,7 +11,8 @@ const storage = new Storage({
     },
 });
 
-const bucket = storage.bucket("autocontent-file-upload");
+const bucketName = "autocontent-file-upload";
+const bucket = storage.bucket(bucketName);
 
 async function run() {
     const postId = process.env.POST_ID;
@@ -214,14 +215,23 @@ async function run() {
     
         if (publishContainerData.id) {
             for (const file of uploadedFiles) {
-                const urlObj = new URL(file.signedReadUrl);
-                const path = urlObj.pathname;
-                
-                const parts = path.split('/').filter(Boolean);
-                parts.shift();
-                const fileName = parts.join('/');
-        
-                await bucket.file(fileName).delete();
+                try {
+                    const urlObj = new URL(file.signedReadUrl);
+                    const path = decodeURIComponent(urlObj.pathname);
+                    const parts = path.split('/').filter(Boolean);
+                    parts.shift();
+                    const fileName = parts.join('/');
+                    const [exists] = await bucket.file(fileName).exists();
+                    
+                    if (!exists) {
+                        continue;
+                    }
+
+                    await bucket.file(fileName).delete();
+                } catch (error) {
+                    console.error('Error during file deletion:', error);
+                    process.exit(1);
+                }
             }
         } else {
             console.error('Error publishing container:', publishContainerData);
