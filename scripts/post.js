@@ -213,16 +213,61 @@ async function run() {
         const publishContainerData = await publishContainerResponse.json();
     
         if (publishContainerData.id) {
+            console.log('Starting file cleanup process...');
+            console.log('Number of files to process:', uploadedFiles.length);
+            
             for (const file of uploadedFiles) {
-                const urlObj = new URL(file.signedReadUrl);
-                const path = urlObj.pathname;
-                
-                const parts = path.split('/').filter(Boolean);
-                parts.shift();
-                const fileName = parts.join('/');
-        
-                await bucket.file(fileName).delete();
+                try {
+                    console.log('\n--- Processing file ---');
+                    console.log('Original signed URL:', file.signedReadUrl);
+                    
+                    const urlObj = new URL(file.signedReadUrl);
+                    console.log('Parsed URL object:', {
+                        protocol: urlObj.protocol,
+                        hostname: urlObj.hostname,
+                        pathname: urlObj.pathname
+                    });
+                    
+                    const path = urlObj.pathname;
+                    console.log('Extracted pathname:', path);
+                    
+                    const parts = path.split('/').filter(Boolean);
+                    console.log('Path parts before shift:', parts);
+                    
+                    parts.shift();
+                    console.log('Path parts after shift:', parts);
+                    
+                    const fileName = parts.join('/');
+                    console.log('Constructed final fileName:', fileName);
+                    console.log('Bucket name being used:', process.env.BUCKET_NAME);
+
+                    console.log('Attempting to delete file:', fileName);
+                    
+                    // Check if file exists before trying to delete
+                    console.log('Checking if file exists...');
+                    const [exists] = await bucket.file(fileName).exists();
+                    console.log('File exists check result:', exists);
+                    
+                    if (!exists) {
+                        console.log(`File ${fileName} does not exist in bucket, skipping deletion`);
+                        continue;
+                    }
+                    
+                    console.log('File exists, proceeding with deletion...');
+                    await bucket.file(fileName).delete();
+                    console.log(`Successfully deleted file: ${fileName}`);
+                } catch (error) {
+                    console.error('Error details:', {
+                        message: error.message,
+                        code: error.code,
+                        stack: error.stack
+                    });
+                    console.error('Error deleting file:', file.signedReadUrl);
+                    // Continue with other files even if one fails
+                    continue;
+                }
             }
+            console.log('\nFile cleanup process completed.');
         } else {
             console.error('Error publishing container:', publishContainerData);
             process.exit(1);
