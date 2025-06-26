@@ -11,7 +11,13 @@ const storage = new Storage({
     },
 });
 
-const bucket = storage.bucket(process.env.BUCKET_NAME || "");
+const bucketName = process.env.BUCKET_NAME || "autocontent-file-upload";
+if (!bucketName) {
+    console.error('BUCKET_NAME environment variable is not set');
+    process.exit(1);
+}
+console.log('Initializing with bucket name:', bucketName);
+const bucket = storage.bucket(bucketName);
 
 async function run() {
     const postId = process.env.POST_ID;
@@ -228,8 +234,8 @@ async function run() {
                         pathname: urlObj.pathname
                     });
                     
-                    const path = urlObj.pathname;
-                    console.log('Extracted pathname:', path);
+                    const path = decodeURIComponent(urlObj.pathname);
+                    console.log('Decoded pathname:', path);
                     
                     const parts = path.split('/').filter(Boolean);
                     console.log('Path parts before shift:', parts);
@@ -239,7 +245,12 @@ async function run() {
                     
                     const fileName = parts.join('/');
                     console.log('Constructed final fileName:', fileName);
-                    console.log('Bucket name being used:', process.env.BUCKET_NAME);
+                    console.log('Bucket name being used:', bucketName);
+
+                    // List files with prefix to debug
+                    console.log('Listing files with same prefix...');
+                    const [files] = await bucket.getFiles({ prefix: parts[0] });
+                    console.log('Found files with same prefix:', files.map(f => f.name));
 
                     console.log('Attempting to delete file:', fileName);
                     
