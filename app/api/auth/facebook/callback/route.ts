@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
 
         // TODO: MAKE REFRESHING LOGIC BEFORE PRODUCTION!!!!!!!!!!
 
-        return NextResponse.redirect(new URL('/context', request.url));
+        return NextResponse.redirect(new URL('/app/context', request.url));
 
         
     } catch (error) {

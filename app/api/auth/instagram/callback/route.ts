@@ -124,7 +124,7 @@ export async function GET(request: NextRequest) {
             return NextResponse.redirect(new URL('/error?message=Failed to exchange code for access token in route', request.url));
         }
 
-        return NextResponse.redirect(new URL('/context', request.url));
+        return NextResponse.redirect(new URL('/app/context', request.url));
 
         
     } catch (error) {
