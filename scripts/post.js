@@ -11,7 +11,7 @@ const storage = new Storage({
     },
 });
 
-const bucketName = process.env.BUCKET_NAME || "autocontent-file-upload";
+const bucketName = "autocontent-file-upload";
 if (!bucketName) {
     console.error('BUCKET_NAME environment variable is not set');
     process.exit(1);
