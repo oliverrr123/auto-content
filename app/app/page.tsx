@@ -28,7 +28,7 @@ export default function Home() {
   const [media, setMedia] = useState<{ media_url: string, media_type: string, caption: string, permalink: string, timestamp: number, like_count: number, comments_count: number }[]>([]);
   const [isLoadingMedia, setIsLoadingMedia] = useState(false);
 
-  const router = useRouter();
+  // const router = useRouter();
 
   const [expandedCaptions, setExpandedCaptions] = useState<{ [key: string]: boolean }>({});
 
@@ -67,11 +67,11 @@ export default function Home() {
     }
   }, [user])
 
-  useEffect(() => {
-    if (!isLoading && !user) {
-      router.replace('/login');
-    }
-  }, [user, isLoading, router]);
+  // useEffect(() => {
+  //   if (!isLoading && !user) {
+  //     router.replace('/login');
+  //   }
+  // }, [user, isLoading, router]);
 
   useEffect(() => {
     console.log('--- media')
@@ -245,5 +245,16 @@ export default function Home() {
     )
   }
 
-  return null
+  if (!isLoading && !user) {
+    return (
+      <div className="flex flex-col gap-4">
+        <h1 className="text-2xl font-bold">This is a landing page <span className="text-blue-500" onClick={() => window.location.href = '/context'}>here</span></h1>
+      </div>
+    )
+  }
+
+
+  return (
+    <div>nevim</div>
+  )
 }

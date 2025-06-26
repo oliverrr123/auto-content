@@ -38,22 +38,22 @@ export function SignupForm({
         <div className="flex gap-4">
           <div className="flex flex-col gap-2">
               <Label htmlFor="first-name">First Name</Label>
-              <Input id="first-name" type="text" name="first-name" placeholder="John" required />
+              <Input id="first-name" type="text" name="first-name" placeholder="John" className="placeholder:opacity-50" required />
           </div>
           <div className="flex flex-col gap-2">
               <Label htmlFor="last-name">Last Name</Label>
-              <Input id="last-name" type="text" name="last-name" placeholder="Pork" required />
+              <Input id="last-name" type="text" name="last-name" placeholder="Pork" className="placeholder:opacity-50" required />
           </div>
         </div>
         <div className="grid gap-2">
           <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" name="email" placeholder="john@growbyte.cz" required />
+          <Input id="email" type="email" name="email" placeholder="john@growbyte.cz" className="placeholder:opacity-50" required />
         </div>
         <div className="grid gap-2">
           <div className="flex items-center">
             <Label htmlFor="password">Password</Label>
           </div>
-          <Input id="password" type="password" name="password" placeholder="••••••••" required />
+          <Input id="password" type="password" name="password" placeholder="••••••••" className="placeholder:opacity-50" required />
         </div>
         <Button type="submit" className="w-full hover:bg-blue-500">
           Create an account

@@ -17,7 +17,7 @@ export function LoginForm({
 
   useEffect(() => {
     if (state?.success) {
-      window.location.href = '/'
+      window.location.href = '/app'
     }
   }, [state?.success])
 
@@ -39,7 +39,7 @@ export function LoginForm({
       <div className="grid gap-6">
         <div className="grid gap-2">
           <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" name="email" placeholder="john@growbyte.cz" required />
+          <Input id="email" type="email" name="email" placeholder="john@growbyte.cz" required className="placeholder:opacity-50" />
         </div>
         <div className="grid gap-2">
           <div className="flex items-center">
@@ -51,7 +51,7 @@ export function LoginForm({
               Forgot your password?
             </a>
           </div>
-          <Input id="password" type="password" name="password" required placeholder="••••••••" />
+          <Input id="password" type="password" name="password" required placeholder="••••••••" className="placeholder:opacity-50" />
         </div>
         <Button type="submit" className="w-full hover:bg-blue-500">
           Login
