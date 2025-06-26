@@ -139,7 +139,7 @@ export default function Context() {
                                         <p className="">1. <span className="font-semibold">Go to the <a href="https://www.instagram.com/accounts/manage_access/" target="_blank" className="text-primary">Apps and Websites</a></span> section in your Instagram profile</p>
                                         <p className="">2. <span className="font-semibold">Click the Tester Invites tab</span> and accept the invitation from GrowByte</p>
                                         <p>3. <span className="font-semibold">Click <a href="https://www.instagram.com/oauth/authorize?enable_fb_login=0&force_authentication=1&client_id=1436609137340002&redirect_uri=https://growbyte.cz/api/auth/instagram/callback&response_type=code&scope=instagram_business_basic%2Cinstagram_business_manage_messages%2Cinstagram_business_manage_comments%2Cinstagram_business_content_publish%2Cinstagram_business_manage_insights" target="_blank" className="text-primary">this link</a></span> to authorize your Instagram account.</p>
-                                        <p>4. <span className="font-semibold">You're all done!</span> Enjoy the app!</p>
+                                        <p>4. <span className="font-semibold">You&apos;re all done!</span> Enjoy the app!</p>
                                         <DialogClose className="text-xl font-semibold h-12 p-0 rounded-2xl bg-primary text-white hover:bg-blue-500">Done</DialogClose>
                                     </DialogContent>
                                 </Dialog>
