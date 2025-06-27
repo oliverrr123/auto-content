@@ -124,7 +124,7 @@ export default function Home() {
         <div>
           <p style={{ whiteSpace: 'pre-wrap' }}>{profile.biography}</p>
         </div>
-        <Link href='/create-post'>
+        <Link href='/app/create-post'>
           <Button className="w-full font-semibold text-md hover:bg-blue-500 flex gap-1 items-center justify-center [&_svg]:!size-5">
             <PlusIcon />
             New Post
