@@ -2,8 +2,6 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { ChatOpenAI, OpenAIEmbeddings } from '@langchain/openai';
 // import { MemoryVectorStore } from 'langchain/vectorstores/memory';
-import 'cheerio';
-// import { CheerioWebBaseLoader } from '@langchain/community/document_loaders/web/cheerio';
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
 // import { pull } from 'langchain/hub';
 // import { ChatPromptTemplate } from '@langchain/core/prompts';
@@ -15,9 +13,9 @@ import { tool } from '@langchain/core/tools';
 import { ToolNode, toolsCondition } from '@langchain/langgraph/prebuilt';
 import { HumanMessage, AIMessage, SystemMessage, ToolMessage } from '@langchain/core/messages';
 import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
-// import { HTMLWebBaseLoader } from '@langchain/community/document_loaders/web/html';
 import { PuppeteerWebBaseLoader } from '@langchain/community/document_loaders/web/puppeteer';
 import { HtmlToTextTransformer } from '@langchain/community/document_transformers/html_to_text';
+import { time } from 'console';
 
 const retrieveSchema = z.object({ query: z.string() });
 
@@ -43,46 +41,10 @@ export async function POST(req: Request) {
 
 		const { messages } = await req.json();
 
-
-
-		// const cheerioLoader = new CheerioWebBaseLoader(
-		// 	'https://olivercingl.com/',
-		// 	// {
-		// 	// 	selector: 'article,section,footer,nav,aside,h1,h2,h3,h4,h5,h6,p,blockquote,pre,code,ul,ol,li,table,thead,tbody,tfoot,tr,th,td,figure,figcaption,img,picture,video,audio,source,details,summary,mark,em,strong,small,sub,sup,abbr,time,address,aside,cite,dfn,kbd,samp,var'
-		// 	// }
-		// );
-
-		// const docs = await cheerioLoader.load();
-
-		// console.log('--- docs ---')
-		// console.log(docs)
-		// console.log('--- docs ---')
-
-		// const newDocs = [new Document({
-		// 	pageContent: '',
-		// 	metadata: {
-		// 		source: 'olivercingl.com',
-		// 		title: 'Oliver Cingl',
-		// 	},
-		// 	id: undefined
-		// })]
-
-		// console.assert(docs.length === 1);
-
 		const splitter = new RecursiveCharacterTextSplitter({
 			chunkSize: 1000,
 			chunkOverlap: 200,
 		})
-
-		// const url = 'https://sazimecesko.cz/';
-		// const loader = new HTMLWebBaseLoader(url);
-		// const transformer = new MozillaReadabilityTransformer();
-
-		// const docs = await loader.load();
-		// const sequence = transformer.pipe(splitter);
-		// const documents = await sequence.invoke(docs);
-
-		// const allSplits = await splitter.splitDocuments(docs);
 
 		const vectorStore = new SupabaseVectorStore(embeddings, {
 			client: supabase,
@@ -90,29 +52,59 @@ export async function POST(req: Request) {
 			queryName: 'match_documents',
 		})
 
-		const url = 'https://sazimecesko.cz/';
+		const url = 'https://atollon.com/';
 		const loader = new PuppeteerWebBaseLoader(url, {
-			launchOptions: { headless: 'new', args: ['--no-sandbox'] }
+			launchOptions: { headless: 'new', args: ['--no-sandbox'] },
+			async evaluate(page) {
+				await new Promise(resolve => setTimeout(resolve, 1000));
+				return page.content();
+			}
 		})
 		const htmlDocs = await loader.load();
 
-		const transformer = new HtmlToTextTransformer();
+		const transformer = new HtmlToTextTransformer({
+			selectors: [
+				{ selector: 'img', format: 'skip' },
+				{ selector: 'picture', format: 'skip' },
+				{ selector: 'figure', format: 'skip' },
+				{ selector: 'video', format: 'skip' },
+				{ selector: 'audio', format: 'skip' },
+				{ selector: 'iframe', format: 'skip' },
+				{ selector: 'script', format: 'skip' },
+				{ selector: 'style', format: 'skip' },
+				{ selector: 'link', format: 'skip' },
+				{ selector: 'meta', format: 'skip' },
+				{ selector: 'svg', format: 'skip' },
+				{ selector: 'path', format: 'skip' },
+				{ selector: 'polygon', format: 'skip' },
+				{ selector: 'circle', format: 'skip' },
+				{ selector: 'ellipse', format: 'skip' },
+				{ selector: 'rect', format: 'skip' },
+				{ selector: 'a', format: 'skip' },
+				{ selector: 'button', format: 'skip' },
+				{ selector: 'input', format: 'skip' },
+				{ selector: 'textarea', format: 'skip' },
+				{ selector: 'select', format: 'skip' },
+				{ selector: 'option', format: 'skip' },
+				{ selector: 'optgroup', format: 'skip' },
+				{ selector: 'fieldset', format: 'skip' },
+			]
+		});
 		const textDocs = await transformer.transformDocuments(htmlDocs);
 
 		const chunks = await splitter.splitDocuments(textDocs);
 
-		// const allSplits = await splitter.splitDocuments(docs);
-
+		
 		await vectorStore.addDocuments(chunks, { ids: Array.from({ length: chunks.length }, (_, i) => i) });
-
+		
+		// const allSplits = await splitter.splitDocuments(docs);
+		// const allSplits = await splitter.splitDocuments(docs);
 		// await vectorStore.addDocuments(allSplits, { ids: Array.from({ length: allSplits.length }, (_, i) => i) });
-
-		// await vectorStore.addDocuments(documents, { ids: Array.from({ length: documents.length }, (_, i) => i) });
 
 		const retrieve = tool(
 			async ({ query }) => {
 				console.log(`query: ${query}`);
-				const retrievedDocs = await vectorStore.similaritySearch(query, 2);
+				const retrievedDocs = await vectorStore.similaritySearch(query, 4);
 				const serialized = retrievedDocs.map((doc) => `Source: ${doc.metadata.source}\nContent: ${doc.pageContent}`)
 				console.log(serialized);
 				return [serialized, retrievedDocs]
