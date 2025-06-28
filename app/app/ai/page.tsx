@@ -102,7 +102,7 @@ export default function AI() {
 		if (!response.ok) {
 			console.error('Failed to get AI response');
 			setMessages([
-				...messages,
+				...newMessages.slice(0, -1),
 				{
 					role: 'assistant',
 					content: 'Sorry, there was an error processing your request. Please try again.',

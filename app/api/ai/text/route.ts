@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { ChatOpenAI, OpenAIEmbeddings } from '@langchain/openai';
-import { MemoryVectorStore } from 'langchain/vectorstores/memory';
+// import { MemoryVectorStore } from 'langchain/vectorstores/memory';
 import 'cheerio';
-import { CheerioWebBaseLoader } from '@langchain/community/document_loaders/web/cheerio';
+// import { CheerioWebBaseLoader } from '@langchain/community/document_loaders/web/cheerio';
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
 // import { pull } from 'langchain/hub';
 // import { ChatPromptTemplate } from '@langchain/core/prompts';
@@ -14,6 +14,10 @@ import { z } from 'zod';
 import { tool } from '@langchain/core/tools';
 import { ToolNode, toolsCondition } from '@langchain/langgraph/prebuilt';
 import { HumanMessage, AIMessage, SystemMessage, ToolMessage } from '@langchain/core/messages';
+import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
+// import { HTMLWebBaseLoader } from '@langchain/community/document_loaders/web/html';
+import { PuppeteerWebBaseLoader } from '@langchain/community/document_loaders/web/puppeteer';
+import { HtmlToTextTransformer } from '@langchain/community/document_transformers/html_to_text';
 
 const retrieveSchema = z.object({ query: z.string() });
 
@@ -23,10 +27,10 @@ const llm = new ChatOpenAI({
 })
 
 const embeddings = new OpenAIEmbeddings({
-	model: 'text-embedding-3-large'
+	model: 'text-embedding-ada-002'
 })
 
-const vectorStore = new MemoryVectorStore(embeddings);
+// const vectorStore = new MemoryVectorStore(embeddings);
 
 export async function POST(req: Request) {
 	try {
@@ -38,49 +42,79 @@ export async function POST(req: Request) {
 		}
 
 		const { messages } = await req.json();
-		const pTagSelector = 'p,h1,h2,h3,h4,h5,h6,li,ul,ol,a,img,blockquote,cite,code,tr,td,th';
-		const cheerioLoader = new CheerioWebBaseLoader(
-			'https://olivercingl.com/',
-			{ selector: pTagSelector }
-		);
 
-		const docs = await cheerioLoader.load();
 
-		console.assert(docs.length === 1);
-		// console.log(`Total characters: ${docs[0].pageContent.length}`);
-		// console.log(docs[0].pageContent.slice(0, 500));
+
+		// const cheerioLoader = new CheerioWebBaseLoader(
+		// 	'https://olivercingl.com/',
+		// 	// {
+		// 	// 	selector: 'article,section,footer,nav,aside,h1,h2,h3,h4,h5,h6,p,blockquote,pre,code,ul,ol,li,table,thead,tbody,tfoot,tr,th,td,figure,figcaption,img,picture,video,audio,source,details,summary,mark,em,strong,small,sub,sup,abbr,time,address,aside,cite,dfn,kbd,samp,var'
+		// 	// }
+		// );
+
+		// const docs = await cheerioLoader.load();
+
+		// console.log('--- docs ---')
+		// console.log(docs)
+		// console.log('--- docs ---')
+
+		// const newDocs = [new Document({
+		// 	pageContent: '',
+		// 	metadata: {
+		// 		source: 'olivercingl.com',
+		// 		title: 'Oliver Cingl',
+		// 	},
+		// 	id: undefined
+		// })]
+
+		// console.assert(docs.length === 1);
 
 		const splitter = new RecursiveCharacterTextSplitter({
 			chunkSize: 1000,
 			chunkOverlap: 200,
 		})
-		const allSplits = await splitter.splitDocuments(docs);
-		// console.log(`Split blog post into ${allSplits.length} sub-documents.`)
 
-		await vectorStore.addDocuments(allSplits);
+		// const url = 'https://sazimecesko.cz/';
+		// const loader = new HTMLWebBaseLoader(url);
+		// const transformer = new MozillaReadabilityTransformer();
 
-		// const promptTemplate = await pull<ChatPromptTemplate>('rlm/rag-prompt');
+		// const docs = await loader.load();
+		// const sequence = transformer.pipe(splitter);
+		// const documents = await sequence.invoke(docs);
 
-		// const InputStateAnnotation = Annotation.Root({
-		// 	question: Annotation<string>,
-		// });
+		// const allSplits = await splitter.splitDocuments(docs);
 
-		// const StateAnnotation = Annotation.Root({
-		// 	question: Annotation<string>,
-		// 	context: Annotation<Document[]>,
-		// 	answer: Annotation<string>,
-		// });
+		const vectorStore = new SupabaseVectorStore(embeddings, {
+			client: supabase,
+			tableName: 'documents',
+			queryName: 'match_documents',
+		})
 
-		// const retrieve = async (state: typeof InputStateAnnotation.State) => {
-		// 	const retrievedDocs = await vectorStore.similaritySearch(state.question);
-		// 	return { context: retrievedDocs };
-		// }
+		const url = 'https://sazimecesko.cz/';
+		const loader = new PuppeteerWebBaseLoader(url, {
+			launchOptions: { headless: 'new', args: ['--no-sandbox'] }
+		})
+		const htmlDocs = await loader.load();
+
+		const transformer = new HtmlToTextTransformer();
+		const textDocs = await transformer.transformDocuments(htmlDocs);
+
+		const chunks = await splitter.splitDocuments(textDocs);
+
+		// const allSplits = await splitter.splitDocuments(docs);
+
+		await vectorStore.addDocuments(chunks, { ids: Array.from({ length: chunks.length }, (_, i) => i) });
+
+		// await vectorStore.addDocuments(allSplits, { ids: Array.from({ length: allSplits.length }, (_, i) => i) });
+
+		// await vectorStore.addDocuments(documents, { ids: Array.from({ length: documents.length }, (_, i) => i) });
 
 		const retrieve = tool(
 			async ({ query }) => {
 				console.log(`query: ${query}`);
 				const retrievedDocs = await vectorStore.similaritySearch(query, 2);
 				const serialized = retrievedDocs.map((doc) => `Source: ${doc.metadata.source}\nContent: ${doc.pageContent}`)
+				console.log(serialized);
 				return [serialized, retrievedDocs]
 			},
 			{
@@ -99,16 +133,6 @@ export async function POST(req: Request) {
 
 		const tools = new ToolNode([retrieve]);
 
-		// const generate = async (state: typeof StateAnnotation.State) => {
-		// 	const docsContent = state.context.map((doc) => doc.pageContent).join('\n');
-		// 	const messages = await promptTemplate.invoke({
-		// 		question: state.question,
-		// 		context: docsContent,
-		// 	})
-		// 	const response = await llm.invoke(messages);
-		// 	return { answer: response.content };
-		// }
-
 		const generate = async (state: typeof MessagesAnnotation.State) => {
 			const recentToolMessages = [];
 			for (let i = state['messages'].length -1; i >= 0; i--) {
@@ -124,22 +148,12 @@ export async function POST(req: Request) {
 			const docsContent = toolMessages.map((doc) => doc.content).join('\n');
 			const systemMessageContent = `You are Grow, a helpful assistant that can answer questions about the user's website. You have access to the following information: ${docsContent}`;
 
-			console.log(systemMessageContent);
-
 			const conversationalMessages = state.messages.filter((message) => message instanceof HumanMessage || (message instanceof AIMessage && message.tool_calls?.length == 0) || message instanceof SystemMessage);
 			const prompt = [new SystemMessage(systemMessageContent), ...conversationalMessages];
 
 			const response = await llm.invoke(prompt);
 			return { messages: [response] };
 		}
-
-		// const graph = new StateGraph(MessagesAnnotation)
-		// 	.addNode('retrieve', retrieve)
-		// 	.addNode('generate', generate)
-		// 	.addEdge('__start__', 'retrieve')
-		// 	.addEdge('retrieve', 'generate')
-		// 	.addEdge('generate', '__end__')
-		// 	.compile();
 
 		const graphBuilder = new StateGraph(MessagesAnnotation)
 			.addNode('queryOrRespond', queryOrRespond)
@@ -155,16 +169,34 @@ export async function POST(req: Request) {
 
 		const graph = graphBuilder.compile();
 
-		// let inputs = { question: messages[messages.length - 1].content };
+		// const agent = createReactAgent({ llm: llm, tools: [retrieve] });
 
 		let inputs = { messages: messages };
 
-		const result = await graph.invoke(inputs);
-		// console.log(result.context.slice(0, 2));
-		// console.log(`\nAnswer: ${result['answer']}`);
+		// const prettyPrint = (message: BaseMessage) => {
+		// 	let txt = `[${message._getType()}]: ${message.content}`;
+		// 	if ((isAIMessage(message) && message.tool_calls?.length) || 0 > 0) {
+		// 	  const tool_calls = (message as AIMessage)?.tool_calls
+		// 		?.map((tc) => `- ${tc.name}(${JSON.stringify(tc.args)})`)
+		// 		.join("\n");
+		// 	  txt += ` \nTools: \n${tool_calls}`;
+		// 	}
+		// 	console.log(txt);
+		//   };
 
-		// return NextResponse.json({ content: result['answer'] });
+
+		// for await (const step of await agent.stream(inputs, { streamMode: 'values' })) {
+		// 	const lastMessage = step.messages[step.messages.length - 1];
+		// 	prettyPrint(lastMessage);
+		// 	console.log('-------\n')
+		// }
+		
+		const result = await graph.invoke(inputs);
+
+		// await vectorStore.delete({ ids: Array.from({ length: documents.length }, (_, i) => i) });
+		
 		return NextResponse.json({ content: result['messages'][result['messages'].length - 1].content });
+		// return NextResponse.json({ content: 'test' });
 	} catch (error) {
 		console.error('Error processing OpenAI response:', error);
 		return NextResponse.json({ error: 'Error processing AI response' }, { status: 500 });
