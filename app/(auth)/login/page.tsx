@@ -1,7 +1,28 @@
+'use client';
 import Image from "next/image"
 import { LoginForm } from "@/components/login-form"
+import { useAuth } from "@/context/AuthContext"
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
 
 export default function LoginPage() {
+  const { user, isLoading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (user && !isLoading) {
+      router.replace('/app');
+    }
+  }, [user, isLoading, router]);
+
+  if (isLoading) {
+    return <div className="min-h-svh flex items-center justify-center">Loading...</div>;
+  }
+
+  if (user) {
+    return null; // Will be redirected by the useEffect
+  }
+
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
       <div className="flex flex-col gap-4 p-6 md:p-10">

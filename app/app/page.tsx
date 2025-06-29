@@ -247,8 +247,5 @@ export default function Home() {
     )
   }
 
-
-  return (
-    <div>nevim</div>
-  )
+  return null;
 }
