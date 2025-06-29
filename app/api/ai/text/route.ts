@@ -1,23 +1,15 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { ChatOpenAI, OpenAIEmbeddings } from '@langchain/openai';
-// import { MemoryVectorStore } from 'langchain/vectorstores/memory';
-import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
-// import { pull } from 'langchain/hub';
-// import { ChatPromptTemplate } from '@langchain/core/prompts';
-// import { Document } from '@langchain/core/documents';
-// import { Annotation, StateGraph, MessagesAnnotation } from '@langchain/langgraph';
 import { StateGraph, MessagesAnnotation } from '@langchain/langgraph';
 import { z } from 'zod';
 import { tool } from '@langchain/core/tools';
 import { ToolNode, toolsCondition } from '@langchain/langgraph/prebuilt';
 import { HumanMessage, AIMessage, SystemMessage, ToolMessage } from '@langchain/core/messages';
 import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
-import { PuppeteerWebBaseLoader } from '@langchain/community/document_loaders/web/puppeteer';
-import { HtmlToTextTransformer } from '@langchain/community/document_transformers/html_to_text';
-import { time } from 'console';
 
-const retrieveSchema = z.object({ query: z.string() });
+const docTypes = ['webpage', 'pdf', 'pptx', 'word', 'instagram_post', 'instagram_profile'] as const;
+const retrieveSchema = z.object({ query: z.string(), doc_type: z.enum(docTypes).optional() });
 
 const llm = new ChatOpenAI({
 	model: 'gpt-4o-mini',
@@ -41,77 +33,34 @@ export async function POST(req: Request) {
 
 		const { messages } = await req.json();
 
-		const splitter = new RecursiveCharacterTextSplitter({
-			chunkSize: 1000,
-			chunkOverlap: 200,
-		})
-
 		const vectorStore = new SupabaseVectorStore(embeddings, {
 			client: supabase,
 			tableName: 'documents',
 			queryName: 'match_documents',
 		})
-
-		const url = 'https://atollon.com/';
-		const loader = new PuppeteerWebBaseLoader(url, {
-			launchOptions: { headless: 'new', args: ['--no-sandbox'] },
-			async evaluate(page) {
-				await new Promise(resolve => setTimeout(resolve, 1000));
-				return page.content();
-			}
-		})
-		const htmlDocs = await loader.load();
-
-		const transformer = new HtmlToTextTransformer({
-			selectors: [
-				{ selector: 'img', format: 'skip' },
-				{ selector: 'picture', format: 'skip' },
-				{ selector: 'figure', format: 'skip' },
-				{ selector: 'video', format: 'skip' },
-				{ selector: 'audio', format: 'skip' },
-				{ selector: 'iframe', format: 'skip' },
-				{ selector: 'script', format: 'skip' },
-				{ selector: 'style', format: 'skip' },
-				{ selector: 'link', format: 'skip' },
-				{ selector: 'meta', format: 'skip' },
-				{ selector: 'svg', format: 'skip' },
-				{ selector: 'path', format: 'skip' },
-				{ selector: 'polygon', format: 'skip' },
-				{ selector: 'circle', format: 'skip' },
-				{ selector: 'ellipse', format: 'skip' },
-				{ selector: 'rect', format: 'skip' },
-				{ selector: 'a', format: 'skip' },
-				{ selector: 'button', format: 'skip' },
-				{ selector: 'input', format: 'skip' },
-				{ selector: 'textarea', format: 'skip' },
-				{ selector: 'select', format: 'skip' },
-				{ selector: 'option', format: 'skip' },
-				{ selector: 'optgroup', format: 'skip' },
-				{ selector: 'fieldset', format: 'skip' },
-			]
-		});
-		const textDocs = await transformer.transformDocuments(htmlDocs);
-
-		const chunks = await splitter.splitDocuments(textDocs);
-
 		
-		await vectorStore.addDocuments(chunks, { ids: Array.from({ length: chunks.length }, (_, i) => i) });
-		
-		// const allSplits = await splitter.splitDocuments(docs);
-		// const allSplits = await splitter.splitDocuments(docs);
-		// await vectorStore.addDocuments(allSplits, { ids: Array.from({ length: allSplits.length }, (_, i) => i) });
-
 		const retrieve = tool(
-			async ({ query }) => {
-				console.log(`query: ${query}`);
-				const retrievedDocs = await vectorStore.similaritySearch(query, 4);
-				const serialized = retrievedDocs.map((doc) => `Source: ${doc.metadata.source}\nContent: ${doc.pageContent}`)
-				console.log(serialized);
-				return [serialized, retrievedDocs]
+			async ({ query, doc_type }) => {
+				try {
+					console.log(`query: ${query}`);
+					console.log(`doc_type: ${doc_type}`);
+					const base = (rpc: any) => rpc.eq("user_id", user.id);
+					const filter = doc_type ? (rpc: any) => base(rpc).eq("doc_type", doc_type) : base;
+					const retrievedDocs = await vectorStore.similaritySearch(query, 3, filter);
+					// const retrievedDocs = await vectorStore.similaritySearch(query, 4);
+					const serialized = retrievedDocs.map((doc) => `Source: ${doc.metadata.source}\nContent: ${doc.pageContent}`)
+					console.log('--------------------------------');
+					console.log(retrievedDocs);
+					console.log('--------------------------------');
+					return [serialized, retrievedDocs]
+				} catch (error) {
+					console.error('Error retrieving documents:', error);
+					return ['Error retrieving documents', []];
+				}
 			},
 			{
 				name: 'retrieve',
-				description: 'Retrieve information related to a query',
+				description: `Retrieve information related to a query. Optionally restrict to a doc_type (${docTypes.join(", ")}).`,
 				schema: retrieveSchema,
 				responseFormat: 'content_and_artifacts'
 			}

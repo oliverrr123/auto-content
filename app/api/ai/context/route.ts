@@ -72,55 +72,71 @@ export async function POST(req: Request) {
 			},
 		};
 
-		const responseIGContext = await openai.chat.completions.create({
-			model: 'gpt-4o-mini',
-			messages: [
-				{
-					role: 'system',
-					content:
-						'You are a helpful assistant that determines which external information is needed for a request. You will be given a request and you will need to determine which external information is needed to fulfill the request. You will then return a JSON object with the following format: { instagram_username: Boolean, instagram_name: Boolean, instagram_profile_picture: Boolean, instagram_biography: Boolean, instagram_media: Boolean, instagram_media_data: { media_url: Boolean, caption: Boolean, media_type: Boolean, permalink: Boolean, timestamp: Boolean, comments_count: Boolean, likes_count: Boolean, is_comment_enabled: Boolean, }, instagram_followers: Boolean, instagram_following: Boolean, instagram_posts: Boolean }',
-				},
-				{
-					role: 'user',
-					content:
-						'Determine which external information is needed for this request: ' +
-						lastMessage.content,
-				},
-			],
-			response_format: {
-				type: 'json_schema',
-				json_schema: schema,
-			},
-		});
+		// const responseIGContext = await openai.chat.completions.create({
+		// 	model: 'gpt-4o-mini',
+		// 	messages: [
+		// 		{
+		// 			role: 'system',
+		// 			content:
+		// 				'You are a helpful assistant that determines which external information is needed for a request. You will be given a request and you will need to determine which external information is needed to fulfill the request. You will then return a JSON object with the following format: { instagram_username: Boolean, instagram_name: Boolean, instagram_profile_picture: Boolean, instagram_biography: Boolean, instagram_media: Boolean, instagram_media_data: { media_url: Boolean, caption: Boolean, media_type: Boolean, permalink: Boolean, timestamp: Boolean, comments_count: Boolean, likes_count: Boolean, is_comment_enabled: Boolean, }, instagram_followers: Boolean, instagram_following: Boolean, instagram_posts: Boolean }',
+		// 		},
+		// 		{
+		// 			role: 'user',
+		// 			content:
+		// 				'Determine which external information is needed for this request: ' +
+		// 				lastMessage.content,
+		// 		},
+		// 	],
+		// 	response_format: {
+		// 		type: 'json_schema',
+		// 		json_schema: schema,
+		// 	},
+		// });
 
-		if (!responseIGContext.choices[0].message.content) {
-			return NextResponse.json({ error: 'No response from OpenAI' }, { status: 500 });
-		}
+		// if (!responseIGContext.choices[0].message.content) {
+		// 	return NextResponse.json({ error: 'No response from OpenAI' }, { status: 500 });
+		// }
 
-		const context = JSON.parse(responseIGContext.choices[0].message.content);
+		// const context = JSON.parse(responseIGContext.choices[0].message.content);
 
 		const profileParameters = [];
 		const mediaParameters = [];
 
-		if (context.instagram_username) profileParameters.push('username');
-		if (context.instagram_name) profileParameters.push('name');
-		if (context.instagram_profile_picture) profileParameters.push('profile_picture_url');
-		if (context.instagram_biography) profileParameters.push('biography');
-		if (context.instagram_followers) profileParameters.push('followers_count');
-		if (context.instagram_following) profileParameters.push('follows_count');
-		if (context.instagram_post_count) profileParameters.push('media_count');
+		// if (context.instagram_username) profileParameters.push('username');
+		// if (context.instagram_name) profileParameters.push('name');
+		// if (context.instagram_profile_picture) profileParameters.push('profile_picture_url');
+		// if (context.instagram_biography) profileParameters.push('biography');
+		// if (context.instagram_followers) profileParameters.push('followers_count');
+		// if (context.instagram_following) profileParameters.push('follows_count');
+		// if (context.instagram_post_count) profileParameters.push('media_count');
 
-		if (context.instagram_media) {
-			if (context.instagram_media_data.media_url) mediaParameters.push('media_url');
-			if (context.instagram_media_data.caption) mediaParameters.push('caption');
-			if (context.instagram_media_data.media_type) mediaParameters.push('media_type');
-			if (context.instagram_media_data.permalink) mediaParameters.push('permalink');
-			if (context.instagram_media_data.timestamp) mediaParameters.push('timestamp');
-			if (context.instagram_media_data.comments_count) mediaParameters.push('comments_count');
-			if (context.instagram_media_data.likes_count) mediaParameters.push('like_count');
-			if (context.instagram_media_data.is_comment_enabled)
-				mediaParameters.push('is_comment_enabled');
-		}
+		// if (context.instagram_media) {
+		// 	if (context.instagram_media_data.media_url) mediaParameters.push('media_url');
+		// 	if (context.instagram_media_data.caption) mediaParameters.push('caption');
+		// 	if (context.instagram_media_data.media_type) mediaParameters.push('media_type');
+		// 	if (context.instagram_media_data.permalink) mediaParameters.push('permalink');
+		// 	if (context.instagram_media_data.timestamp) mediaParameters.push('timestamp');
+		// 	if (context.instagram_media_data.comments_count) mediaParameters.push('comments_count');
+		// 	if (context.instagram_media_data.likes_count) mediaParameters.push('like_count');
+		// 	if (context.instagram_media_data.is_comment_enabled)
+		// 		mediaParameters.push('is_comment_enabled');
+		// }
+
+		profileParameters.push('username');
+		profileParameters.push('name');
+		profileParameters.push('profile_picture_url');
+		profileParameters.push('biography');
+		profileParameters.push('followers_count');
+		profileParameters.push('follows_count');
+		profileParameters.push('media_count');
+		mediaParameters.push('media_url');
+		mediaParameters.push('caption');
+		mediaParameters.push('media_type');
+		mediaParameters.push('permalink');
+		mediaParameters.push('timestamp');
+		mediaParameters.push('comments_count');
+		mediaParameters.push('like_count');
+		mediaParameters.push('is_comment_enabled');
 	
 		return NextResponse.json({ parameters: { profile: profileParameters, media: mediaParameters } });
 	} catch (error) {

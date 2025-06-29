@@ -54,46 +54,6 @@ export default function AI() {
 		setMessages(newMessages);
 		setPrompt('');
 
-		// const contextResponse = await fetch('/api/ai/context', {
-		// 	method: 'POST',
-		// 	body: JSON.stringify({ lastMessage: newMessages[newMessages.length - 2] }),
-		// });
-		// const contextData = await contextResponse.json();
-
-        // const context = {
-        //     profile: null,
-        //     media: null,
-        // }
-
-        // if (contextData && contextData.parameters.profile.length > 0) {
-        //     const profileData = await fetch('/api/get/instagram/custom/profile', {
-        //         method: 'POST',
-        //         headers: {
-        //             'Content-Type': 'application/json',
-        //         },
-        //         body: JSON.stringify({ parameters: contextData.parameters.profile.join(',') }),
-        //     });
-        //     const profileDataJson = await profileData.json();
-        //     context.profile = profileDataJson;
-        // }
-    
-        // if (contextData && contextData.parameters.media.length > 0) {
-        //     const mediaData = await fetch('/api/get/instagram/custom/media', {
-        //         method: 'POST',
-        //         headers: {
-        //             'Content-Type': 'application/json',
-        //         },
-        //         body: JSON.stringify({ parameters: contextData.parameters.media.join(',') }),
-        //     });
-        //     const mediaDataJson = await mediaData.json();
-        //     context.media = mediaDataJson;
-        // }
-
-		// const response = await fetch('/api/ai/text', {
-		// 	method: 'POST',
-		// 	body: JSON.stringify({ messages: newMessages.slice(0, -1), context: context }),
-		// });
-
 		const response = await fetch('/api/ai/text', {
 			method: 'POST',
 			body: JSON.stringify({ messages: newMessages.slice(0, -1) }),

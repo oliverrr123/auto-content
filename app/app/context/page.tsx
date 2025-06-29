@@ -1,5 +1,5 @@
 "use client";
-import { AtSign, CircleCheck, Clock, InstagramIcon, LinkIcon, Loader2, PlusIcon, UploadIcon } from "lucide-react";
+import { AtSign, CircleCheck, Clock, Globe, Globe2, InstagramIcon, LinkIcon, Loader2, PlusIcon, UploadIcon } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useEffect, useState } from "react";
 import {
@@ -25,6 +25,15 @@ export default function Context() {
     const [instagramAccessSuccess, setInstagramAccessSuccess] = useState<boolean>(false);
     const [instagramAccessError, setInstagramAccessError] = useState<string | null>(null);
     const [instagramAccessLoading, setInstagramAccessLoading] = useState<boolean>(false);
+    const [connectedWebsites, setConnectedWebsites] = useState<string[]>([]);
+    const [websiteUrl, setWebsiteUrl] = useState<string>("");
+    const [websiteSaving, setWebsiteSaving] = useState<boolean>(false);
+    const [websiteSavingError, setWebsiteSavingError] = useState<string | null>(null);
+    const [websiteSavingSuccess, setWebsiteSavingSuccess] = useState<boolean>(false);
+    // const [documentSaving, setDocumentSaving] = useState<boolean>(false);
+    // const [documentSavingError, setDocumentSavingError] = useState<string | null>(null);
+    // const [documentSavingSuccess, setDocumentSavingSuccess] = useState<boolean>(false);
+    // const [documentDialogOpen, setDocumentDialogOpen] = useState<boolean>(false);
 
     const router = useRouter();
 
@@ -46,10 +55,15 @@ export default function Context() {
                 .then(res => res.json())
                 .then(data => {
                     setInstagramAccess(data.instagram_access);
-                    console.log('Instagram access:', data.instagram_access);
                 });
         }
     }, [user]);
+
+    useEffect(() => {
+        fetch('/api/ai/rag/get-websites')
+            .then(res => res.json())
+            .then(data => setConnectedWebsites(data.websites));
+    }, [isLoading, websiteSaving]);
 
     if (!user || isLoading) {
         return (
@@ -87,9 +101,95 @@ export default function Context() {
         }
     }
 
+    const saveWebsite = async () => {
+        setWebsiteSaving(true);
+        try {
+            const response = await fetch('/api/ai/rag/save-website', {
+                method: 'POST',
+                body: JSON.stringify({ url: websiteUrl })
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to save website');
+            }
+        } catch (error) {
+            console.error('Error saving website:', error);
+            setWebsiteSavingError('Failed to save website. Please try again later.');
+        } finally {
+            setWebsiteUrl("");
+            setWebsiteSaving(false);
+        }
+    }
+
+    const saveInstagram = async () => {
+        try {
+            const profileData = await fetch(`/api/get/instagram/profile/info`)
+		    const profileDataJson = await profileData.json();
+
+            const mediaData = await fetch(`/api/get/instagram/profile/media`);
+		    const mediaDataJson = await mediaData.json();
+
+            const response = await fetch('/api/ai/rag/save-instagram', {
+                method: 'POST',
+                body: JSON.stringify({ profile: profileDataJson, media: mediaDataJson })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to save Instagram');
+            }
+        } catch (error) {
+            console.error('Error saving Instagram:', error);
+        }
+    }
+
+    // const saveDocument = async () => {
+    //     setDocumentSaving(true);
+    //     try {
+    //         const response = await fetch('/api/ai/rag/save-document', {
+    //             method: 'POST',
+    //             body: JSON.stringify({ document: document })
+    //         })
+
+    //         if (!response.ok) {
+    //             throw new Error('Failed to save document');
+    //         }
+    //     } catch (error) {
+    //         console.error('Error saving document:', error);
+    //         setDocumentSavingError('Failed to save document. Please try again later.');
+    //     } finally {
+    //         setDocumentSaving(false);
+    //     }
+    // }
+
+    // const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    //     setDocumentSaving(true);
+    //     setDocumentDialogOpen(false);
+        
+    //     if (!e.target.files) {
+    //         return;
+    //     }
+        
+    //     for (const file of e.target.files || []) {
+    //         const formData = new FormData();
+    //         formData.append('document', file);
+    //         const response = await fetch('/api/ai/rag/save-document', {
+    //             method: 'POST',
+    //             body: formData
+    //         })
+
+    //         if (!response.ok) {
+    //             throw new Error('Failed to save document');
+    //         }
+    //     }
+        
+    //     e.target.value = '';
+        
+    //     setDocumentSaving(false);
+    // }
     if (user && !isLoading) {
         return (
             <div>
+                <Button onClick={saveInstagram}>Save Instagram</Button>
                 <h2 className="text-2xl font-bold">Instagram</h2>
                 <div className="flex gap-4 mt-4 pr-4 w-[calc(100%+1rem)] no-scrollbar overflow-x-scroll">
                         {connectedAccounts && !connectedAccounts.instagram ? (
@@ -156,7 +256,7 @@ export default function Context() {
                         ) : connectedAccounts && connectedAccounts.instagram ? (
                             <div className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 flex-shrink-0">
                                 <InstagramIcon className="w-10 h-10" />
-                                <p className="text-sm font-semibold truncate max-w-28">@{connectedAccounts.instagram.username}</p>
+                                <p className="text-xs font-semibold truncate max-w-28">@{connectedAccounts.instagram.username}</p>
                             </div>
                         ) : (
                             <Skeleton className="h-32 w-32 rounded-xl" />
@@ -235,10 +335,19 @@ export default function Context() {
                 <div className="flex gap-4 mt-4 pr-4 w-[calc(100%+1rem)] no-scrollbar overflow-x-scroll">
                     <Dialog>
                     <DialogTrigger>
-                        <div className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 flex-shrink-0">
-                            <PlusIcon className="w-10 h-10 text-slate-400" />
-                            <p className="text-sm font-semibold text-slate-400">Add</p>
-                        </div>
+                        {websiteSaving ? (
+                            <div className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 flex-shrink-0">
+                                <div className="animate-spin">
+                                    <Loader2 className="w-10 h-10 text-primary" />
+                                </div>
+                                <p className="text-sm font-semibold text-primary">Loading</p>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 flex-shrink-0">
+                                <PlusIcon className="w-10 h-10 text-slate-400" />
+                                <p className="text-sm font-semibold text-slate-400">Add</p>
+                            </div>
+                        )}
                     </DialogTrigger>
                     <DialogContent>
                         <DialogHeader>
@@ -248,58 +357,30 @@ export default function Context() {
                         <div className="flex flex-col gap-2">
                             <div className="flex items-center gap-2 p-4 bg-white rounded-xl w-full">
                                 <LinkIcon className="w-6 h-6 stroke-[1.6] text-slate-400" />
-                                <input type="url" className="w-full outline-none focus:outline-none" placeholder="https://your-awesome-website.com/" />
+                                <input type="url" value={websiteUrl} onChange={(e) => setWebsiteUrl(e.target.value)} className="w-full outline-none focus:outline-none" placeholder="https://your-awesome-website.com/" />
                             </div>
                         </div>
 
                         <DialogClose asChild>
-                            <Button className="text-xl font-semibold h-12 p-0 rounded-2xl hover:bg-blue-500">Done</Button>
+                            <Button onClick={saveWebsite} className="text-xl font-semibold h-12 p-0 rounded-2xl hover:bg-blue-500">Connect</Button>
                         </DialogClose>
                     </DialogContent>
                     </Dialog>
-                    {/* {connectedAccounts && connectedAccounts.instagram ? (
-                        <div className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 flex-shrink-0">
-                            <InstagramIcon className="w-10 h-10" />
-                            <p className="text-sm font-semibold truncate max-w-28">@{connectedAccounts.instagram.username}</p>
-                        </div>
-                    ) : (
-                        <Skeleton className="h-32 w-32 rounded-xl" />
-                    )} */}
-                </div>
-                <h2 className="text-2xl font-bold mt-4">Documents</h2>
-                <div className="flex gap-4 mt-4 pr-4 w-[calc(100%+1rem)] no-scrollbar overflow-x-scroll">
-                    <Dialog>
-                    <DialogTrigger>
-                        <div className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 flex-shrink-0">
-                            <PlusIcon className="w-10 h-10 text-slate-400" />
-                            <p className="text-sm font-semibold text-slate-400">Add</p>
-                        </div>
-                    </DialogTrigger>
+                    {connectedWebsites && connectedWebsites.map((website) => {
+                        return (
+                            <div key={website} className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 flex-shrink-0">
+                                <Globe className="w-10 h-10" />
+                                <p className="text-xs font-semibold truncate max-w-28">{website}</p>
+                            </div>
+                        )
+                    })}
+                    <Dialog open={websiteSavingError !== null} onOpenChange={() => setWebsiteSavingError(null)}>
                     <DialogContent>
                         <DialogHeader>
-                        <DialogTitle>Connect documents</DialogTitle>
+                            <DialogTitle>Error</DialogTitle>
+                            <DialogDescription>{websiteSavingError}</DialogDescription>
                         </DialogHeader>
-
-                        <div className="flex flex-col gap-2">
-                            <div className="rounded-xl bg-white w-full p-4 cursor-pointer">
-                                <input 
-                                    type="file" 
-                                    className="hidden" 
-                                    accept=".pdf,.doc,.docx,.txt"
-                                    id="file-upload"
-                                />
-                                <label htmlFor="file-upload" className="flex items-center gap-3 bg-white rounded-xl w-full">
-                                    <UploadIcon className="w-6 h-6 stroke-[1.6] text-slate-600" />
-                                    <p className="text-sm font-medium text-slate-600">
-                                        Click to upload or drag and drop
-                                    </p>
-                                </label>
-                            </div>
-                        </div>
-
-                        <DialogClose asChild>
-                            <Button className="text-xl font-semibold h-12 p-0 rounded-2xl hover:bg-blue-500">Done</Button>
-                        </DialogClose>
+                        <DialogClose className="text-xl font-semibold h-12 p-0 rounded-2xl bg-primary text-white hover:bg-blue-500">Done</DialogClose>
                     </DialogContent>
                     </Dialog>
                     {/* {connectedAccounts && connectedAccounts.instagram ? (
@@ -311,6 +392,62 @@ export default function Context() {
                         <Skeleton className="h-32 w-32 rounded-xl" />
                     )} */}
                 </div>
+                {/* <h2 className="text-2xl font-bold mt-4">Documents</h2>
+                <div className="flex gap-4 mt-4 pr-4 w-[calc(100%+1rem)] no-scrollbar overflow-x-scroll">
+                    {documentSaving ? (
+                        <div className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 flex-shrink-0">
+                            <div className="animate-spin">
+                                <Loader2 className="w-10 h-10 text-primary" />
+                            </div>
+                            <p className="text-sm font-semibold text-primary">Loading</p>
+                        </div>
+                    ) : (
+                        <Dialog>
+                        <DialogTrigger disabled className="pointer-events-none cursor-not-allowed">
+                            <div className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 flex-shrink-0">
+                                <PlusIcon className="w-10 h-10 text-slate-400" />
+                                <p className="text-sm font-semibold text-slate-400">Add</p>
+                            </div>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                            <DialogTitle>Connect documents</DialogTitle>
+                            </DialogHeader>
+
+                            <div className="flex flex-col gap-2">
+                                <div className="rounded-xl bg-white w-full p-4 cursor-pointer">
+                                    <input 
+                                        type="file" 
+                                        className="hidden" 
+                                        accept=".pdf,.doc,.docx,.txt"
+                                        id="file-upload"
+                                        multiple
+                                        // onChange={handleFileUpload}
+                                    />
+                                    <label htmlFor="file-upload" className="flex items-center gap-3 bg-white rounded-xl w-full">
+                                        <UploadIcon className="w-6 h-6 stroke-[1.6] text-slate-600" />
+                                        <p className="text-sm font-medium text-slate-600">
+                                            Click to upload or drag and drop
+                                        </p>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <DialogClose asChild>
+                                <Button className="text-xl font-semibold h-12 p-0 rounded-2xl hover:bg-blue-500">Done</Button>
+                            </DialogClose>
+                        </DialogContent>
+                        </Dialog>
+                    )}
+                    {connectedAccounts && connectedAccounts.instagram ? (
+                        <div className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 flex-shrink-0">
+                            <InstagramIcon className="w-10 h-10" />
+                            <p className="text-sm font-semibold truncate max-w-28">@{connectedAccounts.instagram.username}</p>
+                        </div>
+                    ) : (
+                        <Skeleton className="h-32 w-32 rounded-xl" />
+                    )}
+                </div> */}
             </div>
         )
     }
