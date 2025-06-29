@@ -156,9 +156,9 @@ export async function GET(request: NextRequest) {
                 const profileDoc: Document = {
                     pageContent: `Instagram profile of @${instagramData.username} (${instagramData.name})
 Bio: ${instagramData.biography}
-Followers: ${instagramData.followersCount}
-Following: ${instagramData.followsCount}
-Total posts: ${instagramData.mediaCount}`,
+Followers: ${instagramData.followers_count}
+Following: ${instagramData.follows_count}
+Total posts: ${instagramData.media_count}`,
                     metadata: {
                         user_id: user.id,
                         doc_type: 'instagram_profile',
