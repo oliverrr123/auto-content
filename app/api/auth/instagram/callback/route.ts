@@ -122,7 +122,10 @@ export async function GET(request: NextRequest) {
             // TODO: MAKE REFRESHING LOGIC BEFORE PRODUCTION!!!!!!!!!!
 
             try {
-                const instagramDataResponse = await fetch(`https://graph.instagram.com/v23.0/${instagramUserId}?fields=username,name,profile_picture_url,biography,followers_count,follows_count,media_count,media&access_token=${longLivedAccessToken}`)
+                const accountCheck = await fetch(`https://graph.instagram.com/me?fields=id,username&access_token=${longLivedAccessToken}`);
+                const accountData = await accountCheck.json();
+
+                const instagramDataResponse = await fetch(`https://graph.instagram.com/v23.0/${accountData.id}?fields=username,name,profile_picture_url,biography,followers_count,follows_count,media_count,media&access_token=${longLivedAccessToken}`)
                 const instagramData = await instagramDataResponse.json();
 
                 console.log(`Instagram data: ${JSON.stringify(instagramData)}`)
