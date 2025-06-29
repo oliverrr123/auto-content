@@ -122,9 +122,6 @@ export async function GET(request: NextRequest) {
 
             // TODO: MAKE REFRESHING LOGIC BEFORE PRODUCTION!!!!!!!!!!
 
-            const baseUrl = process.env.NEXT_PUBLIC_APP_URL;
-            const supabaseAccessToken = session?.access_token;
-
             try {
 
                 const profileDataResponse = await fetch(`https://graph.instagram.com/v23.0/${instagramUserId}?fields=username,name,profile_picture_url,biography&access_token=${longLivedAccessToken}`)
