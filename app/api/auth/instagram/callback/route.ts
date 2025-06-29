@@ -123,14 +123,14 @@ export async function GET(request: NextRequest) {
             const supabaseAccessToken = session?.access_token;
 
             try {
-                const profileData = await fetch(`${baseUrl}/api/get/instagram/profile/server/info`, {
+                const profileData = await fetch(`${baseUrl}/api/get/instagram/profile/info`, {
                     headers: {
                         'Authorization': `Bearer ${supabaseAccessToken}`
                     }
                 })
                 const profileDataJson = await profileData.json();
         
-                const mediaData = await fetch(`${baseUrl}/api/get/instagram/profile/server/media`, {
+                const mediaData = await fetch(`${baseUrl}/api/get/instagram/profile/media`, {
                     headers: {
                         'Authorization': `Bearer ${supabaseAccessToken}`
                     }
