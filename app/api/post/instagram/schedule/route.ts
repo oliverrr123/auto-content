@@ -81,10 +81,6 @@ export async function POST(req: NextRequest) {
 
         const data = await response.json();
 
-        console.log('--------------------------------');
-        console.log(data);
-        console.log('--------------------------------');
-
         if (!response.ok) {
             const errorText = await response.text();
             console.error('Cron job API error:', errorText);

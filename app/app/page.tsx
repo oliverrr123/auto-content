@@ -73,12 +73,6 @@ export default function Home() {
   //   }
   // }, [user, isLoading, router]);
 
-  useEffect(() => {
-    console.log('--- media')
-    console.log(media)
-    console.log('--- media')
-  }, [media]);
-
   if (isLoading || isLoadingProfile) {
     return (
       <div className="flex flex-col gap-4">

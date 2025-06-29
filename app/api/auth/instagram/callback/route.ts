@@ -77,8 +77,6 @@ export async function GET(request: NextRequest) {
 
             const userInfo = await responseGetUserInfo.json();
 
-            console.log(`User info: ${userInfo}`)
-
             if (!responseGetUserInfo.ok || userInfo.error) {
                 console.error('Failed to fetch user info:', userInfo);
                 return NextResponse.redirect(new URL('/error?message=Failed to fetch Instagram user info', request.url));
@@ -127,10 +125,6 @@ export async function GET(request: NextRequest) {
 
                 const instagramDataResponse = await fetch(`https://graph.instagram.com/v23.0/${accountData.id}?fields=username,name,profile_picture_url,biography,followers_count,follows_count,media_count,media&access_token=${longLivedAccessToken}`)
                 const instagramData = await instagramDataResponse.json();
-
-                console.log(`Instagram data: ${JSON.stringify(instagramData)}`)
-                console.log(`Instagram data data: ${JSON.stringify(instagramData.media.data)}`)
-                console.log(`Instagram data not json: ${instagramData.media.data}`)
 
                 const media = [];
                 for (const item of instagramData.media.data) {

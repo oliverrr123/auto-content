@@ -48,7 +48,6 @@ export async function POST(req: Request) {
 					const base: SupabaseFilterRPCCall = (rpc) => rpc.eq("user_id", user.id);
 					const filter: SupabaseFilterRPCCall = doc_type ? (rpc) => base(rpc).eq("doc_type", doc_type) : base;
 					const retrievedDocs = await vectorStore.similaritySearch(query, 3, filter);
-					// const retrievedDocs = await vectorStore.similaritySearch(query, 4);
 					const serialized = retrievedDocs.map((doc) => `Source: ${doc.metadata.source}\nContent: ${doc.pageContent}`)
 					console.log('--------------------------------');
 					console.log(retrievedDocs);
@@ -138,7 +137,6 @@ export async function POST(req: Request) {
 		// await vectorStore.delete({ ids: Array.from({ length: documents.length }, (_, i) => i) });
 		
 		return NextResponse.json({ content: result['messages'][result['messages'].length - 1].content });
-		// return NextResponse.json({ content: 'test' });
 	} catch (error) {
 		console.error('Error processing OpenAI response:', error);
 		return NextResponse.json({ error: 'Error processing AI response' }, { status: 500 });

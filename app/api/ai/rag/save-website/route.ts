@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
 import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
-// import { PuppeteerWebBaseLoader } from '@langchain/community/document_loaders/web/puppeteer';
-// import puppeteer from 'puppeteer-core';
 import { HtmlToTextTransformer } from '@langchain/community/document_transformers/html_to_text';
 import { OpenAIEmbeddings } from '@langchain/openai';
 import { Document } from '@langchain/core/documents';
@@ -38,20 +36,6 @@ export async function POST(req: NextRequest) {
             queryName: 'match_documents',
         })
 
-
-		// const browser = await puppeteer.connect({
-		// 	browserWSEndpoint: `wss://chrome.browserless.io?token=${process.env.BROWSERLESS_API_KEY}`
-		// });
-
-
-		// const page = await browser.newPage();
-		// await page.goto(url, { waitUntil: 'networkidle2'});
-		// await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 1000)));
-
-		// const html = await page.content();
-
-		// await browser.close();
-
 		const res = await fetch(`https://production-sfo.browserless.io/export?token=${process.env.BROWSERLESS_API_KEY}`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
@@ -64,15 +48,6 @@ export async function POST(req: NextRequest) {
 		})
 
 		const html = await res.text();
-
-		// const loader = new PuppeteerWebBaseLoader(url, {
-		// 	launchOptions: { headless: 'new', args: ['--no-sandbox'] },
-		// 	async evaluate(page) {
-		// 		await new Promise(resolve => setTimeout(resolve, 1000));
-		// 		return page.content();
-		// 	}
-		// })
-		// const htmlDocs = await loader.load();
 
 		const transformer = new HtmlToTextTransformer({
 			selectors: [
@@ -105,8 +80,6 @@ export async function POST(req: NextRequest) {
 		const textDocs = await transformer.transformDocuments([new Document({ pageContent: html })]);
 
 		const chunks = await splitter.splitDocuments(textDocs);
-		
-		// await vectorStore.addDocuments(chunks, { ids: chunks.map((_, i) => `${url} ||| ${i}`) });
 
         const chunksWithUser = chunks.map((doc) => ({
             ...doc,
