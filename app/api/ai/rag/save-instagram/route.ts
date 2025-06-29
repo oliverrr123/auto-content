@@ -42,7 +42,7 @@ Total posts: ${profile.mediaCount}`,
 			},
 		}
 
-		const mediaDocs: Document[] = media.mediaArray.map((post: any, index: number) => {
+		const mediaDocs: Document[] = media.mediaArray.map((post: { caption: string, timestamp: string, like_count: number, comments_count: number, media_type: string, permalink: string }, index: number) => {
 			const caption = post.caption || '';
 			const content = `Instagram post by @${profile.username} on ${new Date(post.timestamp).toLocaleDateString()}
 Caption: ${caption}

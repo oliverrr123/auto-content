@@ -7,6 +7,7 @@ import { tool } from '@langchain/core/tools';
 import { ToolNode, toolsCondition } from '@langchain/langgraph/prebuilt';
 import { HumanMessage, AIMessage, SystemMessage, ToolMessage } from '@langchain/core/messages';
 import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
+import type { SupabaseFilterRPCCall } from "@langchain/community/vectorstores/supabase";
 
 const docTypes = ['webpage', 'pdf', 'pptx', 'word', 'instagram_post', 'instagram_profile'] as const;
 const retrieveSchema = z.object({ query: z.string(), doc_type: z.enum(docTypes).optional() });
@@ -44,8 +45,8 @@ export async function POST(req: Request) {
 				try {
 					console.log(`query: ${query}`);
 					console.log(`doc_type: ${doc_type}`);
-					const base = (rpc: any) => rpc.eq("user_id", user.id);
-					const filter = doc_type ? (rpc: any) => base(rpc).eq("doc_type", doc_type) : base;
+					const base: SupabaseFilterRPCCall = (rpc) => rpc.eq("user_id", user.id);
+					const filter: SupabaseFilterRPCCall = doc_type ? (rpc) => base(rpc).eq("doc_type", doc_type) : base;
 					const retrievedDocs = await vectorStore.similaritySearch(query, 3, filter);
 					// const retrievedDocs = await vectorStore.similaritySearch(query, 4);
 					const serialized = retrievedDocs.map((doc) => `Source: ${doc.metadata.source}\nContent: ${doc.pageContent}`)
@@ -84,7 +85,7 @@ export async function POST(req: Request) {
 					break;
 				}
 			}
-			let toolMessages = recentToolMessages.reverse();
+			const toolMessages = recentToolMessages.reverse();
 
 			const docsContent = toolMessages.map((doc) => doc.content).join('\n');
 			const systemMessageContent = `You are Grow, a helpful assistant that can answer questions about the user's website. You have access to the following information: ${docsContent}`;
@@ -112,7 +113,7 @@ export async function POST(req: Request) {
 
 		// const agent = createReactAgent({ llm: llm, tools: [retrieve] });
 
-		let inputs = { messages: messages };
+		const inputs = { messages: messages };
 
 		// const prettyPrint = (message: BaseMessage) => {
 		// 	let txt = `[${message._getType()}]: ${message.content}`;

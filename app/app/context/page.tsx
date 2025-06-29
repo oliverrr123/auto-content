@@ -1,5 +1,5 @@
 "use client";
-import { AtSign, CircleCheck, Clock, Globe, Globe2, InstagramIcon, LinkIcon, Loader2, PlusIcon, UploadIcon } from "lucide-react";
+import { AtSign, CircleCheck, Clock, Globe, InstagramIcon, LinkIcon, Loader2, PlusIcon } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useEffect, useState } from "react";
 import {
@@ -29,7 +29,7 @@ export default function Context() {
     const [websiteUrl, setWebsiteUrl] = useState<string>("");
     const [websiteSaving, setWebsiteSaving] = useState<boolean>(false);
     const [websiteSavingError, setWebsiteSavingError] = useState<string | null>(null);
-    const [websiteSavingSuccess, setWebsiteSavingSuccess] = useState<boolean>(false);
+    // const [websiteSavingSuccess, setWebsiteSavingSuccess] = useState<boolean>(false);
     // const [documentSaving, setDocumentSaving] = useState<boolean>(false);
     // const [documentSavingError, setDocumentSavingError] = useState<string | null>(null);
     // const [documentSavingSuccess, setDocumentSavingSuccess] = useState<boolean>(false);
