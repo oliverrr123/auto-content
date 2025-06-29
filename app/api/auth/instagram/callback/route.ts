@@ -129,11 +129,11 @@ export async function GET(request: NextRequest) {
                 const instagramData = await instagramDataResponse.json();
 
                 console.log(`Instagram data: ${JSON.stringify(instagramData)}`)
-                console.log(`Instagram data data: ${JSON.stringify(instagramData.data)}`)
-                console.log(`Instagram data not json: ${instagramData.data}`)
+                console.log(`Instagram data data: ${JSON.stringify(instagramData.media.data)}`)
+                console.log(`Instagram data not json: ${instagramData.media.data}`)
 
                 const media = [];
-                for (const item of instagramData.data) {
+                for (const item of instagramData.media.data) {
                     const responseMediaItem = await fetch(`https://graph.instagram.com/v23.0/${item.id}?fields=caption,media_url,thumbnail_url,media_type,permalink,timestamp,like_count,comments_count&access_token=${longLivedAccessToken}`)
                     const mediaItemData = await responseMediaItem.json();
                     if (!mediaItemData.thumbnail_url) {
