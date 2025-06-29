@@ -121,26 +121,26 @@ export default function Context() {
         }
     }
 
-    const saveInstagram = async () => {
-        try {
-            const profileData = await fetch(`/api/get/instagram/profile/info`)
-		    const profileDataJson = await profileData.json();
+    // const saveInstagram = async () => {
+    //     try {
+    //         const profileData = await fetch(`/api/get/instagram/profile/info`)
+	// 	    const profileDataJson = await profileData.json();
 
-            const mediaData = await fetch(`/api/get/instagram/profile/media`);
-		    const mediaDataJson = await mediaData.json();
+    //         const mediaData = await fetch(`/api/get/instagram/profile/media`);
+	// 	    const mediaDataJson = await mediaData.json();
 
-            const response = await fetch('/api/ai/rag/save-instagram', {
-                method: 'POST',
-                body: JSON.stringify({ profile: profileDataJson, media: mediaDataJson })
-            });
+    //         const response = await fetch('/api/ai/rag/save-instagram', {
+    //             method: 'POST',
+    //             body: JSON.stringify({ profile: profileDataJson, media: mediaDataJson })
+    //         });
 
-            if (!response.ok) {
-                throw new Error('Failed to save Instagram');
-            }
-        } catch (error) {
-            console.error('Error saving Instagram:', error);
-        }
-    }
+    //         if (!response.ok) {
+    //             throw new Error('Failed to save Instagram');
+    //         }
+    //     } catch (error) {
+    //         console.error('Error saving Instagram:', error);
+    //     }
+    // }
 
     // const saveDocument = async () => {
     //     setDocumentSaving(true);
@@ -189,7 +189,6 @@ export default function Context() {
     if (user && !isLoading) {
         return (
             <div>
-                <Button onClick={saveInstagram}>Save Instagram</Button>
                 <h2 className="text-2xl font-bold">Instagram</h2>
                 <div className="flex gap-4 mt-4 pr-4 w-[calc(100%+1rem)] no-scrollbar overflow-x-scroll">
                         {connectedAccounts && !connectedAccounts.instagram ? (
