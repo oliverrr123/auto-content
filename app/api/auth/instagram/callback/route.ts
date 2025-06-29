@@ -122,18 +122,13 @@ export async function GET(request: NextRequest) {
             // TODO: MAKE REFRESHING LOGIC BEFORE PRODUCTION!!!!!!!!!!
 
             try {
+                const instagramDataResponse = await fetch(`https://graph.instagram.com/v23.0/${instagramUserId}?fields=username,name,profile_picture_url,biography,followers_count,follows_count,media_count,media&access_token=${longLivedAccessToken}`)
+                const instagramData = await instagramDataResponse.json();
 
-                const profileDataResponse = await fetch(`https://graph.instagram.com/v23.0/${instagramUserId}?fields=username,name,profile_picture_url,biography&access_token=${longLivedAccessToken}`)
-                const profileData = await profileDataResponse.json();
-                
-                const profile = { username: profileData.username, name: profileData.name, profilePictureUrl: profileData.profile_picture_url, biography: profileData.biography, followersCount: profileData.followers_count, followsCount: profileData.follows_count, mediaCount: profileData.media_count };
-        
-                const mediaDataResponse = await fetch(`https://graph.instagram.com/v23.0/${instagramUserId}?fields=media&access_token=${longLivedAccessToken}`)
-                const mediaData = await mediaDataResponse.json();
+                console.log(`Instagram data: ${instagramData}`)
 
-                const media: { media_url: string, caption: string, media_type: string, permalink: string, timestamp: string, like_count: number, comments_count: number }[] = [];
-
-                for (const item of mediaData.media.data) {
+                const media = [];
+                for (const item of instagramData.data) {
                     const responseMediaItem = await fetch(`https://graph.instagram.com/v23.0/${item.id}?fields=caption,media_url,thumbnail_url,media_type,permalink,timestamp,like_count,comments_count&access_token=${longLivedAccessToken}`)
                     const mediaItemData = await responseMediaItem.json();
                     if (!mediaItemData.thumbnail_url) {
@@ -154,21 +149,21 @@ export async function GET(request: NextRequest) {
                 })
                 
                 const profileDoc: Document = {
-                    pageContent: `Instagram profile of @${profile.username} (${profile.name})
-Bio: ${profile.biography}
-Followers: ${profile.followersCount}
-Following: ${profile.followsCount}
-Total posts: ${profile.mediaCount}`,
+                    pageContent: `Instagram profile of @${instagramData.username} (${instagramData.name})
+Bio: ${instagramData.biography}
+Followers: ${instagramData.followersCount}
+Following: ${instagramData.followsCount}
+Total posts: ${instagramData.mediaCount}`,
                     metadata: {
                         user_id: user.id,
                         doc_type: 'instagram_profile',
-                        source: `https://www.instagram.com/${profile.username}`,
+                        source: `https://www.instagram.com/${instagramData.username}`,
                     },
                 }
         
                 const mediaDocs: Document[] = media.map((post: { caption: string, timestamp: string, like_count: number, comments_count: number, media_type: string, permalink: string }, index: number) => {
                     const caption = post.caption || '';
-                    const content = `Instagram post by @${profile.username} on ${new Date(post.timestamp).toLocaleDateString()}
+                    const content = `Instagram post by @${instagramData.username} on ${new Date(post.timestamp).toLocaleDateString()}
 Caption: ${caption}
 Likes: ${post.like_count}
 Comments: ${post.comments_count}
