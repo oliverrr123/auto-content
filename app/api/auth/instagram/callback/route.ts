@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
+import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
+import { OpenAIEmbeddings } from '@langchain/openai';
+import { Document } from '@langchain/core/documents';
 
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
@@ -123,30 +126,78 @@ export async function GET(request: NextRequest) {
             const supabaseAccessToken = session?.access_token;
 
             try {
-                const profileData = await fetch(`${baseUrl}/api/get/instagram/profile/info`, {
-                    headers: {
-                        'Authorization': `Bearer ${supabaseAccessToken}`
+
+                const profileDataResponse = await fetch(`https://graph.instagram.com/v23.0/${instagramUserId}?fields=username,name,profile_picture_url,biography&access_token=${longLivedAccessToken}`)
+                const profileData = await profileDataResponse.json();
+                
+                const profile = { username: profileData.username, name: profileData.name, profilePictureUrl: profileData.profile_picture_url, biography: profileData.biography, followersCount: profileData.followers_count, followsCount: profileData.follows_count, mediaCount: profileData.media_count };
+        
+                const mediaDataResponse = await fetch(`https://graph.instagram.com/v23.0/${instagramUserId}?fields=media&access_token=${longLivedAccessToken}`)
+                const mediaData = await mediaDataResponse.json();
+
+                const media: { media_url: string, caption: string, media_type: string, permalink: string, timestamp: string, like_count: number, comments_count: number }[] = [];
+
+                for (const item of mediaData.media.data) {
+                    const responseMediaItem = await fetch(`https://graph.instagram.com/v23.0/${item.id}?fields=caption,media_url,thumbnail_url,media_type,permalink,timestamp,like_count,comments_count&access_token=${longLivedAccessToken}`)
+                    const mediaItemData = await responseMediaItem.json();
+                    if (!mediaItemData.thumbnail_url) {
+                        media.push({ media_url: mediaItemData.media_url, caption: mediaItemData.caption, media_type: mediaItemData.media_type, permalink: mediaItemData.permalink, timestamp: mediaItemData.timestamp, like_count: mediaItemData.like_count, comments_count: mediaItemData.comments_count })
+                    } else {
+                        media.push({ media_url: mediaItemData.thumbnail_url, caption: mediaItemData.caption, media_type: mediaItemData.media_type, permalink: mediaItemData.permalink, timestamp: mediaItemData.timestamp, like_count: mediaItemData.like_count, comments_count: mediaItemData.comments_count })
                     }
-                })
-                const profileDataJson = await profileData.json();
-        
-                const mediaData = await fetch(`${baseUrl}/api/get/instagram/profile/media`, {
-                    headers: {
-                        'Authorization': `Bearer ${supabaseAccessToken}`
-                    }
-                });
-                const mediaDataJson = await mediaData.json();
-        
-                const response = await fetch(`${baseUrl}/api/ai/rag/save-instagram`, {
-                    method: 'POST',
-                    body: JSON.stringify({ profile: profileDataJson, media: mediaDataJson })
-                });
-        
-                if (!response.ok) {
-                    throw new Error('Failed to save Instagram');
                 }
+
+                const embeddings = new OpenAIEmbeddings({
+                    model: 'text-embedding-ada-002'
+                })
+        
+                const vectorStore = new SupabaseVectorStore(embeddings, {
+                    client: supabase,
+                    tableName: 'documents',
+                    queryName: 'match_documents',
+                })
+                
+                const profileDoc: Document = {
+                    pageContent: `Instagram profile of @${profile.username} (${profile.name})
+Bio: ${profile.biography}
+Followers: ${profile.followersCount}
+Following: ${profile.followsCount}
+Total posts: ${profile.mediaCount}`,
+                    metadata: {
+                        user_id: user.id,
+                        doc_type: 'instagram_profile',
+                        source: `https://www.instagram.com/${profile.username}`,
+                    },
+                }
+        
+                const mediaDocs: Document[] = media.map((post: { caption: string, timestamp: string, like_count: number, comments_count: number, media_type: string, permalink: string }, index: number) => {
+                    const caption = post.caption || '';
+                    const content = `Instagram post by @${profile.username} on ${new Date(post.timestamp).toLocaleDateString()}
+Caption: ${caption}
+Likes: ${post.like_count}
+Comments: ${post.comments_count}
+Media Type: ${post.media_type}
+Post URL: ${post.permalink}`
+                    return {
+                        pageContent: content,
+                        metadata: {
+                            user_id: user.id,
+                            doc_type: 'instagram_post',
+                            source: post.permalink,
+                            chunk_index: index,
+                            media_type: post.media_type,
+                            like_count: post.like_count,
+                            comment_count: post.comments_count,
+                            timestamp: post.timestamp,
+                        }
+                    }
+                });
+        
+                const docs = [profileDoc, ...mediaDocs];
+                await vectorStore.addDocuments(docs, { ids: docs.map((d) => d.metadata.source) });
             } catch (error) {
                 console.error('Error saving Instagram:', error);
+                // Continue with the flow even if saving fails
             }
         } catch (error) {
             console.error('Failed to exchange code for access token in route:', error);
