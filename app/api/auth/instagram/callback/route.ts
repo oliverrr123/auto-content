@@ -118,6 +118,26 @@ export async function GET(request: NextRequest) {
 
             // TODO: MAKE REFRESHING LOGIC BEFORE PRODUCTION!!!!!!!!!!
 
+            const baseUrl = process.env.NEXT_PUBLIC_APP_URL;
+
+            try {
+                const profileData = await fetch(`${baseUrl}/api/get/instagram/profile/info`)
+                const profileDataJson = await profileData.json();
+        
+                const mediaData = await fetch(`${baseUrl}/api/get/instagram/profile/media`);
+                const mediaDataJson = await mediaData.json();
+        
+                const response = await fetch(`${baseUrl}/api/ai/rag/save-instagram`, {
+                    method: 'POST',
+                    body: JSON.stringify({ profile: profileDataJson, media: mediaDataJson })
+                });
+        
+                if (!response.ok) {
+                    throw new Error('Failed to save Instagram');
+                }
+            } catch (error) {
+                console.error('Error saving Instagram:', error);
+            }
         } catch (error) {
             console.error('Failed to exchange code for access token in route:', error);
             console.error(error);
