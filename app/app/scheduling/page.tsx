@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, X, User } from "lucide-react";
-import { DragDropContext, Droppable, Draggable, DropResult, DroppableProvided, DroppableProps } from 'react-beautiful-dnd';
+import { DragDropContext, Droppable, Draggable, DropResult, DroppableProvided, DroppableProps } from '@hello-pangea/dnd';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import Image from "next/image";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
