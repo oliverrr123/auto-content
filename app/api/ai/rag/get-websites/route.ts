@@ -25,10 +25,6 @@ export async function GET() {
 		websites = websites.map((website) => (website.startsWith('http://') || website.startsWith('https://')) ? website.split('://')[1] : website);
 		websites = websites.map((website) => website.endsWith('/') ? website.slice(0, -1) : website);
 
-		console.log('--------------------------------');
-		console.log(websites);
-		console.log('--------------------------------');
-
 		if (websites.length === 0) {
 			return NextResponse.json({ websites: [] });
 		}
