@@ -647,7 +647,7 @@ export default function CreatePost() {
                         </DialogClose>
                     </DialogContent>
                     </Dialog>
-                    <hr className="border-slate-200" />
+                    {/* <hr className="border-slate-200" />
                     <button className="flex gap-2 items-center p-4 bg-white w-full disabled:text-slate-400 disabled:cursor-not-allowed" disabled>
                         <MapPin className="w-6 h-6 stroke-[1.6]" />
                         <p className="text-xl">Add location</p>
@@ -656,7 +656,7 @@ export default function CreatePost() {
                     <button className="flex gap-2 items-center p-4 bg-white w-full disabled:text-slate-400 disabled:cursor-not-allowed" disabled>
                         <Music4 className="w-6 h-6 stroke-[1.6]" />
                         <p className="text-xl">Add music</p>
-                    </button>
+                    </button> */}
                 </div>
                 <Dialog>
                 <DialogTrigger asChild>
