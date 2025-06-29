@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
             return NextResponse.redirect(new URL('/error?message=Failed to exchange code for access token', request.url));
         }
 
-        const accessToken = data.access_token;
+        const supabaseAccessToken = data.access_token;
         const instagramUserId = data.user_id;
 
         // exchange short lived access token for long lived access token
@@ -94,6 +94,7 @@ export async function GET(request: NextRequest) {
 
             const supabase = await createClient();
             const { data: { user } } = await supabase.auth.getUser();
+            const { data: { session } } = await supabase.auth.getSession();
 
             if (!user) {
                 return NextResponse.redirect(new URL('/login', request.url));
@@ -119,12 +120,17 @@ export async function GET(request: NextRequest) {
             // TODO: MAKE REFRESHING LOGIC BEFORE PRODUCTION!!!!!!!!!!
 
             const baseUrl = process.env.NEXT_PUBLIC_APP_URL;
+            const accessToken = session?.access_token;
 
             try {
-                const profileData = await fetch(`${baseUrl}/api/get/instagram/profile/info`)
+                const profileData = await fetch(`${baseUrl}/api/get/instagram/profile/server/info`, {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                })
                 const profileDataJson = await profileData.json();
         
-                const mediaData = await fetch(`${baseUrl}/api/get/instagram/profile/media`);
+                const mediaData = await fetch(`${baseUrl}/api/get/instagram/profile/server/media`);
                 const mediaDataJson = await mediaData.json();
         
                 const response = await fetch(`${baseUrl}/api/ai/rag/save-instagram`, {
