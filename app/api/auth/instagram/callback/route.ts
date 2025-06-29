@@ -125,7 +125,9 @@ export async function GET(request: NextRequest) {
                 const instagramDataResponse = await fetch(`https://graph.instagram.com/v23.0/${instagramUserId}?fields=username,name,profile_picture_url,biography,followers_count,follows_count,media_count,media&access_token=${longLivedAccessToken}`)
                 const instagramData = await instagramDataResponse.json();
 
-                console.log(`Instagram data: ${instagramData}`)
+                console.log(`Instagram data: ${JSON.stringify(instagramData)}`)
+                console.log(`Instagram data data: ${JSON.stringify(instagramData.data)}`)
+                console.log(`Instagram data not json: ${instagramData.data}`)
 
                 const media = [];
                 for (const item of instagramData.data) {
