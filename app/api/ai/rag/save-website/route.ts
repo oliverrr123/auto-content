@@ -3,7 +3,7 @@ import { createClient } from '@/utils/supabase/server';
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
 import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
 // import { PuppeteerWebBaseLoader } from '@langchain/community/document_loaders/web/puppeteer';
-import puppeteer from 'puppeteer-core';
+// import puppeteer from 'puppeteer-core';
 import { HtmlToTextTransformer } from '@langchain/community/document_transformers/html_to_text';
 import { OpenAIEmbeddings } from '@langchain/openai';
 import { Document } from '@langchain/core/documents';
