@@ -54,7 +54,7 @@ export function SignupForm({
             </div>
             <div className="space-y-6">
               <p className="text-sm text-gray-500">
-                Didn't receive an email? Check your spam folder.
+                Didn&apos;t receive an email? Check your spam folder.
               </p>
               <Button asChild className="w-full bg-blue-600 hover:bg-blue-700">
                 <Link href="/login">
