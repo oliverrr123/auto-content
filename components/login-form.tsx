@@ -32,7 +32,7 @@ export function LoginForm({
       {state?.error && (
         <Alert variant="destructive">
           <AlertDescription>
-            {state.error}
+            {state.error === 'Email not confirmed' ? 'Email not confirmed. Please check your email for a verification link.' : state.error}
           </AlertDescription>
         </Alert>
       )}

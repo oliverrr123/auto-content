@@ -52,8 +52,7 @@ export async function signup(prevState: AuthState | null, formData: FormData): P
     return { error: error.message }
   }
 
-  revalidatePath("/app", "layout");
-  redirect("/app");
+  return { success: true }
 }
 
 export async function logout() {

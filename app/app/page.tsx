@@ -118,12 +118,10 @@ export default function Home() {
         <div>
           <p style={{ whiteSpace: 'pre-wrap' }}>{profile.biography}</p>
         </div>
-        <Link href='/app/create-post'>
-          <Button className="w-full font-semibold text-md hover:bg-blue-500 flex gap-1 items-center justify-center [&_svg]:!size-5">
-            <PlusIcon />
-            New Post
-          </Button>
-        </Link>
+        <Button onClick={() => window.location.href = '/app/create-post'} className="w-full font-semibold text-md hover:bg-blue-500 flex gap-1 items-center justify-center [&_svg]:!size-5">
+          <PlusIcon />
+          New Post
+        </Button>
         {media && !isLoadingMedia && media.length > 0 ? (
           <div className="grid grid-cols-3 w-dvw -translate-x-4 gap-[1px] pb-16">
             {media.map((mediaItem) => (
