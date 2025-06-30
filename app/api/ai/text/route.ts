@@ -33,6 +33,8 @@ export async function POST(req: Request) {
 		}
 
 		const { messages } = await req.json();
+		
+		const systemMessageBase = 'Your name is Grow, you are a helpful assistant that can answer questions about the user\'s Instagram account and website. You are also a great writer and can help the user with their Instagram posts. When you will be asked for example: "Create a new post about ___", you should create a new post for the user\'s Instagram account in their writing style. When you get asked questions like these, you should retrieve the context from the vector database. You can also retrieve information about the user\'s Instagram profile so you can see the bio, or the information from their website where there should be more information about them so you can get a better understanding of the user. If you\'re generating a new post, generate it in the same language as the user\'s other posts, not in the language the user speaks to you, or if you are unsure, ask which language the user prefers.';
 
 		const vectorStore = new SupabaseVectorStore(embeddings, {
 			client: supabase,
@@ -68,7 +70,7 @@ export async function POST(req: Request) {
 
 		const queryOrRespond = async (state: typeof MessagesAnnotation.State) => {
 			const llmWithTools = llm.bindTools([retrieve]);
-			const response = await llmWithTools.invoke(state.messages);
+			const response = await llmWithTools.invoke([systemMessageBase, ...state.messages]);
 			return { messages: [response] };
 		}
 
@@ -87,7 +89,7 @@ export async function POST(req: Request) {
 			const toolMessages = recentToolMessages.reverse();
 
 			const docsContent = toolMessages.map((doc) => doc.content).join('\n');
-			const systemMessageContent = `You are Grow, a helpful assistant that can answer questions about the user's website. You have access to the following information: ${docsContent}`;
+			const systemMessageContent = `${systemMessageBase} You have access to the following information about the user's website and Instagram account: ${docsContent}`;
 
 			const conversationalMessages = state.messages.filter((message) => message instanceof HumanMessage || (message instanceof AIMessage && message.tool_calls?.length == 0) || message instanceof SystemMessage);
 			const prompt = [new SystemMessage(systemMessageContent), ...conversationalMessages];
