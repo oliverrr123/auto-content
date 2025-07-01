@@ -2,31 +2,17 @@
 
 import * as React from "react"
 import {
-  AudioWaveform,
-  BookOpen,
-  Bot,
   Calendar,
-  ChevronsUpDown,
-  Command,
   FileText,
   Frame,
-  GalleryVerticalEnd,
-  Home,
   House,
-  Link,
   Map,
   PieChart,
-  Plus,
   PlusCircle,
-  Settings2,
-  Sparkle,
-  SquareTerminal,
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
-import { NavProjects } from "@/components/nav-projects"
 import { NavUser } from "@/components/nav-user"
-import { TeamSwitcher } from "@/components/team-switcher"
 import {
   Sidebar,
   SidebarContent,
@@ -37,7 +23,6 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar"
-import { DropdownMenu, DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu"
 
 // This is sample data.
 const data = {
