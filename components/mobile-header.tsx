@@ -27,7 +27,7 @@ export default function MobileNavbar() {
                                 <User className="w-4 h-4 text-slate-400" />
                             </div>
                         </PopoverTrigger>
-                        <PopoverContent className="w-48 flex flex-col gap-2" onClick={() => logout()}>
+                        <PopoverContent className="w-48 flex flex-col gap-2" onClick={() => { logout(); window.location.href = "/login" }}>
                             <div className="flex items-center gap-2">
                                 {user.user_metadata.avatar_url && (
                                     <Image src={user.user_metadata.avatar_url} alt="User" width={24} height={24} unoptimized priority className="rounded-full" />

@@ -9,6 +9,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Heart, MessageCircle, PlusIcon, ChevronDown, ChevronUp } from "lucide-react";
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const formatDate = (timestamp: string | number) => {
     const date = new Date(typeof timestamp === 'string' ? timestamp : timestamp * 1000);
@@ -86,7 +87,7 @@ export default function Home() {
         <Skeleton className="h-4 w-3/4" />
         <Skeleton className="h-4 w-2/3" />
         <Skeleton className="h-8 w-full" />
-        <div className="grid grid-cols-3 w-dvw -translate-x-4 gap-[1px] pb-16">
+        <div className="grid grid-cols-3 w-dvw -translate-x-4 gap-[1px] pb-16 sm:pb-0 sm:w-full sm:translate-x-0 sm:gap-0">
           <Skeleton className="aspect-[4/5] w-full rounded-none" />
           <Skeleton className="aspect-[4/5] w-full rounded-none" />
           <Skeleton className="aspect-[4/5] w-full rounded-none" />
@@ -102,10 +103,10 @@ export default function Home() {
         <div className="flex gap-4 items-center">
           <div>
               {profile.profilePictureUrl ? (
-                <>
-                  <Image src={profile.profilePictureUrl} alt="User Avatar" width={100} height={100} unoptimized className="rounded-full absolute z-10" />
-                  <div className="w-[100px] h-[100px] bg-slate-200 rounded-full relative" />
-                </>
+                <Avatar className="w-24 h-24">
+                  <AvatarImage src={profile.profilePictureUrl} alt="User Avatar" />
+                  <AvatarFallback className="rounded-full">{profile.name.charAt(0)}</AvatarFallback>
+                </Avatar>
               ) : (
                 <Skeleton className="rounded-full w-[100px] h-[100px]" />
               )}
@@ -123,7 +124,7 @@ export default function Home() {
           New Post
         </Button>
         {media && !isLoadingMedia && media.length > 0 ? (
-          <div className="grid grid-cols-3 w-dvw -translate-x-4 gap-[1px] pb-16">
+          <div className="grid grid-cols-3 w-dvw -translate-x-4 gap-[1px] pb-16 sm:pb-0 sm:w-full sm:translate-x-0 sm:gap-0">
             {media.map((mediaItem) => (
               <Dialog key={mediaItem.media_url}>
               <DialogTrigger>
@@ -218,7 +219,7 @@ export default function Home() {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-3 w-dvw -translate-x-4 gap-[1px] pb-16">
+          <div className="grid grid-cols-3 w-dvw -translate-x-4 gap-[1px] pb-16 sm:pb-0 sm:w-full sm:translate-x-0 sm:gap-0">
             <Skeleton className="aspect-[4/5] w-full rounded-none" />
             <Skeleton className="aspect-[4/5] w-full rounded-none" />
             <Skeleton className="aspect-[4/5] w-full rounded-none" />

@@ -20,7 +20,9 @@ export default function AI() {
 	]);
 
 	const scrollToBottom = () => {
-		messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+		if (messagesEndRef.current) {
+			messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+		}
 	};
 
 	useEffect(() => {
@@ -81,33 +83,35 @@ export default function AI() {
 	}
 
 	return (
-		<div className="">
-			<div className="flex flex-col gap-4 pb-48 overflow-y-auto">
-				{messages.map((message, index) =>
-					message.role === 'assistant' ? (
-						<div key={index} className="flex gap-2">
-							<img
-								src="/icons/ai-2.svg"
-								className="w-6 h-6"
-								alt="AI"
-								width={22}
-								height={22}
-							/>
-							<Markdown content={message.content} />
-						</div>
-					) : (
-						<div key={index} className="flex justify-end">
-							<div className="bg-primary px-4 py-3 rounded-xl rounded-br-none ml-10 mr-[1px] text-white">
-								<p>{message.content}</p>
+		<div className="flex flex-col h-full relative">
+			<div className="absolute inset-0 bottom-[100px] overflow-y-auto">
+				<div className="flex flex-col gap-4 pb-4">
+					{messages.map((message, index) =>
+						message.role === 'assistant' ? (
+							<div key={index} className="flex gap-2">
+								<img
+									src="/icons/ai-2.svg"
+									className="w-6 h-6"
+									alt="AI"
+									width={22}
+									height={22}
+								/>
+								<Markdown content={message.content} />
 							</div>
-						</div>
-					)
-				)}
-				<div ref={messagesEndRef} />
+						) : (
+							<div key={index} className="flex justify-end">
+								<div className="bg-primary px-4 py-3 rounded-xl rounded-br-none ml-10 mr-[1px] text-white">
+									<p>{message.content}</p>
+								</div>
+							</div>
+						)
+					)}
+					<div ref={messagesEndRef} className="h-4" />
+				</div>
 			</div>
-			<div className="fixed w-[calc(100%-2rem)] bottom-14">
-				<div className="mt-4 relative">
-					<div className="bg-slate-100 w-full h-16 absolute -bottom-10 -z-10"></div>
+			<div className="absolute bottom-0 left-0 right-0">
+				<div className="relative">
+			
 					<div className="flex flex-col bg-white rounded-xl">
 						<textarea
 							className="w-full p-4 rounded-xl focus:outline-none resize-none"
