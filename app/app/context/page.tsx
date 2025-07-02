@@ -61,6 +61,14 @@ export default function Context() {
         staleTime: 5 * 60_000,
     })
 
+    const { mutate: deleteInstagram, isPending: instagramDeleting, error: instagramDeletingError } = useMutation({
+        mutationFn: async () => {
+            const res = await fetch('/api/ai/rag/delete-instagram');
+            if (!res.ok) throw new Error('Failed to delete instagram');
+        },
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['connected-accounts'] })
+    })
+
     // useEffect(() => {
     //     fetch('/api/get/connected-accounts')
     //         .then(res => res.json())
@@ -176,14 +184,6 @@ export default function Context() {
             setWebsiteUpdating(null);
         }
     }
-
-    const { mutate: deleteInstagram, isPending: instagramDeleting, error: instagramDeletingError } = useMutation({
-        mutationFn: async () => {
-            const res = await fetch('/api/ai/rag/delete-instagram');
-            if (!res.ok) throw new Error('Failed to delete instagram');
-        },
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['connected-accounts'] })
-    })
 
     const updateInstagram = async () => {
         console.log('updateInstagram');
@@ -412,11 +412,10 @@ export default function Context() {
                         )
                     })}
                     <ErrorDialog
-                        error={instagramAccessError || instagramDeletingError || instagramUpdatingError || websiteSavingError || websiteDeletingError || websiteUpdatingError || ""}
+                        error={instagramAccessError || instagramDeletingError?.message || instagramUpdatingError || websiteSavingError || websiteDeletingError || websiteUpdatingError || ""}
                         open={instagramAccessError !== null || instagramDeletingError !== null || instagramUpdatingError !== null || websiteSavingError !== null || websiteDeletingError !== null || websiteUpdatingError !== null}
                         onOpenChange={() => {
                             if (instagramAccessError !== null) setInstagramAccessError(null);
-                            if (instagramDeletingError !== null) setInstagramDeletingError(null);
                             if (instagramUpdatingError !== null) setInstagramUpdatingError(null);
                             if (websiteSavingError !== null) setWebsiteSavingError(null);
                             if (websiteDeletingError !== null) setWebsiteDeletingError(null);
