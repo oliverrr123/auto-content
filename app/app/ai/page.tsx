@@ -1,14 +1,12 @@
 'use client';
 import { useAuth } from '@/context/AuthContext';
-import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Mic, Paperclip, Send } from 'lucide-react';
 import { Markdown } from '@/components/markdown';
 
 export default function AI() {
-	const { user, isLoading } = useAuth();
-	const router = useRouter();
+	const { user } = useAuth();
 	const [prompt, setPrompt] = useState('');
 	const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -26,12 +24,6 @@ export default function AI() {
 	useEffect(() => {
 		scrollToBottom();
 	}, [messages]);
-
-	useEffect(() => {
-		if (!user && !isLoading) {
-			router.push('/login');
-		}
-	}, [user, isLoading, router]);
 
 	if (!user) {
 		return null;

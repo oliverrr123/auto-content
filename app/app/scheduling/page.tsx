@@ -1,6 +1,5 @@
 'use client';
 import { useAuth } from "@/context/AuthContext";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, X, User } from "lucide-react";
@@ -12,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Clock } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface Post {
     id: string;
@@ -61,9 +61,7 @@ const StrictModeDroppable = ({ children, ...props }: DroppableProps) => {
 export default function Scheduling() {
     const { user, isLoading } = useAuth();
 
-    const router = useRouter();
-
-    const [posts, setPosts] = useState<Post[]>([]);
+    // const [posts, setPosts] = useState<Post[]>([]);
     const [currentPosts, setCurrentPosts] = useState<Post[][]>([]);
     const [currentWeekDay, setCurrentWeekDay] = useState<Date>(new Date());
     const [showEditDialog, setShowEditDialog] = useState(false);
@@ -74,6 +72,8 @@ export default function Scheduling() {
     const [tagText, setTagText] = useState('');
     const [showTags, setShowTags] = useState(false);
     const [invalidTime, setInvalidTime] = useState(false);
+
+    const queryClient = useQueryClient();
 
     const handleDragEnd = (result: DropResult) => {
         if (!result.destination) return;
@@ -286,21 +286,19 @@ export default function Scheduling() {
             xhr.send(file);
         });
     }
-    
-    useEffect(() => {
-        if (!user && !isLoading) {
-            router.push('/login');
-        } else if (user) {
-            fetch('/api/get/instagram/posts')
-                .then(res => res.json())
-                .then(data => {
-                    setPosts(data.posts);
-                })
-                .catch(err => {
-                    console.error(err);
-                })
-        }
-    }, [user, isLoading, router]);
+
+    async function fetchPosts() {
+        const res = await fetch('/api/get/instagram/posts');
+        if (!res.ok) throw new Error('Failed to fetch posts');
+        return (await res.json()).posts;
+    }
+
+    const { data: posts = [] } = useQuery({
+        queryKey: ['posts'],
+        queryFn: fetchPosts,
+        enabled: !isLoading,
+        staleTime: 5 * 60_000,
+    })
 
     useEffect(() => {
         const monday = new Date(currentWeekDay);
@@ -336,13 +334,13 @@ export default function Scheduling() {
 
     useEffect(() => {
         if (editPostId) {
-            const post = posts.find(post => post.id === editPostId);
+            const post = posts.find((post: Post) => post.id === editPostId);
             if (post) {
                 setEditedPost({
                     ...post,
-                    params: post.params.map(param => ({
+                    params: post.params.map((param: { taggedPeople: { username: string }[] }) => ({
                         ...param,
-                        taggedPeople: param.taggedPeople.map(tag => ({ ...tag }))
+                        taggedPeople: param.taggedPeople.map((tag: { username: string }) => ({ ...tag }))
                     }))
                 });
             }
@@ -358,48 +356,51 @@ export default function Scheduling() {
         }));
     };
 
-    const saveEdits = async () => {
-        const cleanedPost = {
-            ...editedPost!,
-            params: editedPost!.params.map(param => ({
-                ...param,
-                taggedPeople: param.taggedPeople.filter(tag => tag.username.trim() !== '')
-            }))
-        };
-        const response = await fetch('/api/post/instagram/edit', {
-            method: 'POST',
-            body: JSON.stringify({postData: cleanedPost})
-        })
-        const data = await response.json();
-        if (response.ok) {
-            setPosts(prev => prev.map(post => post.id === cleanedPost.id ? cleanedPost : post));
-            setShowEditDialog(false);
-        } else {
-            console.error(data.error);
+    const { mutate: saveEdits } = useMutation({ 
+        mutationFn: async () => {
+            const cleanedPost = {
+                ...editedPost!,
+                params: editedPost!.params.map(param => ({
+                    ...param,
+                    taggedPeople: param.taggedPeople.filter(tag => tag.username.trim() !== '')
+                }))
+            };
+            const response = await fetch('/api/post/instagram/edit', {
+                method: 'POST',
+                body: JSON.stringify({postData: cleanedPost})
+            })
+            const data = await response.json();
+            if (response.ok) {
+                queryClient.invalidateQueries({ queryKey: ['posts'] });
+                setShowEditDialog(false);
+            } else {
+                console.error(data.error);
+            }
         }
-    }
+    })
 
-    const deletePost = async () => {
-        const cleanedPost = {
-            ...editedPost!,
-            params: editedPost!.params.map(param => ({
-                ...param,
-                taggedPeople: param.taggedPeople.filter(tag => tag.username.trim() !== '')
-            }))
-        };
-
-        const response = await fetch('/api/post/instagram/delete', {
-            method: 'POST',
-            body: JSON.stringify({postData: cleanedPost})
-        })
-        const data = await response.json();
-        if (data.success) {
-            setPosts(prev => prev.filter(post => post.id !== cleanedPost.id));
-            setShowEditDialog(false);
-        } else {
-            console.error(data.error);
+    const { mutate: deletePost } = useMutation({
+        mutationFn: async () => {
+            const cleanedPost = {
+                ...editedPost!,
+                params: editedPost!.params.map(param => ({
+                    ...param,
+                    taggedPeople: param.taggedPeople.filter(tag => tag.username.trim() !== '')
+                }))
+            };
+            const response = await fetch('/api/post/instagram/delete', {
+                method: 'POST',
+                body: JSON.stringify({postData: cleanedPost})
+            })
+            const data = await response.json();
+            if (response.ok) {
+                queryClient.invalidateQueries({ queryKey: ['posts'] });
+                setShowEditDialog(false);
+            } else {
+                console.error(data.error);
+            }
         }
-    }
+    })
 
     useEffect(() => {
         if (editedPost?.schedule_params.scheduled_date) {
