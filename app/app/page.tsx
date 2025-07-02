@@ -3,7 +3,7 @@ import Image from "next/image";
 import React from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Heart, MessageCircle, PlusIcon, ChevronDown, ChevronUp } from "lucide-react";
@@ -36,18 +36,30 @@ export default function Home() {
 
   async function fetchProfile() {
     setIsLoadingProfile(true);
-    const res = await fetch('/api/get/instagram/profile/info');
-    if (!res.ok) throw new Error('Failed to fetch profile');
-    setIsLoadingProfile(false);
-    return await res.json();
+    try {
+      const res = await fetch('/api/get/instagram/profile/info');
+      if (!res.ok) {
+        // If the user has not connected an IG account (400 / 404), treat as no profile
+        return null;
+      }
+      return await res.json();
+    } finally {
+      setIsLoadingProfile(false);
+    }
   }
 
   async function fetchMedia() {
     setIsLoadingMedia(true);
-    const res = await fetch('/api/get/instagram/profile/media');
-    if (!res.ok) throw new Error('Failed to fetch media');
-    setIsLoadingMedia(false);
-    return (await res.json()).mediaArray;
+    try {
+      const res = await fetch('/api/get/instagram/profile/media');
+      if (!res.ok) {
+        // No media available yet
+        return [];
+      }
+      return (await res.json()).mediaArray;
+    } finally {
+      setIsLoadingMedia(false);
+    }
   }
 
   const { data: profile = null } = useQuery({
@@ -63,6 +75,15 @@ export default function Home() {
     enabled: !isLoading,
     staleTime: 5 * 60_000,
   })
+
+  useEffect(() => {
+    console.log(`user: ${user}`);
+    console.log(`isLoading: ${isLoading}`);
+    console.log(`isLoadingProfile: ${isLoadingProfile}`);
+    console.log(`isLoadingMedia: ${isLoadingMedia}`);
+    console.log(`profile: ${profile}`);
+    console.log(`media: ${media}`);
+  }, [user, isLoading, isLoadingProfile, isLoadingMedia, profile, media]);
 
   if (isLoading || isLoadingProfile) {
     return (
@@ -88,6 +109,10 @@ export default function Home() {
   }
 
   if (user && profile && !isLoadingProfile && media) {
+    console.log(media);
+    console.log(profile);
+    console.log(user);
+    console.log(isLoadingProfile);
     return (
       <div className="flex flex-col gap-4">
         <div className="flex gap-4 items-center">
@@ -220,18 +245,10 @@ export default function Home() {
     );
   }
 
-  if (user && profile && !isLoadingProfile && !media) {
+  if (user && !profile && !isLoadingProfile) {
     return (
       <div className="flex flex-col gap-4">
         <h1 className="text-2xl font-bold">Start by linking your Instagram account <span className="text-blue-500" onClick={() => window.location.href = '/app/context'}>here</span></h1>
-      </div>
-    )
-  }
-
-  if (!isLoading && !user) {
-    return (
-      <div className="flex flex-col gap-4">
-        <h1 className="text-2xl font-bold">This is a landing page <span className="text-blue-500" onClick={() => window.location.href = '/app/context'}>here</span></h1>
       </div>
     )
   }
