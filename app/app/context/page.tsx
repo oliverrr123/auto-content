@@ -35,7 +35,7 @@ export default function Context() {
     const [websiteDeleting, setWebsiteDeleting] = useState<string | null>("");
     const [websiteDeletingError, setWebsiteDeletingError] = useState<string | null>(null);
     // const [instagramDeleting, setInstagramDeleting] = useState<boolean>(false);
-    const [instagramDeletingError, setInstagramDeletingError] = useState<string | null>(null);
+    // const [instagramDeletingError, setInstagramDeletingError] = useState<string | null>(null);
     const [instagramUpdating, setInstagramUpdating] = useState<boolean>(false);
     const [instagramUpdatingError, setInstagramUpdatingError] = useState<string | null>(null);
     const [websiteUpdating, setWebsiteUpdating] = useState<string | null>("");
@@ -177,7 +177,7 @@ export default function Context() {
         }
     }
 
-    const { mutate: deleteInstagram, isPending: instagramDeleting, isError, error: deleteInstagramError } = useMutation({
+    const { mutate: deleteInstagram, isPending: instagramDeleting, error: instagramDeletingError } = useMutation({
         mutationFn: async () => {
             const res = await fetch('/api/ai/rag/delete-instagram');
             if (!res.ok) throw new Error('Failed to delete instagram');
