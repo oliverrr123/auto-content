@@ -1,7 +1,7 @@
 "use client";
 import { AtSign, CircleCheck, Clock, Globe, InstagramIcon, LinkIcon, PlusIcon } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -27,9 +27,35 @@ export default function Context() {
         return res.json();
     }
 
+    async function fetchWebsites() {
+        const res = await fetch('/api/ai/rag/get-websites');
+        if (!res.ok) throw new Error('Failed to fetch websites');
+        return (await res.json()).websites;
+    }
+
+    async function fetchInstagramAccess() {
+        const res = await fetch('/api/instagram-access/get');
+        if (!res.ok) throw new Error('Failed to fetch instagram access');
+        return (await res.json()).instagram_access;
+    }
+
     const { data: connectedAccounts = [] } = useQuery({
         queryKey: ['connected-accounts'],
         queryFn: fetchConnectedAccounts,
+        enabled: !isLoading,
+        staleTime: 5 * 60_000,
+    })
+
+    const { data: connectedWebsites = [] } = useQuery({
+        queryKey: ['websites'],
+        queryFn: fetchWebsites,
+        enabled: !isLoading,
+        staleTime: 5 * 60_000,
+    })
+
+    const { data: instagramAccess = '' } = useQuery({
+        queryKey: ['instagram-access'],
+        queryFn: fetchInstagramAccess,
         enabled: !isLoading,
         staleTime: 5 * 60_000,
     })
@@ -50,19 +76,6 @@ export default function Context() {
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['connected-accounts'] })
     })
 
-    async function fetchInstagramAccess() {
-        const res = await fetch('/api/instagram-access/get');
-        if (!res.ok) throw new Error('Failed to fetch instagram access');
-        return (await res.json()).instagram_access;
-    }
-
-    const { data: instagramAccess = '' } = useQuery({
-        queryKey: ['instagram-access'],
-        queryFn: fetchInstagramAccess,
-        enabled: !isLoading,
-        staleTime: 5 * 60_000,
-    })
-
     const { mutate: requestInstagramAccess, isPending: instagramAccessLoading, error: instagramAccessError } = useMutation({
         mutationFn: async () => {
             const res = await fetch('/api/instagram-access/request', {
@@ -73,19 +86,6 @@ export default function Context() {
             return (await res.json()).instagram_access;
         },
         onSuccess: () => { queryClient.setQueryData(['instagram-access'], 'pending'); setInstagramAccessSuccess(true) },
-    })
-
-    async function fetchWebsites() {
-        const res = await fetch('/api/ai/rag/get-websites');
-        if (!res.ok) throw new Error('Failed to fetch websites');
-        return (await res.json()).websites;
-    }
-
-    const { data: connectedWebsites = [] } = useQuery({
-        queryKey: ['websites'],
-        queryFn: fetchWebsites,
-        enabled: !isLoading,
-        staleTime: 5 * 60_000,
     })
 
     const { mutate: saveWebsite, isPending: websiteSaving, error: websiteSavingError } = useMutation({
@@ -138,50 +138,6 @@ export default function Context() {
         )
     }
 
-    // const saveDocument = async () => {
-    //     setDocumentSaving(true);
-    //     try {
-    //         const response = await fetch('/api/ai/rag/save-document', {
-    //             method: 'POST',
-    //             body: JSON.stringify({ document: document })
-    //         })
-
-    //         if (!response.ok) {
-    //             throw new Error('Failed to save document');
-    //         }
-    //     } catch (error) {
-    //         console.error('Error saving document:', error);
-    //         setDocumentSavingError('Failed to save document. Please try again later.');
-    //     } finally {
-    //         setDocumentSaving(false);
-    //     }
-    // }
-
-    // const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    //     setDocumentSaving(true);
-    //     setDocumentDialogOpen(false);
-        
-    //     if (!e.target.files) {
-    //         return;
-    //     }
-        
-    //     for (const file of e.target.files || []) {
-    //         const formData = new FormData();
-    //         formData.append('document', file);
-    //         const response = await fetch('/api/ai/rag/save-document', {
-    //             method: 'POST',
-    //             body: formData
-    //         })
-
-    //         if (!response.ok) {
-    //             throw new Error('Failed to save document');
-    //         }
-    //     }
-        
-    //     e.target.value = '';
-        
-    //     setDocumentSaving(false);
-    // }
     if (user && !isLoading) {
         return (
             <div>
