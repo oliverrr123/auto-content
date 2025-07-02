@@ -20,7 +20,7 @@ export async function GET() {
 			return NextResponse.json({ error: 'No websites found' }, { status: 404 });
 		}
 
-		let websites = [...new Set(websiteData.map((website) => website.id.split(' ||| ')[0]))];
+		const websites = [...new Set(websiteData.map((website) => website.id.split(' ||| ')[0]))];
 
 		// websites = websites.map((website) => (website.startsWith('http://') || website.startsWith('https://')) ? website.split('://')[1] : website);
 		// websites = websites.map((website) => website.endsWith('/') ? website.slice(0, -1) : website);

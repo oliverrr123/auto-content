@@ -1,5 +1,5 @@
 "use client";
-import { AtSign, CircleCheck, Clock, Globe, InstagramIcon, LinkIcon, Loader2, PlusIcon } from "lucide-react";
+import { AtSign, CircleCheck, Clock, Globe, InstagramIcon, LinkIcon, PlusIcon } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useEffect, useState } from "react";
 import {
@@ -16,6 +16,8 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
+import ErrorDialog from "@/components/error-dialog";
+import Loader from "@/components/loader";
 
 export default function Context() {
     const { user, isLoading } = useAuth();
@@ -185,6 +187,7 @@ export default function Context() {
     }
 
     const updateInstagram = async () => {
+        console.log('updateInstagram');
         setInstagramUpdating(true);
         try {
             const response = await fetch('/api/ai/rag/update-instagram');
@@ -199,26 +202,6 @@ export default function Context() {
             setInstagramUpdating(false);
         }
     }
-    // const saveInstagram = async () => {
-    //     try {
-    //         const profileData = await fetch(`/api/get/instagram/profile/info`)
-	// 	    const profileDataJson = await profileData.json();
-
-    //         const mediaData = await fetch(`/api/get/instagram/profile/media`);
-	// 	    const mediaDataJson = await mediaData.json();
-
-    //         const response = await fetch('/api/ai/rag/save-instagram', {
-    //             method: 'POST',
-    //             body: JSON.stringify({ profile: profileDataJson, media: mediaDataJson })
-    //         });
-
-    //         if (!response.ok) {
-    //             throw new Error('Failed to save Instagram');
-    //         }
-    //     } catch (error) {
-    //         console.error('Error saving Instagram:', error);
-    //     }
-    // }
 
     // const saveDocument = async () => {
     //     setDocumentSaving(true);
@@ -269,180 +252,107 @@ export default function Context() {
             <div>
                 <h2 className="text-2xl font-bold">Instagram</h2>
                 <div className="flex gap-4 mt-4 pr-4 w-[calc(100%+1rem)] no-scrollbar overflow-x-scroll">
-                        {connectedAccounts && !connectedAccounts.instagram ? (
-                            instagramAccess === 'true' && !instagramAccessLoading ? (
-                                <Link href="https://www.instagram.com/oauth/authorize?enable_fb_login=0&force_authentication=1&client_id=1436609137340002&redirect_uri=https://growbyte.cz/api/auth/instagram/callback&response_type=code&scope=instagram_business_basic%2Cinstagram_business_manage_messages%2Cinstagram_business_manage_comments%2Cinstagram_business_content_publish%2Cinstagram_business_manage_insights" className="flex flex-col gap-2 items-center justify-center bg-white border-primary border-2 rounded-xl p-4 w-32 h-32 flex-shrink-0">
-                                    <PlusIcon className="w-10 h-10 text-primary" />
-                                    <p className="text-sm font-semibold text-primary">Add</p>
-                                </Link>
-                            ) : instagramAccess === 'pending' && !instagramAccessLoading ? (
-                                <div className="flex flex-col gap-2 items-center justify-center bg-white border-primary border-2 rounded-xl p-4 w-32 h-32 flex-shrink-0">
-                                    <Clock className="w-10 h-10 text-primary" />
-                                    <p className="text-sm font-semibold text-primary">Pending</p>
+                    {connectedAccounts && !connectedAccounts.instagram ? (
+                        instagramAccess === 'true' && !instagramAccessLoading ? (
+                            <Link href="https://www.instagram.com/oauth/authorize?enable_fb_login=0&force_authentication=1&client_id=1436609137340002&redirect_uri=https://growbyte.cz/api/auth/instagram/callback&response_type=code&scope=instagram_business_basic%2Cinstagram_business_manage_messages%2Cinstagram_business_manage_comments%2Cinstagram_business_content_publish%2Cinstagram_business_manage_insights" className="flex flex-col gap-2 items-center justify-center bg-white border-primary border-2 rounded-xl p-4 w-32 h-32 flex-shrink-0">
+                                <PlusIcon className="w-10 h-10 text-primary" />
+                                <p className="text-sm font-semibold text-primary">Add</p>
+                            </Link>
+                        ) : instagramAccess === 'pending' && !instagramAccessLoading ? (
+                            <div className="flex flex-col gap-2 items-center justify-center bg-white border-primary border-2 rounded-xl p-4 w-32 h-32 flex-shrink-0">
+                                <Clock className="w-10 h-10 text-primary" />
+                                <p className="text-sm font-semibold text-primary">Pending</p>
+                            </div>
+                        ) : instagramAccess === 'false' && !instagramAccessLoading ? (
+                            <Dialog>
+                            <DialogTrigger className="flex flex-col gap-2 items-center justify-center bg-white border-primary border-2 rounded-xl p-4 w-32 h-32 flex-shrink-0">
+                                <PlusIcon className="w-10 h-10 text-primary" />
+                                <p className="text-sm font-semibold text-primary">Add</p>
+                            </DialogTrigger>
+                            <DialogContent>
+                                <DialogHeader>
+                                <DialogTitle>Connect Instagram</DialogTitle>
+                                <DialogDescription>Enter your Instagram username</DialogDescription>
+                                </DialogHeader>
+
+                                <div className="flex flex-col gap-2">
+                                    <div className="flex items-center gap-2 p-4 bg-white rounded-xl w-full">
+                                        <AtSign className="w-6 h-6 stroke-[1.6] text-slate-400" />
+                                        <input type="url" value={instagramUsername} onChange={(e) => setInstagramUsername(e.target.value)} className="w-full outline-none focus:outline-none" placeholder="your-username" />
+                                    </div>
                                 </div>
-                            ) : instagramAccess === 'false' && !instagramAccessLoading ? (
-                                <Dialog>
+
+                                <DialogClose onClick={requestInstagramAccess} className="text-xl font-semibold h-12 p-0 rounded-2xl bg-primary text-white hover:bg-blue-500">Done</DialogClose>
+                            </DialogContent>
+                            </Dialog>
+                        ) : instagramAccess === 'accepted' && !instagramAccessLoading ? (
+                            <Dialog>
                                 <DialogTrigger className="flex flex-col gap-2 items-center justify-center bg-white border-primary border-2 rounded-xl p-4 w-32 h-32 flex-shrink-0">
-                                    <PlusIcon className="w-10 h-10 text-primary" />
-                                    <p className="text-sm font-semibold text-primary">Add</p>
+                                    <CircleCheck className="w-10 h-10 text-primary" />
+                                    <p className="text-sm font-semibold text-primary">Click here!</p>
                                 </DialogTrigger>
                                 <DialogContent>
                                     <DialogHeader>
-                                    <DialogTitle>Connect Instagram</DialogTitle>
-                                    <DialogDescription>Enter your Instagram username</DialogDescription>
+                                        <DialogTitle>Access accepted</DialogTitle>
                                     </DialogHeader>
-
-                                    <div className="flex flex-col gap-2">
-                                        <div className="flex items-center gap-2 p-4 bg-white rounded-xl w-full">
-                                            <AtSign className="w-6 h-6 stroke-[1.6] text-slate-400" />
-                                            <input type="url" value={instagramUsername} onChange={(e) => setInstagramUsername(e.target.value)} className="w-full outline-none focus:outline-none" placeholder="your-username" />
-                                        </div>
-                                    </div>
-
-                                    <DialogClose onClick={requestInstagramAccess} className="text-xl font-semibold h-12 p-0 rounded-2xl bg-primary text-white hover:bg-blue-500">Done</DialogClose>
+                                    <p className="font-semibold">Congratulations! Your access has been approved. Follow these instructions to complete the setup.</p>
+                                    <p className="">1. <span className="font-semibold">Go to the <a href="https://www.instagram.com/accounts/manage_access/" target="_blank" className="text-primary">Apps and Websites</a></span> section in your Instagram profile</p>
+                                    <p className="">2. <span className="font-semibold">Click the Tester Invites tab</span> and accept the invitation from GrowByte</p>
+                                    <p>3. <span className="font-semibold">Click <a href="https://www.instagram.com/oauth/authorize?enable_fb_login=0&force_authentication=1&client_id=1436609137340002&redirect_uri=https://growbyte.cz/api/auth/instagram/callback&response_type=code&scope=instagram_business_basic%2Cinstagram_business_manage_messages%2Cinstagram_business_manage_comments%2Cinstagram_business_content_publish%2Cinstagram_business_manage_insights" target="_blank" className="text-primary">this link</a></span> to authorize your Instagram account.</p>
+                                    <p>4. <span className="font-semibold">You&apos;re all done!</span> Enjoy the app!</p>
+                                    <DialogClose className="text-xl font-semibold h-12 p-0 rounded-2xl bg-primary text-white hover:bg-blue-500">Done</DialogClose>
                                 </DialogContent>
-                                </Dialog>
-                            ) : instagramAccess === 'accepted' && !instagramAccessLoading ? (
-                                <Dialog>
-                                    <DialogTrigger className="flex flex-col gap-2 items-center justify-center bg-white border-primary border-2 rounded-xl p-4 w-32 h-32 flex-shrink-0">
-                                        <CircleCheck className="w-10 h-10 text-primary" />
-                                        <p className="text-sm font-semibold text-primary">Click here!</p>
-                                    </DialogTrigger>
-                                    <DialogContent>
-                                        <DialogHeader>
-                                            <DialogTitle>Access accepted</DialogTitle>
-                                        </DialogHeader>
-                                        <p className="font-semibold">Congratulations! Your access has been approved. Follow these instructions to complete the setup.</p>
-                                        <p className="">1. <span className="font-semibold">Go to the <a href="https://www.instagram.com/accounts/manage_access/" target="_blank" className="text-primary">Apps and Websites</a></span> section in your Instagram profile</p>
-                                        <p className="">2. <span className="font-semibold">Click the Tester Invites tab</span> and accept the invitation from GrowByte</p>
-                                        <p>3. <span className="font-semibold">Click <a href="https://www.instagram.com/oauth/authorize?enable_fb_login=0&force_authentication=1&client_id=1436609137340002&redirect_uri=https://growbyte.cz/api/auth/instagram/callback&response_type=code&scope=instagram_business_basic%2Cinstagram_business_manage_messages%2Cinstagram_business_manage_comments%2Cinstagram_business_content_publish%2Cinstagram_business_manage_insights" target="_blank" className="text-primary">this link</a></span> to authorize your Instagram account.</p>
-                                        <p>4. <span className="font-semibold">You&apos;re all done!</span> Enjoy the app!</p>
-                                        <DialogClose className="text-xl font-semibold h-12 p-0 rounded-2xl bg-primary text-white hover:bg-blue-500">Done</DialogClose>
-                                    </DialogContent>
-                                </Dialog>
-                            ) : instagramAccessLoading ? (
-                                <div className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 flex-shrink-0">
-                                    <div className="animate-spin">
-                                        <Loader2 className="w-10 h-10 text-primary" />
-                                    </div>
-                                    <p className="text-sm font-semibold text-primary">Loading</p>
-                                </div>
-                            ) : (
-                                <Skeleton className="h-32 w-32 rounded-xl" />
-                            )
-                        ) : connectedAccounts && connectedAccounts.instagram ? (
-                            instagramDeleting ? (
-                                <div className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 flex-shrink-0">
-                                    <div className="animate-spin">
-                                        <Loader2 className="w-10 h-10 text-primary" />
-                                    </div>
-                                    <p className="text-sm font-semibold text-primary">Deleting...</p>
-                                </div>
-                            ) : (
-                                <Dialog>
-                                <DialogTrigger>
-                                    <div className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 flex-shrink-0">
-                                        <InstagramIcon className="w-10 h-10" />
-                                        <p className="text-xs font-semibold truncate max-w-28">@{connectedAccounts.instagram.username}</p>
-                                    </div>
-                                </DialogTrigger>
-                                <DialogContent className="bg-slate-100 [&>button]:hidden max-h-[90vh] overflow-y-auto overflow-x-hidden">
-                                    <DialogHeader>
-                                        <DialogTitle>{connectedAccounts.instagram.name}</DialogTitle>
-                                        <DialogDescription>@{connectedAccounts.instagram.username}</DialogDescription>
-                                    </DialogHeader>
-                                    <DialogFooter className="flex gap-3 mt-8">
-                                        <DialogClose className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-white text-slate-700">Close</DialogClose>
-                                        <DialogClose onClick={deleteInstagram} className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-primary text-white bg-red-500 hover:bg-red-600">Delete</DialogClose>
-                                        <DialogClose onClick={updateInstagram} className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-primary text-white hover:bg-blue-500">Update</DialogClose>
-                                    </DialogFooter>
-                                </DialogContent>
-                                </Dialog>
-                            )
+                            </Dialog>
+                        ) : instagramAccessLoading ? (
+                            <Loader text="Loading..." />
                         ) : (
                             <Skeleton className="h-32 w-32 rounded-xl" />
-                        )}
-                        <Dialog open={instagramAccessSuccess} onOpenChange={setInstagramAccessSuccess}>
-                        <DialogContent>
-                            <DialogHeader>
-                                <DialogTitle>Request sent</DialogTitle>
-                                <DialogDescription>Check back in 24 hours, we will approve your request.</DialogDescription>
-                            </DialogHeader>
-                            <DialogClose className="text-xl font-semibold h-12 p-0 rounded-2xl bg-primary text-white hover:bg-blue-500">Done</DialogClose>
-                        </DialogContent>
-                        </Dialog>
-                        <Dialog open={instagramAccessError !== null} onOpenChange={() => setInstagramAccessError(null)}>
-                        <DialogContent>
-                            <DialogHeader>
-                                <DialogTitle>Error</DialogTitle>
-                                <DialogDescription>{instagramAccessError}</DialogDescription>
-                            </DialogHeader>
-                            <DialogClose className="text-xl font-semibold h-12 p-0 rounded-2xl bg-primary text-white hover:bg-blue-500">Done</DialogClose>
-                        </DialogContent>
-                        </Dialog>
-                    {/* <Dialog>
-                    <DialogTrigger>
-                        {connectedAccounts && connectedAccounts.instagram ? (
-                            <div className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 flex-shrink-0">
-                                <PlusIcon className="w-10 h-10 text-slate-400" />
-                                <p className="text-sm font-semibold text-slate-400">Add</p>
-                            </div>
+                        )
+                    ) : connectedAccounts && connectedAccounts.instagram ? (
+                        instagramDeleting ? (
+                            <Loader text="Deleting..." />
+                        ) : instagramUpdating ? (
+                            <Loader text="Updating..." />
                         ) : (
-                            <div className="flex flex-col gap-2 items-center justify-center bg-white border-primary border-2 rounded-xl p-4 w-32 h-32 flex-shrink-0">
-                                <PlusIcon className="w-10 h-10 text-primary" />
-                                <p className="text-sm font-semibold text-primary">Add</p>
-                            </div>
-                        )}
-                    </DialogTrigger>
+                            <Dialog>
+                            <DialogTrigger>
+                                <div className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 flex-shrink-0">
+                                    <InstagramIcon className="w-10 h-10" />
+                                    <p className="text-xs font-semibold truncate max-w-28">@{connectedAccounts.instagram.username}</p>
+                                </div>
+                            </DialogTrigger>
+                            <DialogContent className="bg-slate-100 [&>button]:hidden max-h-[90vh] overflow-y-auto overflow-x-hidden">
+                                <DialogHeader>
+                                    <DialogTitle>{connectedAccounts.instagram.name}</DialogTitle>
+                                    <DialogDescription>@{connectedAccounts.instagram.username}</DialogDescription>
+                                </DialogHeader>
+                                <DialogFooter className="flex gap-3 mt-8">
+                                    <DialogClose className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-white text-slate-700">Close</DialogClose>
+                                    <DialogClose onClick={deleteInstagram} className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-primary text-white bg-red-500 hover:bg-red-600">Delete</DialogClose>
+                                    <DialogClose onClick={updateInstagram} className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-primary text-white hover:bg-blue-500">Update</DialogClose>
+                                </DialogFooter>
+                            </DialogContent>
+                            </Dialog>
+                        )
+                    ) : (
+                        <Skeleton className="h-32 w-32 rounded-xl" />
+                    )}
+                    <Dialog open={instagramAccessSuccess} onOpenChange={setInstagramAccessSuccess}>
                     <DialogContent>
                         <DialogHeader>
-                        <DialogTitle>Connect social media</DialogTitle>
+                            <DialogTitle>Request sent</DialogTitle>
+                            <DialogDescription>Check back in 24 hours, we will approve your request.</DialogDescription>
                         </DialogHeader>
-
-                        <div className="flex flex-col gap-2">
-                            <Link href="https://www.instagram.com/oauth/authorize?enable_fb_login=0&force_authentication=1&client_id=1436609137340002&redirect_uri=https://growbyte.cz/api/auth/instagram/callback&response_type=code&scope=instagram_business_basic%2Cinstagram_business_manage_messages%2Cinstagram_business_manage_comments%2Cinstagram_business_content_publish%2Cinstagram_business_manage_insights">
-                                <div className="flex gap-2 items-center p-4 bg-white rounded-xl w-full">
-                                    <InstagramIcon className="w-6 h-6 stroke-[1.6]" />
-                                    <p className="text-xl">Instagram</p>
-                                </div>
-                            </Link>
-                            <Link href="https://www.facebook.com/v23.0/dialog/oauth?client_id=442224939723604&display=page&extras=%7B%22setup%22%3A%7B%22channel%22%3A%22IG_API_ONBOARDING%22%7D%7D&redirect_uri=https%3A%2F%2Fgrowbyte.cz%2Fapi%2Fauth%2Ffacebook%2Fcallback&response_type=code&scope=instagram_basic,instagram_content_publish,instagram_manage_comments,instagram_manage_insights,pages_show_list,pages_read_engagement">
-                                <div className="flex gap-2 items-center p-4 bg-white rounded-xl w-full">
-                                    <FacebookIcon className="w-6 h-6 stroke-[1.6]" />
-                                    <p className="text-xl">Facebook</p>
-                                </div>
-                            </Link>
-                        </div>
-
-                        <DialogClose asChild>
-                            <Button className="text-xl font-semibold h-12 p-0 rounded-2xl hover:bg-blue-500">Done</Button>
-                        </DialogClose>
+                        <DialogClose className="text-xl font-semibold h-12 p-0 rounded-2xl bg-primary text-white hover:bg-blue-500">Done</DialogClose>
                     </DialogContent>
-                    </Dialog> */}
-                    {/* {connectedAccounts && connectedAccounts.instagram && (
-                        <div className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 flex-shrink-0">
-                            <InstagramIcon className="w-10 h-10" />
-                            <p className="text-sm font-semibold truncate max-w-28">@{connectedAccounts.instagram.username}</p>
-                        </div>
-                    )} */}
-                    {/* {user.user_metadata.facebook_id && (
-                        <div className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 flex-shrink-0">
-                            <FacebookIcon className="w-10 h-10" />
-                            <p className="text-sm font-semibold truncate max-w-28">Facebook</p>
-                        </div>
-                    )} */}
+                    </Dialog>
                 </div>
                 <h2 className="text-2xl font-bold mt-4">Websites</h2>
                 <div className="flex gap-4 mt-4 pr-4 w-[calc(100%+1rem)] no-scrollbar overflow-x-scroll">
                     <Dialog>
                     <DialogTrigger>
                         {websiteSaving ? (
-                            <div className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 flex-shrink-0">
-                                <div className="animate-spin">
-                                    <Loader2 className="w-10 h-10 text-primary" />
-                                </div>
-                                <p className="text-sm font-semibold text-primary">Loading</p>
-                            </div>
+                            <Loader text="Loading..." />
                         ) : (
                             <div className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 flex-shrink-0">
                                 <PlusIcon className="w-10 h-10 text-slate-400" />
@@ -471,19 +381,13 @@ export default function Context() {
                         if (websiteDeleting === website) {
                             return (
                                 <div key={website} className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 flex-shrink-0">
-                                    <div className="animate-spin">
-                                        <Loader2 className="w-10 h-10 text-primary" />
-                                    </div>
-                                    <p className="text-sm font-semibold text-primary">Deleting...</p>
+                                    <Loader text="Deleting..." />
                                 </div>
                             )
                         } else if (websiteUpdating === website) {
                             return (
                                 <div key={website} className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 flex-shrink-0">
-                                    <div className="animate-spin">
-                                        <Loader2 className="w-10 h-10 text-primary" />
-                                    </div>
-                                    <p className="text-sm font-semibold text-primary">Updating...</p>
+                                    <Loader text="Updating..." />
                                 </div>
                             )
                         }
@@ -508,15 +412,30 @@ export default function Context() {
                             </Dialog>
                         )
                     })}
-                    <Dialog open={websiteSavingError !== null} onOpenChange={() => setWebsiteSavingError(null)}>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>Error</DialogTitle>
-                            <DialogDescription>{websiteSavingError}</DialogDescription>
-                        </DialogHeader>
-                        <DialogClose className="text-xl font-semibold h-12 p-0 rounded-2xl bg-primary text-white hover:bg-blue-500">Done</DialogClose>
-                    </DialogContent>
-                    </Dialog>
+                    <ErrorDialog
+                        error={instagramAccessError || instagramDeletingError || instagramUpdatingError || websiteSavingError || websiteDeletingError || websiteUpdatingError || ""}
+                        open={instagramAccessError !== null || instagramDeletingError !== null || instagramUpdatingError !== null || websiteSavingError !== null || websiteDeletingError !== null || websiteUpdatingError !== null}
+                        onOpenChange={() => {
+                            if (instagramAccessError !== null) {
+                                setInstagramAccessError(null);
+                            }
+                            if (instagramDeletingError !== null) {
+                                setInstagramDeletingError(null);
+                            }
+                            if (instagramUpdatingError !== null) {
+                                setInstagramUpdatingError(null);
+                            }
+                            if (websiteSavingError !== null) {
+                                setWebsiteSavingError(null);
+                            }
+                            if (websiteDeletingError !== null) {
+                                setWebsiteDeletingError(null);
+                            }
+                            if (websiteUpdatingError !== null) {
+                                setWebsiteUpdatingError(null);
+                            }
+                        }}
+                    />
                 </div>
                 {/* <h2 className="text-2xl font-bold mt-4">Documents</h2>
                 <div className="flex gap-4 mt-4 pr-4 w-[calc(100%+1rem)] no-scrollbar overflow-x-scroll">
