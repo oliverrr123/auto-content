@@ -416,24 +416,12 @@ export default function Context() {
                         error={instagramAccessError || instagramDeletingError || instagramUpdatingError || websiteSavingError || websiteDeletingError || websiteUpdatingError || ""}
                         open={instagramAccessError !== null || instagramDeletingError !== null || instagramUpdatingError !== null || websiteSavingError !== null || websiteDeletingError !== null || websiteUpdatingError !== null}
                         onOpenChange={() => {
-                            if (instagramAccessError !== null) {
-                                setInstagramAccessError(null);
-                            }
-                            if (instagramDeletingError !== null) {
-                                setInstagramDeletingError(null);
-                            }
-                            if (instagramUpdatingError !== null) {
-                                setInstagramUpdatingError(null);
-                            }
-                            if (websiteSavingError !== null) {
-                                setWebsiteSavingError(null);
-                            }
-                            if (websiteDeletingError !== null) {
-                                setWebsiteDeletingError(null);
-                            }
-                            if (websiteUpdatingError !== null) {
-                                setWebsiteUpdatingError(null);
-                            }
+                            if (instagramAccessError !== null) setInstagramAccessError(null);
+                            if (instagramDeletingError !== null) setInstagramDeletingError(null);
+                            if (instagramUpdatingError !== null) setInstagramUpdatingError(null);
+                            if (websiteSavingError !== null) setWebsiteSavingError(null);
+                            if (websiteDeletingError !== null) setWebsiteDeletingError(null);
+                            if (websiteUpdatingError !== null) setWebsiteUpdatingError(null);
                         }}
                     />
                 </div>
