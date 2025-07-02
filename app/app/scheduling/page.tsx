@@ -1,6 +1,6 @@
 'use client';
 import { useAuth } from "@/context/AuthContext";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, X, User } from "lucide-react";
 import { DragDropContext, Droppable, Draggable, DropResult, DroppableProvided, DroppableProps } from '@hello-pangea/dnd';
@@ -12,6 +12,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { Clock } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import Loader from "@/components/loader";
+import ErrorDialog from "@/components/error-dialog";
 
 interface Post {
     id: string;
@@ -61,9 +63,42 @@ const StrictModeDroppable = ({ children, ...props }: DroppableProps) => {
 export default function Scheduling() {
     const { user, isLoading } = useAuth();
 
-    // const [posts, setPosts] = useState<Post[]>([]);
-    const [currentPosts, setCurrentPosts] = useState<Post[][]>([]);
     const [currentWeekDay, setCurrentWeekDay] = useState<Date>(new Date());
+
+    async function fetchPosts() {
+        const res = await fetch('/api/get/instagram/posts');
+        if (!res.ok) throw new Error('Failed to fetch posts');
+        return (await res.json()).posts as Post[];
+    }
+
+    const { data: posts = [], isPending: postsLoading, error: postsError } = useQuery({
+        queryKey: ['posts'],
+        queryFn: fetchPosts,
+        enabled: !isLoading,
+        staleTime: 5 * 60_000,
+    });
+
+    // Derived posts per weekday (computed, not stored)
+    const currentPosts = useMemo<Post[][]>(() => {
+        const monday = new Date(currentWeekDay);
+        const currentDayIdx = currentWeekDay.getDay() || 7;
+        monday.setDate(currentWeekDay.getDate() - currentDayIdx + 1);
+
+        return Array.from({ length: 7 }, (_unused, i) => {
+            const day = new Date(monday);
+            day.setDate(monday.getDate() + i);
+
+            return posts.filter((post: Post) => {
+                const postDate = new Date(post.schedule_params.scheduled_date);
+                return (
+                    postDate.getDate() === day.getDate() &&
+                    postDate.getMonth() === day.getMonth() &&
+                    postDate.getFullYear() === day.getFullYear()
+                );
+            });
+        });
+    }, [posts, currentWeekDay]);
+
     const [showEditDialog, setShowEditDialog] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [editPostId, setEditPostId] = useState<string | null>(null);
@@ -287,60 +322,15 @@ export default function Scheduling() {
         });
     }
 
-    async function fetchPosts() {
-        const res = await fetch('/api/get/instagram/posts');
-        if (!res.ok) throw new Error('Failed to fetch posts');
-        return (await res.json()).posts;
-    }
-
-    const { data: posts = [] } = useQuery({
-        queryKey: ['posts'],
-        queryFn: fetchPosts,
-        enabled: !isLoading,
-        staleTime: 5 * 60_000,
-    })
-
-    useEffect(() => {
-        const monday = new Date(currentWeekDay);
-        
-        const currentDay = currentWeekDay.getDay() || 7;
-        monday.setDate(currentWeekDay.getDate() - currentDay + 1);
-
-        const week = Array.from({ length: 7 }, (_, i) => {
-            const day = new Date(monday);
-            day.setDate(monday.getDate() + i);
-            return day;
-        });
-
-        const tempCurrentPosts: Post[][] = [];
-        for (const day of week) {
-            const currentDay: Post[] = [];
-            for (const post of posts) {
-                const postDate = new Date(post.schedule_params.scheduled_date);
-                if (
-                    postDate.getDate() === day.getDate() &&
-                    postDate.getMonth() === day.getMonth() &&
-                    postDate.getFullYear() === day.getFullYear()
-                ) {
-                    currentDay.push(post);
-                }
-            }
-            tempCurrentPosts.push(currentDay);
-        }
-
-        setCurrentPosts(tempCurrentPosts);
-
-    }, [posts, currentWeekDay]);
-
     useEffect(() => {
         if (editPostId) {
             const post = posts.find((post: Post) => post.id === editPostId);
             if (post) {
                 setEditedPost({
                     ...post,
-                    params: post.params.map((param: { taggedPeople: { username: string }[] }) => ({
+                    params: post.params.map((param: Post['params'][number]) => ({
                         ...param,
-                        taggedPeople: param.taggedPeople.map((tag: { username: string }) => ({ ...tag }))
+                        taggedPeople: param.taggedPeople.map((tag: Post['params'][number]['taggedPeople'][number]) => ({ ...tag }))
                     }))
                 });
             }
@@ -356,51 +346,53 @@ export default function Scheduling() {
         }));
     };
 
-    const { mutate: saveEdits } = useMutation({ 
-        mutationFn: async () => {
+    const { mutate: saveEdits, error: saveEditsError } = useMutation({
+        mutationFn: async (postToSave: Post) => {
             const cleanedPost = {
-                ...editedPost!,
-                params: editedPost!.params.map(param => ({
+                ...postToSave,
+                params: postToSave.params.map((param: Post['params'][number]) => ({
                     ...param,
                     taggedPeople: param.taggedPeople.filter(tag => tag.username.trim() !== '')
                 }))
             };
             const response = await fetch('/api/post/instagram/edit', {
                 method: 'POST',
-                body: JSON.stringify({postData: cleanedPost})
-            })
-            const data = await response.json();
-            if (response.ok) {
-                queryClient.invalidateQueries({ queryKey: ['posts'] });
-                setShowEditDialog(false);
-            } else {
-                console.error(data.error);
+                body: JSON.stringify({ postData: cleanedPost })
+            });
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.error || 'Failed to edit post');
             }
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['posts'] });
+            setShowEditDialog(false);
         }
-    })
+    });
 
-    const { mutate: deletePost } = useMutation({
-        mutationFn: async () => {
+    const { mutate: deletePost, error: deletePostError } = useMutation({
+        mutationFn: async (postToDelete: Post) => {
             const cleanedPost = {
-                ...editedPost!,
-                params: editedPost!.params.map(param => ({
+                ...postToDelete,
+                params: postToDelete.params.map((param: Post['params'][number]) => ({
                     ...param,
                     taggedPeople: param.taggedPeople.filter(tag => tag.username.trim() !== '')
                 }))
             };
             const response = await fetch('/api/post/instagram/delete', {
                 method: 'POST',
-                body: JSON.stringify({postData: cleanedPost})
-            })
-            const data = await response.json();
-            if (response.ok) {
-                queryClient.invalidateQueries({ queryKey: ['posts'] });
-                setShowEditDialog(false);
-            } else {
-                console.error(data.error);
+                body: JSON.stringify({ postData: cleanedPost })
+            });
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.error || 'Failed to delete post');
             }
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['posts'] });
+            setShowEditDialog(false);
         }
-    })
+    });
 
     useEffect(() => {
         if (editedPost?.schedule_params.scheduled_date) {
@@ -446,6 +438,14 @@ export default function Scheduling() {
 
     if (!user) {
         return null;
+    }
+
+    if (postsLoading) {
+        return (
+            <div className="flex justify-center items-center w-full mt-10">
+                <Loader text="Loading..." />
+            </div>
+        );
     }
 
     return (
@@ -498,7 +498,7 @@ export default function Scheduling() {
                     {currentPosts.map((day, index) => (
                         <div key={index} className={`col-start-2 col-end-3 p-2 overflow-x-auto no-scrollbar`} style={{gridRow: `${index + 1} / ${index + 2}`}}>
                             <div className='flex gap-2'>
-                                {day.sort((a, b) => {
+                                {day.sort((a: Post, b: Post) => {
                                     const timeA = new Date(a.schedule_params.scheduled_date);
                                     const timeB = new Date(b.schedule_params.scheduled_date);
                                     return timeA.getTime() - timeB.getTime();
@@ -960,7 +960,7 @@ export default function Scheduling() {
                                     </DialogHeader>
                                     <DialogFooter className="flex gap-3">
                                         <DialogClose className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-white text-slate-700">Go back</DialogClose>
-                                        <DialogClose onClick={() => { deletePost(); setShowEditDialog(false); setEditPostId(null); setEditedPost(null); setShowTags(false); }} className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-red-500 text-white hover:bg-red-600">Delete</DialogClose>
+                                        <DialogClose onClick={() => { if (editedPost) deletePost(editedPost); setShowEditDialog(false); setEditPostId(null); setEditedPost(null); setShowTags(false); }} className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-red-500 text-white hover:bg-red-600">Delete</DialogClose>
                                     </DialogFooter>
                                 </DialogContent>
                             </Dialog>
@@ -974,7 +974,7 @@ export default function Scheduling() {
                                     </DialogHeader>
                                     <DialogFooter className="flex gap-3">
                                         <DialogClose className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-white text-slate-700">Go back</DialogClose>
-                                        <DialogClose onClick={() => { saveEdits(); setShowEditDialog(false); setEditPostId(null); setEditedPost(null); setShowTags(false); }} className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-primary text-white hover:bg-blue-500">Save</DialogClose>
+                                        <DialogClose onClick={() => { if (editedPost) saveEdits(editedPost); setShowEditDialog(false); setEditPostId(null); setEditedPost(null); setShowTags(false); }} className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-primary text-white hover:bg-blue-500">Save</DialogClose>
                                     </DialogFooter>
                                 </DialogContent>
                             </Dialog>
@@ -983,6 +983,11 @@ export default function Scheduling() {
                     </Dialog>
                 </div>
             </div>
+            <ErrorDialog
+                error={postsError?.message || saveEditsError?.message || deletePostError?.message || ""}
+                open={Boolean(postsError || saveEditsError || deletePostError)}
+                onOpenChange={() => {}}
+            />
         </>
     )
 }
