@@ -11,22 +11,20 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+export const AuthProvider = ({ children, initialUser = null }: { children: ReactNode, initialUser?: User | null }) => {
+  const [user, setUser] = useState<User | null>(initialUser);
+  const [isLoading, setIsLoading] = useState(!initialUser);
   const supabase = createClient();
 
   useEffect(() => {
-    const fetchUser = async () => {
-      setIsLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-      setIsLoading(false);
-    };
+    if (!initialUser) {
+      supabase.auth.getUser().then(({ data }) => {
+        setUser(data.user);
+        setIsLoading(false);
+      })
+    }
 
-    fetchUser();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       // No need to set isLoading here as initial load is handled
       // and subsequent changes might not need a global loading state.
@@ -36,10 +34,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // }
     });
 
-    return () => {
-      authListener?.subscription.unsubscribe();
-    };
-  }, [supabase]);
+    return () => authListener.subscription.unsubscribe();
+  }, [supabase, initialUser]);
 
   return (
     <AuthContext.Provider value={{ user, isLoading }}>
