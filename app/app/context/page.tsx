@@ -2,16 +2,7 @@
 import { AtSign, CircleCheck, Clock, Globe, InstagramIcon, LinkIcon, PlusIcon } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useEffect, useState } from "react";
-import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-    DialogFooter,
-} from "@/components/ui/dialog"
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -22,29 +13,11 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 export default function Context() {
     const { user, isLoading } = useAuth();
 
-    // const [connectedAccounts, setConnectedAccounts] = useState<{ instagram: { name: string, username: string, profile_picture_url: string } } | null>(null);
     const [instagramUsername, setInstagramUsername] = useState<string>("");
-    const [instagramAccess, setInstagramAccess] = useState<string>("");
     const [instagramAccessSuccess, setInstagramAccessSuccess] = useState<boolean>(false);
-    const [instagramAccessError, setInstagramAccessError] = useState<string | null>(null);
-    const [instagramAccessLoading, setInstagramAccessLoading] = useState<boolean>(false);
-    const [connectedWebsites, setConnectedWebsites] = useState<string[]>([]);
     const [websiteUrl, setWebsiteUrl] = useState<string>("");
-    const [websiteSaving, setWebsiteSaving] = useState<boolean>(false);
-    const [websiteSavingError, setWebsiteSavingError] = useState<string | null>(null);
     const [websiteDeleting, setWebsiteDeleting] = useState<string | null>("");
-    const [websiteDeletingError, setWebsiteDeletingError] = useState<string | null>(null);
-    // const [instagramDeleting, setInstagramDeleting] = useState<boolean>(false);
-    // const [instagramDeletingError, setInstagramDeletingError] = useState<string | null>(null);
-    const [instagramUpdating, setInstagramUpdating] = useState<boolean>(false);
-    const [instagramUpdatingError, setInstagramUpdatingError] = useState<string | null>(null);
     const [websiteUpdating, setWebsiteUpdating] = useState<string | null>("");
-    const [websiteUpdatingError, setWebsiteUpdatingError] = useState<string | null>(null);
-    // const [websiteSavingSuccess, setWebsiteSavingSuccess] = useState<boolean>(false);
-    // const [documentSaving, setDocumentSaving] = useState<boolean>(false);
-    // const [documentSavingError, setDocumentSavingError] = useState<string | null>(null);
-    // const [documentSavingSuccess, setDocumentSavingSuccess] = useState<boolean>(false);
-    // const [documentDialogOpen, setDocumentDialogOpen] = useState<boolean>(false);
 
     const queryClient = useQueryClient();
 
@@ -69,27 +42,89 @@ export default function Context() {
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['connected-accounts'] })
     })
 
-    // useEffect(() => {
-    //     fetch('/api/get/connected-accounts')
-    //         .then(res => res.json())
-    //         .then(data => setConnectedAccounts(data));
-    // }, [isLoading, instagramDeleting]);
+    const { mutate: updateInstagram, isPending: instagramUpdating, error: instagramUpdatingError } = useMutation({
+        mutationFn: async () => {
+            const res = await fetch('/api/ai/rag/update-instagram');
+            if (!res.ok) throw new Error('Failed to update instagram');
+        },
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['connected-accounts'] })
+    })
 
-    useEffect(() => {
-        if (user) {
-            fetch('/api/instagram-access/get')
-                .then(res => res.json())
-                .then(data => {
-                    setInstagramAccess(data.instagram_access);
-                });
-        }
-    }, [user]);
+    async function fetchInstagramAccess() {
+        const res = await fetch('/api/instagram-access/get');
+        if (!res.ok) throw new Error('Failed to fetch instagram access');
+        return (await res.json()).instagram_access;
+    }
 
-    useEffect(() => {
-        fetch('/api/ai/rag/get-websites')
-            .then(res => res.json())
-            .then(data => setConnectedWebsites(data.websites));
-    }, [isLoading, websiteSaving, websiteDeleting]);
+    const { data: instagramAccess = '' } = useQuery({
+        queryKey: ['instagram-access'],
+        queryFn: fetchInstagramAccess,
+        enabled: !isLoading,
+        staleTime: 5 * 60_000,
+    })
+
+    const { mutate: requestInstagramAccess, isPending: instagramAccessLoading, error: instagramAccessError } = useMutation({
+        mutationFn: async () => {
+            const res = await fetch('/api/instagram-access/request', {
+                method: 'POST',
+                body: JSON.stringify({ username: instagramUsername })
+            });
+            if (!res.ok) throw new Error('Failed to request instagram access');
+            return (await res.json()).instagram_access;
+        },
+        onSuccess: () => { queryClient.setQueryData(['instagram-access'], 'pending'); setInstagramAccessSuccess(true) },
+    })
+
+    async function fetchWebsites() {
+        const res = await fetch('/api/ai/rag/get-websites');
+        if (!res.ok) throw new Error('Failed to fetch websites');
+        return (await res.json()).websites;
+    }
+
+    const { data: connectedWebsites = [] } = useQuery({
+        queryKey: ['websites'],
+        queryFn: fetchWebsites,
+        enabled: !isLoading,
+        staleTime: 5 * 60_000,
+    })
+
+    const { mutate: saveWebsite, isPending: websiteSaving, error: websiteSavingError } = useMutation({
+        mutationFn: async () => {
+            const res = await fetch('/api/ai/rag/save-website', {
+                method: 'POST',
+                body: JSON.stringify({ url: websiteUrl })
+            });
+            if (!res.ok) throw new Error('Failed to save website');
+            return (await res.json()).websites;
+        },
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['websites'] })
+    })
+
+    const { mutate: deleteWebsite, isPending: isWebsiteDeleting, error: websiteDeletingError } = useMutation({
+        mutationFn: async (url: string) => {
+            setWebsiteDeleting(url);
+            const res = await fetch('/api/ai/rag/delete-website', {
+                method: 'POST',
+                body: JSON.stringify({ url: url })
+            });
+            if (!res.ok) throw new Error('Failed to delete website');
+            return (await res.json()).websites;
+        },
+        onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['websites'] }); setWebsiteDeleting(null) }
+    })
+
+    const { mutate: updateWebsite, isPending: isWebsiteUpdating, error: websiteUpdatingError } = useMutation({
+        mutationFn: async (url: string) => {
+            setWebsiteUpdating(url);
+            const res = await fetch('/api/ai/rag/update-website', {
+                method: 'POST',
+                body: JSON.stringify({ url: url })
+            });
+            if (!res.ok) throw new Error('Failed to update website');
+            return (await res.json()).websites;
+        },
+        onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['websites'] }); setWebsiteUpdating(null) }
+    })
 
     if (!user || isLoading) {
         return (
@@ -101,105 +136,6 @@ export default function Context() {
                 </div>
             </div>
         )
-    }
-
-    const requestInstagramAccess = async () => {
-        setInstagramAccessLoading(true);
-
-        try {
-            const response = await fetch('/api/instagram-access/request', {
-                method: 'POST',
-                body: JSON.stringify({ username: instagramUsername })
-            });
-
-            if (!response.ok) {
-                setInstagramAccessError('Failed to request Instagram access');
-                throw new Error('Failed to request Instagram access');
-            }
-
-            setInstagramAccess('pending');
-            setInstagramAccessSuccess(true);
-        } catch (error) {
-            console.error('Error sending request:', error);
-            setInstagramAccessError('Failed to send request. Please try again later.');
-        } finally {
-            setInstagramAccessLoading(false);
-        }
-    }
-
-    const saveWebsite = async () => {
-        setWebsiteSaving(true);
-        try {
-            const response = await fetch('/api/ai/rag/save-website', {
-                method: 'POST',
-                body: JSON.stringify({ url: websiteUrl })
-            });
-            
-            if (!response.ok) {
-                throw new Error('Failed to save website');
-            }
-        } catch (error) {
-            console.error('Error saving website:', error);
-            setWebsiteSavingError('Failed to save website. Please try again later.');
-        } finally {
-            setWebsiteUrl("");
-            setWebsiteSaving(false);
-        }
-    }
-
-    const deleteWebsite = async (url: string) => {
-        setWebsiteDeleting(url);
-        try {
-            const response = await fetch('/api/ai/rag/delete-website', {
-                method: 'POST',
-                body: JSON.stringify({ url: url })
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to delete website');
-            }
-        } catch (error) {
-            console.error('Error deleting website:', error);
-            setWebsiteDeletingError('Failed to delete website. Please try again later.');
-        } finally {
-            setWebsiteDeleting(null);
-        }
-    }
-
-    const updateWebsite = async (url: string) => {
-        setWebsiteUpdating(url);
-        try {
-            const response = await fetch('/api/ai/rag/update-website', {
-                method: 'POST',
-                body: JSON.stringify({ url: url })
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to update website');
-            }
-        } catch (error) {
-            console.error('Error updating website:', error);
-            setWebsiteUpdatingError('Failed to update website. Please try again later.');
-        } finally {
-            setWebsiteUpdating(null);
-        }
-    }
-
-    const updateInstagram = async () => {
-        console.log('updateInstagram');
-        setInstagramUpdating(true);
-        try {
-            const response = await fetch('/api/ai/rag/update-instagram');
-
-            if (!response.ok) {
-                throw new Error('Failed to update instagram');
-            }
-        } catch (error) {
-            console.error('Error updating instagram:', error);
-            setInstagramUpdatingError('Failed to update instagram. Please try again later.');
-        } finally {
-            setInstagramUpdating(false);
-        }
     }
 
     // const saveDocument = async () => {
@@ -281,7 +217,7 @@ export default function Context() {
                                     </div>
                                 </div>
 
-                                <DialogClose onClick={requestInstagramAccess} className="text-xl font-semibold h-12 p-0 rounded-2xl bg-primary text-white hover:bg-blue-500">Done</DialogClose>
+                                <DialogClose onClick={() => requestInstagramAccess()} className="text-xl font-semibold h-12 p-0 rounded-2xl bg-primary text-white hover:bg-blue-500">Done</DialogClose>
                             </DialogContent>
                             </Dialog>
                         ) : instagramAccess === 'accepted' && !instagramAccessLoading ? (
@@ -328,7 +264,7 @@ export default function Context() {
                                 <DialogFooter className="flex gap-3 mt-8">
                                     <DialogClose className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-white text-slate-700">Close</DialogClose>
                                     <DialogClose onClick={() => deleteInstagram()} className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-primary text-white bg-red-500 hover:bg-red-600">Delete</DialogClose>
-                                    <DialogClose onClick={updateInstagram} className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-primary text-white hover:bg-blue-500">Update</DialogClose>
+                                    <DialogClose onClick={() => updateInstagram()} className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-primary text-white hover:bg-blue-500">Update</DialogClose>
                                 </DialogFooter>
                             </DialogContent>
                             </Dialog>
@@ -372,18 +308,18 @@ export default function Context() {
                         </div>
 
                         <DialogClose asChild>
-                            <Button onClick={saveWebsite} className="text-xl font-semibold h-12 p-0 rounded-2xl hover:bg-blue-500">Connect</Button>
+                            <Button onClick={() => saveWebsite()} className="text-xl font-semibold h-12 p-0 rounded-2xl hover:bg-blue-500">Connect</Button>
                         </DialogClose>
                     </DialogContent>
                     </Dialog>
-                    {connectedWebsites && connectedWebsites.map((website) => {
-                        if (websiteDeleting === website) {
+                    {connectedWebsites && connectedWebsites.map((website: string) => {
+                        if (isWebsiteDeleting && websiteDeleting === website) {
                             return (
                                 <div key={website} className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 flex-shrink-0">
                                     <Loader text="Deleting..." />
                                 </div>
                             )
-                        } else if (websiteUpdating === website) {
+                        } else if (isWebsiteUpdating && websiteUpdating === website) {
                             return (
                                 <div key={website} className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 flex-shrink-0">
                                     <Loader text="Updating..." />
@@ -412,15 +348,9 @@ export default function Context() {
                         )
                     })}
                     <ErrorDialog
-                        error={instagramAccessError || instagramDeletingError?.message || instagramUpdatingError || websiteSavingError || websiteDeletingError || websiteUpdatingError || ""}
+                        error={instagramAccessError?.message || instagramDeletingError?.message || instagramUpdatingError?.message || websiteSavingError?.message || websiteDeletingError?.message || websiteUpdatingError?.message || ""}
                         open={instagramAccessError !== null || instagramDeletingError !== null || instagramUpdatingError !== null || websiteSavingError !== null || websiteDeletingError !== null || websiteUpdatingError !== null}
-                        onOpenChange={() => {
-                            if (instagramAccessError !== null) setInstagramAccessError(null);
-                            if (instagramUpdatingError !== null) setInstagramUpdatingError(null);
-                            if (websiteSavingError !== null) setWebsiteSavingError(null);
-                            if (websiteDeletingError !== null) setWebsiteDeletingError(null);
-                            if (websiteUpdatingError !== null) setWebsiteUpdatingError(null);
-                        }}
+                        onOpenChange={() => {}}
                     />
                 </div>
                 {/* <h2 className="text-2xl font-bold mt-4">Documents</h2>
