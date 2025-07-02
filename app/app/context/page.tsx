@@ -54,7 +54,7 @@ export default function Context() {
         return res.json();
     }
 
-    const { data: connectedAccounts = [], isFetching, error: connectedAccountsError } = useQuery({
+    const { data: connectedAccounts = [] } = useQuery({
         queryKey: ['connected-accounts'],
         queryFn: fetchConnectedAccounts,
         enabled: !isLoading,
