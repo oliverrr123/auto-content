@@ -22,8 +22,8 @@ export async function GET() {
 
 		let websites = [...new Set(websiteData.map((website) => website.id.split(' ||| ')[0]))];
 
-		websites = websites.map((website) => (website.startsWith('http://') || website.startsWith('https://')) ? website.split('://')[1] : website);
-		websites = websites.map((website) => website.endsWith('/') ? website.slice(0, -1) : website);
+		// websites = websites.map((website) => (website.startsWith('http://') || website.startsWith('https://')) ? website.split('://')[1] : website);
+		// websites = websites.map((website) => website.endsWith('/') ? website.slice(0, -1) : website);
 
 		if (websites.length === 0) {
 			return NextResponse.json({ websites: [] });

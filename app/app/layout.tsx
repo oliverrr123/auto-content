@@ -21,30 +21,33 @@ export default function Page({ children }: { children: React.ReactNode }) {
       </>
     )
   } else {
-    return (
-      <SidebarProvider className="h-screen">
-        <AppSidebar />
-        <SidebarInset className="overflow-hidden flex flex-col h-full">
-          <div className="flex-1 min-h-0">
-            <ResizablePanelGroup
-              direction="horizontal"
-              className="h-full"
-            >
-              <ResizablePanel defaultSize={50} minSize={26} className="bg-slate-100">
-                <div className="h-full p-6 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
-                  {children}
-                </div>
-              </ResizablePanel>
-              <ResizableHandle withHandle />
-              <ResizablePanel defaultSize={50} minSize={30} className="bg-slate-100">
-                <div className="h-full p-6 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
-                  <DesktopAI />
-                </div>
-              </ResizablePanel>
-            </ResizablePanelGroup>
-          </div>
-        </SidebarInset>
-      </SidebarProvider>
-    )
+      return (
+        <SidebarProvider className="h-screen">
+          <AppSidebar />
+          <SidebarInset className="overflow-hidden flex flex-col h-full">
+            <div className="flex-1 min-h-0">
+              <ResizablePanelGroup
+                direction="horizontal"
+                className="h-full"
+              >
+                <ResizablePanel defaultSize={50} minSize={26} className="bg-slate-100">
+                  <div className="h-full p-6 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+                    {children}
+                  </div>
+                </ResizablePanel>
+                <ResizableHandle withHandle />
+                <ResizablePanel defaultSize={50} minSize={30} className="bg-slate-100">
+                  <div className="h-full p-6 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+                    <DesktopAI />
+                  </div>
+                </ResizablePanel>
+              </ResizablePanelGroup>
+            </div>
+          </SidebarInset>
+        </SidebarProvider>
+      )
   }
+
+  return null;
+
 }

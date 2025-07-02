@@ -8,7 +8,7 @@ import { LogOut, User } from "lucide-react";
 import { logout } from "@/lib/auth-actions";
 import { Skeleton } from "./ui/skeleton";
 
-export default function MobileNavbar() {
+export default function MobileHeader() {
     const { user } = useAuth();
     
     return (

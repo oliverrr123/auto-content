@@ -10,6 +10,7 @@ import {
     DialogHeader,
     DialogTitle,
     DialogTrigger,
+    DialogFooter,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -29,6 +30,14 @@ export default function Context() {
     const [websiteUrl, setWebsiteUrl] = useState<string>("");
     const [websiteSaving, setWebsiteSaving] = useState<boolean>(false);
     const [websiteSavingError, setWebsiteSavingError] = useState<string | null>(null);
+    const [websiteDeleting, setWebsiteDeleting] = useState<string | null>("");
+    const [websiteDeletingError, setWebsiteDeletingError] = useState<string | null>(null);
+    const [instagramDeleting, setInstagramDeleting] = useState<boolean>(false);
+    const [instagramDeletingError, setInstagramDeletingError] = useState<string | null>(null);
+    const [instagramUpdating, setInstagramUpdating] = useState<boolean>(false);
+    const [instagramUpdatingError, setInstagramUpdatingError] = useState<string | null>(null);
+    const [websiteUpdating, setWebsiteUpdating] = useState<string | null>("");
+    const [websiteUpdatingError, setWebsiteUpdatingError] = useState<string | null>(null);
     // const [websiteSavingSuccess, setWebsiteSavingSuccess] = useState<boolean>(false);
     // const [documentSaving, setDocumentSaving] = useState<boolean>(false);
     // const [documentSavingError, setDocumentSavingError] = useState<string | null>(null);
@@ -41,7 +50,7 @@ export default function Context() {
         fetch('/api/get/connectedAccounts')
             .then(res => res.json())
             .then(data => setConnectedAccounts(data));
-    }, [isLoading]);
+    }, [isLoading, instagramDeleting]);
 
     useEffect(() => {
         if (!user && !isLoading) {
@@ -63,7 +72,7 @@ export default function Context() {
         fetch('/api/ai/rag/get-websites')
             .then(res => res.json())
             .then(data => setConnectedWebsites(data.websites));
-    }, [isLoading, websiteSaving]);
+    }, [isLoading, websiteSaving, websiteDeleting]);
 
     if (!user || isLoading) {
         return (
@@ -121,6 +130,75 @@ export default function Context() {
         }
     }
 
+    const deleteWebsite = async (url: string) => {
+        setWebsiteDeleting(url);
+        try {
+            const response = await fetch('/api/ai/rag/delete-website', {
+                method: 'POST',
+                body: JSON.stringify({ url: url })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to delete website');
+            }
+        } catch (error) {
+            console.error('Error deleting website:', error);
+            setWebsiteDeletingError('Failed to delete website. Please try again later.');
+        } finally {
+            setWebsiteDeleting(null);
+        }
+    }
+
+    const updateWebsite = async (url: string) => {
+        setWebsiteUpdating(url);
+        try {
+            const response = await fetch('/api/ai/rag/update-website', {
+                method: 'POST',
+                body: JSON.stringify({ url: url })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update website');
+            }
+        } catch (error) {
+            console.error('Error updating website:', error);
+            setWebsiteUpdatingError('Failed to update website. Please try again later.');
+        } finally {
+            setWebsiteUpdating(null);
+        }
+    }
+
+    const deleteInstagram = async () => {
+        setInstagramDeleting(true);
+        try {
+            const response = await fetch('/api/ai/rag/delete-instagram');
+
+            if (!response.ok) {
+                throw new Error('Failed to delete instagram');
+            }
+        } catch (error) {
+            console.error('Error deleting instagram:', error);
+            setInstagramDeletingError('Failed to delete instagram. Please try again later.');
+        } finally {
+            setInstagramDeleting(false);    
+        }
+    }
+
+    const updateInstagram = async () => {
+        setInstagramUpdating(true);
+        try {
+            const response = await fetch('/api/ai/rag/update-instagram');
+
+            if (!response.ok) {
+                throw new Error('Failed to update instagram');
+            }
+        } catch (error) {
+            console.error('Error updating instagram:', error);
+            setInstagramUpdatingError('Failed to update instagram. Please try again later.');
+        } finally {
+            setInstagramUpdating(false);
+        }
+    }
     // const saveInstagram = async () => {
     //     try {
     //         const profileData = await fetch(`/api/get/instagram/profile/info`)
@@ -253,10 +331,34 @@ export default function Context() {
                                 <Skeleton className="h-32 w-32 rounded-xl" />
                             )
                         ) : connectedAccounts && connectedAccounts.instagram ? (
-                            <div className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 flex-shrink-0">
-                                <InstagramIcon className="w-10 h-10" />
-                                <p className="text-xs font-semibold truncate max-w-28">@{connectedAccounts.instagram.username}</p>
-                            </div>
+                            instagramDeleting ? (
+                                <div className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 flex-shrink-0">
+                                    <div className="animate-spin">
+                                        <Loader2 className="w-10 h-10 text-primary" />
+                                    </div>
+                                    <p className="text-sm font-semibold text-primary">Deleting...</p>
+                                </div>
+                            ) : (
+                                <Dialog>
+                                <DialogTrigger>
+                                    <div className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 flex-shrink-0">
+                                        <InstagramIcon className="w-10 h-10" />
+                                        <p className="text-xs font-semibold truncate max-w-28">@{connectedAccounts.instagram.username}</p>
+                                    </div>
+                                </DialogTrigger>
+                                <DialogContent className="bg-slate-100 [&>button]:hidden max-h-[90vh] overflow-y-auto overflow-x-hidden">
+                                    <DialogHeader>
+                                        <DialogTitle>{connectedAccounts.instagram.name}</DialogTitle>
+                                        <DialogDescription>@{connectedAccounts.instagram.username}</DialogDescription>
+                                    </DialogHeader>
+                                    <DialogFooter className="flex gap-3 mt-8">
+                                        <DialogClose className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-white text-slate-700">Close</DialogClose>
+                                        <DialogClose onClick={deleteInstagram} className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-primary text-white bg-red-500 hover:bg-red-600">Delete</DialogClose>
+                                        <DialogClose onClick={updateInstagram} className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-primary text-white hover:bg-blue-500">Update</DialogClose>
+                                    </DialogFooter>
+                                </DialogContent>
+                                </Dialog>
+                            )
                         ) : (
                             <Skeleton className="h-32 w-32 rounded-xl" />
                         )}
@@ -366,11 +468,44 @@ export default function Context() {
                     </DialogContent>
                     </Dialog>
                     {connectedWebsites && connectedWebsites.map((website) => {
+                        if (websiteDeleting === website) {
+                            return (
+                                <div key={website} className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 flex-shrink-0">
+                                    <div className="animate-spin">
+                                        <Loader2 className="w-10 h-10 text-primary" />
+                                    </div>
+                                    <p className="text-sm font-semibold text-primary">Deleting...</p>
+                                </div>
+                            )
+                        } else if (websiteUpdating === website) {
+                            return (
+                                <div key={website} className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 flex-shrink-0">
+                                    <div className="animate-spin">
+                                        <Loader2 className="w-10 h-10 text-primary" />
+                                    </div>
+                                    <p className="text-sm font-semibold text-primary">Updating...</p>
+                                </div>
+                            )
+                        }
                         return (
-                            <div key={website} className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 flex-shrink-0">
-                                <Globe className="w-10 h-10" />
-                                <p className="text-xs font-semibold truncate max-w-28">{website}</p>
-                            </div>
+                            <Dialog key={website}>
+                            <DialogTrigger>
+                                <div key={website} className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 flex-shrink-0">
+                                    <Globe className="w-10 h-10" />
+                                    <p className="text-xs font-semibold truncate max-w-28">{website}</p>
+                                </div>
+                            </DialogTrigger>
+                            <DialogContent className="bg-slate-100 [&>button]:hidden max-h-[90vh] overflow-y-auto overflow-x-hidden">
+                                <DialogHeader>
+                                    <DialogTitle>{website}</DialogTitle>
+                                </DialogHeader>
+                                <DialogFooter className="flex gap-3 mt-8">
+                                    <DialogClose className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-white text-slate-700">Close</DialogClose>
+                                    <DialogClose onClick={() => deleteWebsite(website)} className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-primary text-white bg-red-500 hover:bg-red-600">Delete</DialogClose>
+                                    <DialogClose onClick={() => updateWebsite(website)} className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-primary text-white hover:bg-blue-500">Update</DialogClose>
+                                </DialogFooter>
+                            </DialogContent>
+                            </Dialog>
                         )
                     })}
                     <Dialog open={websiteSavingError !== null} onOpenChange={() => setWebsiteSavingError(null)}>
@@ -382,14 +517,6 @@ export default function Context() {
                         <DialogClose className="text-xl font-semibold h-12 p-0 rounded-2xl bg-primary text-white hover:bg-blue-500">Done</DialogClose>
                     </DialogContent>
                     </Dialog>
-                    {/* {connectedAccounts && connectedAccounts.instagram ? (
-                        <div className="flex flex-col gap-2 items-center justify-center bg-white rounded-xl p-4 w-32 h-32 flex-shrink-0">
-                            <InstagramIcon className="w-10 h-10" />
-                            <p className="text-sm font-semibold truncate max-w-28">@{connectedAccounts.instagram.username}</p>
-                        </div>
-                    ) : (
-                        <Skeleton className="h-32 w-32 rounded-xl" />
-                    )} */}
                 </div>
                 {/* <h2 className="text-2xl font-bold mt-4">Documents</h2>
                 <div className="flex gap-4 mt-4 pr-4 w-[calc(100%+1rem)] no-scrollbar overflow-x-scroll">
