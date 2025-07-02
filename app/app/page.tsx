@@ -3,12 +3,13 @@ import Image from "next/image";
 import React from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Heart, MessageCircle, PlusIcon, ChevronDown, ChevronUp } from "lucide-react";
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useQuery } from "@tanstack/react-query";
 
 const formatDate = (timestamp: string | number) => {
     const date = new Date(typeof timestamp === 'string' ? timestamp : timestamp * 1000);
@@ -22,12 +23,8 @@ const formatDate = (timestamp: string | number) => {
 export default function Home() {
   const { user, isLoading } = useAuth();
 
-  const [profile, setProfile] = useState<{ username: string, name: string, profilePictureUrl: string, biography: string } | null>(null);
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
-
-  const [media, setMedia] = useState<{ media_url: string, media_type: string, caption: string, permalink: string, timestamp: number, like_count: number, comments_count: number }[]>([]);
   const [isLoadingMedia, setIsLoadingMedia] = useState(false);
-
   const [expandedCaptions, setExpandedCaptions] = useState<{ [key: string]: boolean }>({});
 
   const toggleCaption = (mediaUrl: string) => {
@@ -37,33 +34,35 @@ export default function Home() {
     }));
   };
 
-  useEffect(() => {
-    if (user) {
-      setIsLoadingProfile(true);
+  async function fetchProfile() {
+    setIsLoadingProfile(true);
+    const res = await fetch('/api/get/instagram/profile/info');
+    if (!res.ok) throw new Error('Failed to fetch profile');
+    setIsLoadingProfile(false);
+    return await res.json();
+  }
 
-      fetch('/api/get/instagram/profile/info')
-        .then(res => res.json())
-        .then(data => {
-          setProfile(data);
-          setIsLoadingProfile(false);
-        })
-        .catch(err => {
-          console.error(err);
-          setIsLoadingProfile(false);
-        })
+  async function fetchMedia() {
+    setIsLoadingMedia(true);
+    const res = await fetch('/api/get/instagram/profile/media');
+    if (!res.ok) throw new Error('Failed to fetch media');
+    setIsLoadingMedia(false);
+    return (await res.json()).mediaArray;
+  }
 
-      fetch('/api/get/instagram/profile/media')
-        .then(res => res.json())
-        .then(data => {
-          setMedia(data.mediaArray);
-          setIsLoadingMedia(false);
-        })
-        .catch(err => {
-          console.error(err);
-          setIsLoadingMedia(false);
-        })
-    }
-  }, [user])
+  const { data: profile = null } = useQuery({
+    queryKey: ['profile'],
+    queryFn: fetchProfile,
+    enabled: !isLoading,
+    staleTime: 5 * 60_000,
+  })
+
+  const { data: media = [] } = useQuery({
+    queryKey: ['media'],
+    queryFn: fetchMedia,
+    enabled: !isLoading,
+    staleTime: 5 * 60_000,
+  })
 
   if (isLoading || isLoadingProfile) {
     return (
@@ -116,7 +115,7 @@ export default function Home() {
         </Button>
         {media && !isLoadingMedia && media.length > 0 ? (
           <div className="grid grid-cols-3 w-dvw -translate-x-4 gap-[1px] pb-16 sm:pb-0 sm:w-full sm:translate-x-0 sm:gap-0">
-            {media.map((mediaItem) => (
+            {media.map((mediaItem: { media_url: string, media_type: string, caption: string, permalink: string, timestamp: number, like_count: number, comments_count: number }) => (
               <Dialog key={mediaItem.media_url}>
               <DialogTrigger>
                 <div key={mediaItem.media_url} className="aspect-[4/5] w-full relative bg-black border-white">
