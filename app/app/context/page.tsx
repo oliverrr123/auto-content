@@ -14,15 +14,15 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import ErrorDialog from "@/components/error-dialog";
 import Loader from "@/components/loader";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 export default function Context() {
     const { user, isLoading } = useAuth();
 
-    const [connectedAccounts, setConnectedAccounts] = useState<{ instagram: { name: string, username: string, profile_picture_url: string } } | null>(null);
+    // const [connectedAccounts, setConnectedAccounts] = useState<{ instagram: { name: string, username: string, profile_picture_url: string } } | null>(null);
     const [instagramUsername, setInstagramUsername] = useState<string>("");
     const [instagramAccess, setInstagramAccess] = useState<string>("");
     const [instagramAccessSuccess, setInstagramAccessSuccess] = useState<boolean>(false);
@@ -34,7 +34,7 @@ export default function Context() {
     const [websiteSavingError, setWebsiteSavingError] = useState<string | null>(null);
     const [websiteDeleting, setWebsiteDeleting] = useState<string | null>("");
     const [websiteDeletingError, setWebsiteDeletingError] = useState<string | null>(null);
-    const [instagramDeleting, setInstagramDeleting] = useState<boolean>(false);
+    // const [instagramDeleting, setInstagramDeleting] = useState<boolean>(false);
     const [instagramDeletingError, setInstagramDeletingError] = useState<string | null>(null);
     const [instagramUpdating, setInstagramUpdating] = useState<boolean>(false);
     const [instagramUpdatingError, setInstagramUpdatingError] = useState<string | null>(null);
@@ -46,19 +46,26 @@ export default function Context() {
     // const [documentSavingSuccess, setDocumentSavingSuccess] = useState<boolean>(false);
     // const [documentDialogOpen, setDocumentDialogOpen] = useState<boolean>(false);
 
-    const router = useRouter();
+    const queryClient = useQueryClient();
 
-    useEffect(() => {
-        fetch('/api/get/connectedAccounts')
-            .then(res => res.json())
-            .then(data => setConnectedAccounts(data));
-    }, [isLoading, instagramDeleting]);
+    async function fetchConnectedAccounts() {
+        const res = await fetch('/api/get/connected-accounts');
+        if (!res.ok) throw new Error('Failed to fetch connected accounts');
+        return res.json();
+    }
 
-    useEffect(() => {
-        if (!user && !isLoading) {
-            router.push('/login');
-        }
-    }, [user, isLoading, router]);
+    const { data: connectedAccounts = [], isFetching, error: connectedAccountsError } = useQuery({
+        queryKey: ['connected-accounts'],
+        queryFn: fetchConnectedAccounts,
+        enabled: !isLoading,
+        staleTime: 5 * 60_000,
+    })
+
+    // useEffect(() => {
+    //     fetch('/api/get/connected-accounts')
+    //         .then(res => res.json())
+    //         .then(data => setConnectedAccounts(data));
+    // }, [isLoading, instagramDeleting]);
 
     useEffect(() => {
         if (user) {
@@ -170,21 +177,13 @@ export default function Context() {
         }
     }
 
-    const deleteInstagram = async () => {
-        setInstagramDeleting(true);
-        try {
-            const response = await fetch('/api/ai/rag/delete-instagram');
-
-            if (!response.ok) {
-                throw new Error('Failed to delete instagram');
-            }
-        } catch (error) {
-            console.error('Error deleting instagram:', error);
-            setInstagramDeletingError('Failed to delete instagram. Please try again later.');
-        } finally {
-            setInstagramDeleting(false);    
-        }
-    }
+    const { mutate: deleteInstagram, isPending: instagramDeleting, isError, error: deleteInstagramError } = useMutation({
+        mutationFn: async () => {
+            const res = await fetch('/api/ai/rag/delete-instagram');
+            if (!res.ok) throw new Error('Failed to delete instagram');
+        },
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['connected-accounts'] })
+    })
 
     const updateInstagram = async () => {
         console.log('updateInstagram');
@@ -328,7 +327,7 @@ export default function Context() {
                                 </DialogHeader>
                                 <DialogFooter className="flex gap-3 mt-8">
                                     <DialogClose className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-white text-slate-700">Close</DialogClose>
-                                    <DialogClose onClick={deleteInstagram} className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-primary text-white bg-red-500 hover:bg-red-600">Delete</DialogClose>
+                                    <DialogClose onClick={() => deleteInstagram()} className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-primary text-white bg-red-500 hover:bg-red-600">Delete</DialogClose>
                                     <DialogClose onClick={updateInstagram} className="rounded-2xl font-medium text-xl p-2 drop-shadow-sexy w-full bg-primary text-white hover:bg-blue-500">Update</DialogClose>
                                 </DialogFooter>
                             </DialogContent>
