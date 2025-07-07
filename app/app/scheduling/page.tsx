@@ -508,7 +508,7 @@ export default function Scheduling() {
                                         <DialogTrigger>
                                             <div className='flex items-center gap-2 px-3 py-2 bg-primary text-white rounded-xl whitespace-nowrap'>
                                                 <div className="flex flex-col items-start">
-                                                    <p className="text-sm">{post.caption}</p>
+                                                    <p className="text-sm max-w-[250px] truncate text-ellipsis overflow-hidden">{post.caption}</p>
                                                     <p className="text-xs opacity-70">{new Date(post.schedule_params.scheduled_date).getHours()}:{new Date(post.schedule_params.scheduled_date).getMinutes().toString().padStart(2, '0')}</p>
                                                 </div>
                                             </div>
@@ -577,7 +577,7 @@ export default function Scheduling() {
                                             <div className='flex items-center gap-2 px-3 py-2 bg-blue-400 text-white rounded-xl whitespace-nowrap'>
                                                 <CheckCircle className='w-4 h-4' />
                                                 <div className="flex flex-col items-start">
-                                                    <p className="text-sm">{post.caption}</p>
+                                                    <p className="text-sm max-w-[250px] truncate text-ellipsis overflow-hidden">{post.caption}</p>
                                                     <p className="text-xs opacity-70">{new Date(post.schedule_params.scheduled_date).getHours()}:{new Date(post.schedule_params.scheduled_date).getMinutes().toString().padStart(2, '0')}</p>
                                                 </div>
                                             </div>
