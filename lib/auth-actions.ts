@@ -40,6 +40,7 @@ export async function signup(prevState: AuthState | null, formData: FormData): P
       data: {
         first_name: firstName,
         last_name: lastName,
+        email: email,
       },
       emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/confirm`,
     }
