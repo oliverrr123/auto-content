@@ -6,12 +6,6 @@ export async function POST(req: NextRequest) {
         const { uploadedFiles, caption, scheduledDate } = await req.json();
         const supabase = await createClient();
 
-        console.log('--------------------------------1')
-        console.log(uploadedFiles)
-        console.log(caption)
-        console.log(scheduledDate)
-        console.log('--------------------------------')
-
         const { data: { user } } = await supabase.auth.getUser();
 
         if (!user) {
@@ -93,13 +87,6 @@ export async function POST(req: NextRequest) {
                 job_id: cronJobId
             }).eq('id', post.id);
         }
-
-        console.log('--------------------------------2')
-        console.log(responseData)
-        console.log(response)
-        console.log(post)
-        console.log(error)
-        console.log('--------------------------------')
 
         return NextResponse.json({ success: true }, { status: 200 });
     } catch (error) {
