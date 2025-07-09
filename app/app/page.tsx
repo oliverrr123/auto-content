@@ -3,7 +3,7 @@ import Image from "next/image";
 import React from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Heart, MessageCircle, PlusIcon, ChevronDown, ChevronUp } from "lucide-react";
@@ -76,15 +76,6 @@ export default function Home() {
     staleTime: 5 * 60_000,
   })
 
-  useEffect(() => {
-    console.log(`user: ${user}`);
-    console.log(`isLoading: ${isLoading}`);
-    console.log(`isLoadingProfile: ${isLoadingProfile}`);
-    console.log(`isLoadingMedia: ${isLoadingMedia}`);
-    console.log(`profile: ${profile}`);
-    console.log(`media: ${media}`);
-  }, [user, isLoading, isLoadingProfile, isLoadingMedia, profile, media]);
-
   if (isLoading || isLoadingProfile) {
     return (
       <div className="flex flex-col gap-4">
@@ -109,10 +100,6 @@ export default function Home() {
   }
 
   if (user && profile && !isLoadingProfile && media) {
-    console.log(media);
-    console.log(profile);
-    console.log(user);
-    console.log(isLoadingProfile);
     return (
       <div className="flex flex-col gap-4">
         <div className="flex gap-4 items-center">
@@ -240,7 +227,7 @@ export default function Home() {
             <Skeleton className="aspect-[4/5] w-full rounded-none" />
             <Skeleton className="aspect-[4/5] w-full rounded-none" />
           </div>
-        ) }
+        )}
       </div>
     );
   }

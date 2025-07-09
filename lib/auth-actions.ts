@@ -1,6 +1,7 @@
 'use server';
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
+import { QueryClient } from "@tanstack/react-query";
 
 type AuthState = {
   error?: string
@@ -56,6 +57,8 @@ export async function signup(prevState: AuthState | null, formData: FormData): P
 export async function logout() {
   const supabase = await createClient()
   await supabase.auth.signOut()
+  const queryClient = new QueryClient()
+  queryClient.invalidateQueries()
   redirect('/login')
 }
 
