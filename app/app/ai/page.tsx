@@ -1,12 +1,12 @@
 'use client';
-import { useAuth } from '@/context/AuthContext';
+// import { useAuth } from '@/context/AuthContext';
 import { useEffect, useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Mic, Paperclip, Send } from 'lucide-react';
 import { Markdown } from '@/components/markdown';
 
 export default function AI() {
-	const { user } = useAuth();
+	// const { user } = useAuth();
 	const [prompt, setPrompt] = useState('');
 	const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -25,9 +25,9 @@ export default function AI() {
 		scrollToBottom();
 	}, [messages]);
 
-	if (!user) {
-		return null;
-	}
+	// if (!user) {
+	// 	return null;
+	// }
 
 	function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
 		if (e.key === 'Enter' && !e.shiftKey) {
