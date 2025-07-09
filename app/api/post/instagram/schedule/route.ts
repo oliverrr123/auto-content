@@ -2,26 +2,26 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 
 export async function POST(req: NextRequest) {
-    const { uploadedFiles, caption, scheduledDate } = await req.json();
-    const supabase = await createClient();
-
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-        return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const { data } = await supabase.from('instagram').select('*').eq('id', user.id).single();
-
-    if (!data) {
-        return NextResponse.json({ success: false, error: 'Instagram account not linked' }, { status: 400 });
-    }
-
     try {
+        const { uploadedFiles, caption, scheduledDate } = await req.json();
+        const supabase = await createClient();
+
+        console.log('--------------------------------1')
+        console.log(uploadedFiles)
+        console.log(caption)
+        console.log(scheduledDate)
+        console.log('--------------------------------')
+
         const { data: { user } } = await supabase.auth.getUser();
 
         if (!user) {
             return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+        }
+
+        const { data } = await supabase.from('instagram').select('*').eq('id', user.id).single();
+
+        if (!data) {
+            return NextResponse.json({ success: false, error: 'Instagram account not linked' }, { status: 400 });
         }
 
         const { data: post, error } = await supabase
@@ -79,20 +79,28 @@ export async function POST(req: NextRequest) {
             })
         });
 
-        const data = await response.json();
-
         if (!response.ok) {
             const errorText = await response.text();
             console.error('Cron job API error:', errorText);
             throw new Error(`Failed to schedule cron job: ${response.status} ${response.statusText}`);
         }
 
-        if (data.jobId) {
-            const cronJobId = data.jobId;
+        const responseData = await response.json();
+
+        if (responseData.jobId) {
+            const cronJobId = responseData.jobId;
             await supabase.from('posts').update({
                 job_id: cronJobId
             }).eq('id', post.id);
         }
+
+        console.log('--------------------------------2')
+        console.log(responseData)
+        console.log(response)
+        console.log(post)
+        console.log(error)
+        console.log('--------------------------------')
+
         return NextResponse.json({ success: true }, { status: 200 });
     } catch (error) {
         console.error(error);
