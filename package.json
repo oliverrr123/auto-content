@@ -72,6 +72,7 @@
     "@types/pdf-parse": "^1.1.5",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/three": "^0.178.1",
     "@types/unzipper": "^0.10.11",
     "@types/xml2js": "^0.4.14",
     "eslint": "^9",
