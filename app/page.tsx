@@ -13,7 +13,7 @@ export default function LandingPage() {
     }
 
     return (
-        <div className="flex flex-col p-4 pb-24 gap-4 h-dvh justify-center">
+        <div className="flex flex-col p-4 pb-8 gap-4 h-dvh justify-center">
             <div className="flex w-full justify-center items-center pb-2">
                 <div className="w-48 h-48 bg-primary rounded-full"></div>
             </div>
