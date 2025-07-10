@@ -7,7 +7,7 @@ import { CanvasRevealEffect } from "@/components/ui/canvas-reveal-effect";
 export function CoolButton() {
   return (
     <>
-        <button className="flex items-center justify-center max-w-sm w-full mx-auto p-4 relative hover:scale-105 transition-all duration-300">
+        <button className="flex items-center justify-center max-w-sm w-full rounded-lg overflow-hidden mx-auto p-4 relative hover:scale-105 transition-all duration-300">
           <AnimatePresence>
             <div className="h-full w-full absolute inset-0">
               <CanvasRevealEffect

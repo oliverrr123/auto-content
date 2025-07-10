@@ -27,7 +27,7 @@ export default function LandingPage() {
                 <Link href="/login" className="bg-primary text-white px-4 py-2 rounded-md">Login</Link>
                 <Link href="/signup" className="bg-white text-primary px-4 py-2 rounded-md">Signup</Link>
             </div> */}
-            <Link href="/signup" className="flex justify-center items-center mt-2 left-0 right-0" style={{filter: "drop-shadow(0 5px 10px rgba(9, 120, 255, 0.75))"}}>
+            <Link href="/signup" className="flex justify-center items-center mt-2 left-0 right-0 rounded-lg overflow-hidden" style={{filter: "drop-shadow(0 5px 10px rgba(9, 120, 255, 0.75))"}}>
                 <CoolButton />
             </Link>
             <p className="text-center text-black text-opacity-50">Already have an account? <Link href="/login" className="text-primary underline">Login</Link></p>
