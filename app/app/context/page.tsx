@@ -1,7 +1,7 @@
 "use client";
 import { AtSign, CircleCheck, Clock, Globe, InstagramIcon, LinkIcon, PlusIcon } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -9,6 +9,37 @@ import { Skeleton } from "@/components/ui/skeleton";
 import ErrorDialog from "@/components/error-dialog";
 import Loader from "@/components/loader";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
+// Add basic URL validation helper below imports
+function isValidUrl(url: string): boolean {
+    if (!url) return false;
+    let formatted = url.trim();
+
+    // prepend protocol if missing
+    if (!/^https?:\/\//i.test(formatted)) {
+        formatted = `https://${formatted}`;
+    }
+
+    try {
+        const { hostname } = new URL(formatted);
+
+        /*
+          Basic domain checks:
+          1) Must contain at least one dot
+          2) Dot cannot be the first or last character
+          3) Top-level domain (portion after last dot) must be at least 2 chars
+        */
+        if (!hostname || hostname.startsWith('.') || hostname.endsWith('.')) return false;
+        const pieces = hostname.split('.');
+        if (pieces.length < 2) return false;
+        const tld = pieces[pieces.length - 1];
+        if (tld.length < 2) return false;
+
+        return true;
+    } catch {
+        return false;
+    }
+}
 
 export default function Context() {
     const { user, isLoading } = useAuth();
@@ -18,6 +49,9 @@ export default function Context() {
     const [websiteUrl, setWebsiteUrl] = useState<string>("");
     const [websiteDeleting, setWebsiteDeleting] = useState<string | null>("");
     const [websiteUpdating, setWebsiteUpdating] = useState<string | null>("");
+
+    // Error dialog open state
+    const [errorDialogOpen, setErrorDialogOpen] = useState(false);
 
     const queryClient = useQueryClient();
 
@@ -125,6 +159,15 @@ export default function Context() {
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['websites'] }); setWebsiteUpdating(null) }
     })
+
+    // ---------------- Error dialog helpers ----------------
+    const errorMessage = instagramAccessError?.message || instagramDeletingError?.message || instagramUpdatingError?.message || websiteSavingError?.message || websiteDeletingError?.message || websiteUpdatingError?.message || "";
+
+    useEffect(() => {
+        if (errorMessage) {
+            setErrorDialogOpen(true);
+        }
+    }, [errorMessage]);
 
     if (!user || isLoading) {
         return (
@@ -262,9 +305,12 @@ export default function Context() {
                                 <input type="url" value={websiteUrl} onChange={(e) => setWebsiteUrl(e.target.value)} className="w-full outline-none focus:outline-none" placeholder="https://your-awesome-website.com/" />
                             </div>
                         </div>
+                        {websiteUrl && !isValidUrl(websiteUrl) && (
+                            <p className="text-sm text-red-500">Please enter a valid URL (e.g., https://website.com)</p>
+                        )}
 
                         <DialogClose asChild>
-                            <Button onClick={() => saveWebsite()} className="text-xl font-semibold h-12 p-0 rounded-2xl hover:bg-blue-500">Connect</Button>
+                            <Button onClick={() => isValidUrl(websiteUrl) && saveWebsite()} disabled={!isValidUrl(websiteUrl)} className="text-xl font-semibold h-12 p-0 rounded-2xl hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">Connect</Button>
                         </DialogClose>
                     </DialogContent>
                     </Dialog>
@@ -304,9 +350,9 @@ export default function Context() {
                         )
                     })}
                     <ErrorDialog
-                        error={instagramAccessError?.message || instagramDeletingError?.message || instagramUpdatingError?.message || websiteSavingError?.message || websiteDeletingError?.message || websiteUpdatingError?.message || ""}
-                        open={instagramAccessError !== null || instagramDeletingError !== null || instagramUpdatingError !== null || websiteSavingError !== null || websiteDeletingError !== null || websiteUpdatingError !== null}
-                        onOpenChange={() => {}}
+                        error={errorMessage}
+                        open={errorDialogOpen}
+                        onOpenChange={setErrorDialogOpen}
                     />
                 </div>
                 {/* <h2 className="text-2xl font-bold mt-4">Documents</h2>
